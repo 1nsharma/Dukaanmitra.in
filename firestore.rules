@@ -1,0 +1,54 @@
+/**
+ * Core Philosophy: This ruleset implements a secure "dropbox" model. The primary goal is to allow any user, including unauthenticated visitors, to submit a contact form while strictly preventing anyone from reading, updating, or deleting any submissions. This protects the Personally Identifiable Information (PII) within the form data from public access.
+ *
+ * Data Structure: The data is organized into a single, top-level collection:
+ * - /contactFormSubmissions: Stores all submissions.
+ *
+ * Key Security Decisions:
+ * - Public Write-Only Access: The `contactFormSubmissions` collection is intentionally configured to allow `create` operations from anyone. This is necessary for the public-facing contact form to function.
+ * - Strict Data Lockdown: All other operations (`get`, `list`, `update`, `delete`) on contact submissions are denied. This ensures that submitted data cannot be viewed or tampered with by other users. Read access should be managed through a trusted backend environment or a future admin role.
+ * - No Data Validation: In line with the prototyping philosophy, these rules do not validate the shape or type of the submitted data. The focus is solely on authorization.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description
+     * Allows any user (authenticated or not) to submit a contact form, but denies
+     * all read, update, and delete operations to protect the submitted PII. This
+     * creates a secure 'write-only' dropbox.
+     *
+     * @path
+     * /contactFormSubmissions/{contactFormSubmissionId}
+     *
+     * @allow
+     * (create) An anonymous website visitor can create a new contact form submission.
+     *
+     * @deny
+     * (get) An authenticated user attempts to read a submission. This is denied to prevent data leakage. Reads should be handled by a trusted server environment or a future admin role.
+     *
+     * @deny
+     * (list) An anonymous user attempts to list all submissions. This is denied.
+     *
+     * @deny
+     * (update) Any user attempts to modify a submission after it has been created.
+     *
+     * @principle
+     * Implements a secure 'dropbox' pattern where data can be submitted publicly but not read or modified, protecting sensitive user information until reviewed by an authorized party (e.g., an admin).
+     */
+    match /contactFormSubmissions/{contactFormSubmissionId} {
+      // READ RULES
+      allow get: if false;
+      allow list: if false;
+
+      // WRITE RULES
+      // This rule is intentionally open to allow any website visitor,
+      // authenticated or not, to submit the contact form. This is a secure
+      // pattern because all other permissions (read, update, delete) are denied.
+      allow create: if true;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}

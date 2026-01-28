@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "ContactFormSubmission": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContactFormSubmission",
+      "type": "object",
+      "description": "Represents a contact form submission from the website.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the contact form submission."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the person submitting the form."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the person submitting the form.",
+          "format": "email"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject of the contact form submission."
+        },
+        "message": {
+          "type": "string",
+          "description": "The message content of the contact form submission."
+        },
+        "submittedAt": {
+          "type": "string",
+          "description": "Timestamp of when the form was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "subject",
+        "message",
+        "submittedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/contactFormSubmissions/{contactFormSubmissionId}",
+        "definition": {
+          "entityName": "ContactFormSubmission",
+          "schema": {
+            "$ref": "#/backend/entities/ContactFormSubmission"
+          },
+          "description": "Stores contact form submissions from the website. No denormalized authorization fields are needed since all submissions are publicly accessible for admin review.",
+          "params": [
+            {
+              "name": "contactFormSubmissionId",
+              "description": "Unique identifier for the contact form submission."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure prioritizes security and scalability for the DukaanMitra public website, focusing on contact form submissions. It leverages structural segregation by placing contact form submissions in a dedicated collection with consistent security needs.\n\n**Authorization Independence:** This design avoids hierarchical authorization dependencies by storing all necessary data within each document. Since all submissions are treated equally (no drafts or private submissions), this collection benefits from a homogeneous security posture. This means no `get()` calls are required in the security rules, ensuring atomic operations.\n\n**QAPs (Rules Are Not Filters):** The design supports secure `list` operations because all documents in the `contactFormSubmissions` collection share the same access control requirements. Security rules can efficiently validate read access without needing to filter based on document content.\n"
+  }
+}
