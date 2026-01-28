@@ -3,19 +3,29 @@
 import Link from "next/link";
 import { Menu, Store } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useUser, useAuth } from "@/firebase";
 
 const navLinks = [
-  { href: "#features", label: "Features" },
-  { href: "#pricing", label: "Pricing" },
+  { href: "/#features", label: "Features" },
+  { href: "/#pricing", label: "Pricing" },
   { href: "/docs", label: "Docs" },
-  { href: "#contact", label: "Contact" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 export default function Header() {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    router.push('/');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -38,15 +48,33 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
+          {user && (
+             <Link
+              href="/dashboard"
+              className="font-medium text-foreground/60 transition-colors hover:text-foreground/80"
+            >
+              Dashboard
+            </Link>
+          )}
         </nav>
 
         <div className="flex flex-1 items-center justify-end space-x-2">
-          <Button asChild variant="ghost">
-            <Link href="/login">Log In</Link>
-          </Button>
-          <Button asChild className="bg-primary hover:bg-primary/90">
-            <Link href="/login?register=true">Get Started</Link>
-          </Button>
+          {!isUserLoading && (
+            <>
+              {user ? (
+                <Button onClick={handleSignOut} variant="ghost">Sign Out</Button>
+              ) : (
+                <>
+                  <Button asChild variant="ghost">
+                    <Link href="/login">Log In</Link>
+                  </Button>
+                  <Button asChild className="bg-primary hover:bg-primary/90">
+                    <Link href="/login?register=true">Get Started</Link>
+                  </Button>
+                </>
+              )}
+            </>
+          )}
           
           {/* Mobile Navigation */}
           <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -81,6 +109,15 @@ export default function Header() {
                       {link.label}
                     </Link>
                   ))}
+                  {user && (
+                    <Link
+                      href="/dashboard"
+                      className="text-lg font-medium"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                  )}
                 </nav>
               </div>
             </SheetContent>

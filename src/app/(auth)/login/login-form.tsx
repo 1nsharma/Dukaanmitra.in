@@ -4,7 +4,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTransition } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +18,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { handleLogin } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth, useFirestore } from "@/firebase";
+
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email."),
@@ -26,15 +29,14 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const initialState = {
-  message: "",
-  success: false,
-};
-
 export default function LoginForm() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const auth = useAuth();
+  const firestore = useFirestore();
+
   const isRegister = searchParams.get('register') === 'true';
 
   const form = useForm<FormValues>({
@@ -43,24 +45,56 @@ export default function LoginForm() {
   });
 
   const onSubmit = (values: FormValues) => {
-    const formData = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-
     startTransition(async () => {
-      // In a real app, you'd call a different action for registration
-      const state = await handleLogin(initialState, formData);
-      if (state.success) {
-        toast({
-          title: "Success!",
-          description: "You have been logged in.",
-        });
-        // router.push('/dashboard');
-      } else {
+      try {
+        if (isRegister) {
+          const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+          const user = userCredential.user;
+
+          // Create user profile in Firestore
+          await setDoc(doc(firestore, "users", user.uid), {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.email?.split('@')[0] || '',
+            createdAt: serverTimestamp(),
+          });
+
+          toast({
+            title: "Account Created!",
+            description: "You have been successfully registered.",
+          });
+          router.push('/dashboard');
+        } else {
+          await signInWithEmailAndPassword(auth, values.email, values.password);
+          toast({
+            title: "Success!",
+            description: "You have been logged in.",
+          });
+          router.push('/dashboard');
+        }
+      } catch (error: any) {
+        let message = "An unexpected error occurred.";
+        switch(error.code) {
+          case 'auth/email-already-in-use':
+            message = "This email is already in use. Please log in or use a different email.";
+            break;
+          case 'auth/invalid-email':
+            message = "Please enter a valid email address.";
+            break;
+          case 'auth/weak-password':
+            message = "The password is too weak. Please use at least 8 characters.";
+            break;
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+             message = 'Invalid email or password. Please try again.';
+             break;
+          default:
+            console.error(error); // Log other errors to the console
+        }
         toast({
           title: "Authentication Failed",
-          description: state.message,
+          description: message,
           variant: "destructive",
         });
       }

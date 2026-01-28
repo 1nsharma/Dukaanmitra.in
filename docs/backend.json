@@ -41,6 +41,32 @@
         "message",
         "submittedAt"
       ]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's public profile information.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID from Firebase Authentication."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's primary email address."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's chosen display name."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the user account was created."
+        }
+      },
+      "required": ["uid", "email", "createdAt"]
     }
   },
   "auth": {
@@ -66,8 +92,24 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores public user profile information.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The user's unique ID, matching their Firebase Auth UID."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "This Firestore structure prioritizes security and scalability for the DukaanMitra public website, focusing on contact form submissions. It leverages structural segregation by placing contact form submissions in a dedicated collection with consistent security needs.\n\n**Authorization Independence:** This design avoids hierarchical authorization dependencies by storing all necessary data within each document. Since all submissions are treated equally (no drafts or private submissions), this collection benefits from a homogeneous security posture. This means no `get()` calls are required in the security rules, ensuring atomic operations.\n\n**QAPs (Rules Are Not Filters):** The design supports secure `list` operations because all documents in the `contactFormSubmissions` collection share the same access control requirements. Security rules can efficiently validate read access without needing to filter based on document content.\n"
+    "reasoning": "This Firestore structure prioritizes security and scalability. Contact form submissions are in a separate collection with write-only public access. User profiles are stored in a `users` collection, where each user can only read and write to their own document, ensuring data privacy."
   }
 }

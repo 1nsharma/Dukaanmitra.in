@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTransition } from "react";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,53 +18,52 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { handleContactForm } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
+import { useFirestore } from "@/firebase";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Please enter a valid email address."),
+  subject: z.string(),
   message: z.string().min(10, "Message must be at least 10 characters.").max(500, "Message must be less than 500 characters."),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const initialState = {
-  message: "",
-  success: false,
-};
-
 export default function ContactForm() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const firestore = useFirestore();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
+      subject: "Contact Form Submission",
       message: "",
     },
   });
 
   const onSubmit = (values: FormValues) => {
-    const formData = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-
     startTransition(async () => {
-      const state = await handleContactForm(initialState, formData);
-      if (state.success) {
+      try {
+        const submissionsCollection = collection(firestore, "contactFormSubmissions");
+        await addDoc(submissionsCollection, {
+          ...values,
+          submittedAt: serverTimestamp(),
+        });
+        
         toast({
           title: "Message Sent!",
-          description: state.message,
+          description: "Your message has been sent successfully!",
         });
         form.reset();
-      } else {
+      } catch (error: any) {
+        console.error("Error submitting form: ", error);
         toast({
           title: "Error",
-          description: state.message,
+          description: "Failed to send message. Please try again.",
           variant: "destructive",
         });
       }

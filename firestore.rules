@@ -1,13 +1,15 @@
 /**
- * Core Philosophy: This ruleset implements a secure "dropbox" model. The primary goal is to allow any user, including unauthenticated visitors, to submit a contact form while strictly preventing anyone from reading, updating, or deleting any submissions. This protects the Personally Identifiable Information (PII) within the form data from public access.
+ * Core Philosophy: This ruleset implements a secure "dropbox" model for contact forms and
+ * a user-centric model for profiles.
  *
- * Data Structure: The data is organized into a single, top-level collection:
- * - /contactFormSubmissions: Stores all submissions.
+ * Data Structure:
+ * - /contactFormSubmissions: A write-only collection for public form submissions.
+ * - /users: Stores user profiles, accessible only by the owning user.
  *
  * Key Security Decisions:
- * - Public Write-Only Access: The `contactFormSubmissions` collection is intentionally configured to allow `create` operations from anyone. This is necessary for the public-facing contact form to function.
- * - Strict Data Lockdown: All other operations (`get`, `list`, `update`, `delete`) on contact submissions are denied. This ensures that submitted data cannot be viewed or tampered with by other users. Read access should be managed through a trusted backend environment or a future admin role.
- * - No Data Validation: In line with the prototyping philosophy, these rules do not validate the shape or type of the submitted data. The focus is solely on authorization.
+ * - Public Write for Contacts: `contactFormSubmissions` allows `create` from anyone to enable the public contact form. All other access is denied to protect PII.
+ * - Owner-Only Access for Users: Users can only `get`, `create`, and `update` their own document in the `users` collection, keyed by their UID. This prevents users from accessing or modifying each other's data.
+ * - No Data Validation: Rules focus on authorization, not data shape validation.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -15,40 +17,36 @@ service cloud.firestore {
 
     /**
      * @description
-     * Allows any user (authenticated or not) to submit a contact form, but denies
-     * all read, update, and delete operations to protect the submitted PII. This
-     * creates a secure 'write-only' dropbox.
-     *
-     * @path
-     * /contactFormSubmissions/{contactFormSubmissionId}
-     *
-     * @allow
-     * (create) An anonymous website visitor can create a new contact form submission.
-     *
-     * @deny
-     * (get) An authenticated user attempts to read a submission. This is denied to prevent data leakage. Reads should be handled by a trusted server environment or a future admin role.
-     *
-     * @deny
-     * (list) An anonymous user attempts to list all submissions. This is denied.
-     *
-     * @deny
-     * (update) Any user attempts to modify a submission after it has been created.
-     *
-     * @principle
-     * Implements a secure 'dropbox' pattern where data can be submitted publicly but not read or modified, protecting sensitive user information until reviewed by an authorized party (e.g., an admin).
+     * Allows any user to submit a contact form, but denies all read, update,
+     * and delete operations to protect PII.
      */
     match /contactFormSubmissions/{contactFormSubmissionId} {
-      // READ RULES
-      allow get: if false;
-      allow list: if false;
-
-      // WRITE RULES
-      // This rule is intentionally open to allow any website visitor,
-      // authenticated or not, to submit the contact form. This is a secure
-      // pattern because all other permissions (read, update, delete) are denied.
+      allow get, list, update, delete: if false;
       allow create: if true;
-      allow update: if false;
-      allow delete: if false;
+    }
+
+    /**
+     * @description
+     * User profile data. Can only be read or written by the authenticated
+     * user who owns the document.
+     *
+     * @path
+     * /users/{userId}
+     *
+     * @allow
+     * (get) An authenticated user can read their own profile.
+     *
+     * @allow
+     * (create) An authenticated user can create their own profile document.
+     *
+     * @allow
+     * (update) An authenticated user can update their own profile.
+     *
+     * @deny
+     * (get) A user cannot read another user's profile.
+     */
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
