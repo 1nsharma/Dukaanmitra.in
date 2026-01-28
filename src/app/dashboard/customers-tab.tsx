@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { collection, query, orderBy } from "firebase/firestore";
 import { Loader2, PlusCircle } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection, useFirestore, useMemoFirebase, type WithId } from "@/firebase";
@@ -54,6 +54,14 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
       case 'churned': return <Badge variant="destructive">Churned</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
+  }
+
+  const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    if (typeof date.toDate === 'function') {
+      return format(date.toDate(), "PPP");
+    }
+    return format(parseISO(date as string), "PPP");
   }
 
   return (
@@ -108,7 +116,7 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
                     <TableCell>{customer.phone}</TableCell>
                     <TableCell>{renderCustomerStatus(customer.status)}</TableCell>
                     <TableCell>
-                      {customer.last_visit ? format(new Date(customer.last_visit), "PPP") : 'N/A'}
+                      {formatDate(customer.last_visit)}
                     </TableCell>
                     <TableCell className="text-right">
                       {`₹${(customer.total_spent || 0).toFixed(2)}`}
@@ -123,4 +131,3 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
     </Card>
   );
 }
-    

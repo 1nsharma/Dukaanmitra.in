@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { collection, query, orderBy } from "firebase/firestore";
 import { Loader2, PlusCircle } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
@@ -56,6 +56,14 @@ export default function BillsTab({ shopId }: BillsTabProps) {
     }
   }
 
+  const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    if (typeof date.toDate === 'function') {
+      return format(date.toDate(), "PPp");
+    }
+    return format(parseISO(date as string), "PPp");
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -105,7 +113,7 @@ export default function BillsTab({ shopId }: BillsTabProps) {
                   <TableRow key={bill.id}>
                     <TableCell className="font-medium">{bill.customer_name || 'N/A'}</TableCell>
                     <TableCell>
-                      {bill.created_at ? format(new Date(bill.created_at), "PPp") : 'N/A'}
+                      {formatDate(bill.created_at)}
                     </TableCell>
                     <TableCell>{renderPaymentStatus(bill.payment_status)}</TableCell>
                     <TableCell className="text-right">
@@ -121,5 +129,3 @@ export default function BillsTab({ shopId }: BillsTabProps) {
     </Card>
   );
 }
-
-    
