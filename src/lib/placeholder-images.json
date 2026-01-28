@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "hero",
-      "description": "A dynamic shot of a modern Kirana store owner using a tablet to manage their inventory.",
-      "imageUrl": "https://images.unsplash.com/photo-1753161029695-f1d1e6881257?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzdG9yZSUyMG93bmVyJTIwdGFibGV0fGVufDB8fHx8MTc2OTYxODA0N3ww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "store owner tablet"
+      "description": "A smiling Indian shop owner in his store, looking at his smartphone which displays marketing messages for his business.",
+      "imageUrl": "https://images.unsplash.com/photo-1620752763329-37f6d5c5b9f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraXJhbmElMjBzdG9yZSUyMG93bmVyJTIwcGhvbmV8ZW58MHx8fHwxNzcwMjE3OTM0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "kirana store owner phone"
     },
     {
       "id": "feature-whatsapp",

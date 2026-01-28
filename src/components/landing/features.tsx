@@ -1,35 +1,20 @@
-import Image from 'next/image';
-import { getPlaceholderImage } from '@/lib/placeholder-images';
-import { BrainCircuit, LayoutDashboard, MessageCircle, Smartphone } from 'lucide-react';
+import { ClipboardList, Sparkles, Star } from 'lucide-react';
 
-const features = [
+const kitFeatures = [
   {
-    id: 'feature-whatsapp',
-    icon: <MessageCircle className="w-8 h-8 text-primary" />,
-    title: 'WhatsApp: The Silent Backend',
-    description: "Your entire business runs on WhatsApp. We provide the silent, efficient backend to handle orders, customer queries, and payments without the conversational overhead. It's fast, cost-effective, and works the way you already work.",
-    imageHint: 'chat mobile'
+    icon: <ClipboardList className="w-8 h-8 text-primary" />,
+    title: 'Ready-to-Use Templates',
+    description: "Save time with pre-built WhatsApp message templates for common situations like order confirmations, payment reminders, and more.",
   },
   {
-    id: 'feature-ai',
-    icon: <BrainCircuit className="w-8 h-8 text-primary" />,
-    title: 'AI for Ruthless Efficiency',
-    description: "We use AI only where it matters: to understand ambiguous orders and customer emotions. For simple tasks like '20 ki cheeni', we use direct parsing for zero-cost, instant transactions. This solves the cost-latency problem for emerging markets.",
-    imageHint: 'robot brain'
+    icon: <Sparkles className="w-8 h-8 text-primary" />,
+    title: 'Festival & Offer Messages',
+    description: "Boost your sales during holidays and special events with targeted promotional messages. Announce discounts and special offers with a single click.",
   },
   {
-    id: 'feature-mobile',
-    icon: <Smartphone className="w-8 h-8 text-primary" />,
-    title: 'Your Shop in Your Pocket',
-    description: "While your customers use WhatsApp, you get a powerful mobile app. Manage inventory, track sales, view customer analytics, and launch marketing campaigns from anywhere. It's your complete business command center.",
-    imageHint: 'mobile app'
-  },
-  {
-    id: 'feature-admin',
-    icon: <LayoutDashboard className="w-8 h-8 text-primary" />,
-    title: 'Data-Driven Dashboards',
-    description: "Our admin panels turn your raw data into actionable insights. Understand customer behavior, track sales trends, and get a real-time health score for your shop. Make informed decisions that drive growth.",
-    imageHint: 'dashboard chart'
+    icon: <Star className="w-8 h-8 text-primary" />,
+    title: 'Easy Google Review Scripts',
+    description: "Improve your online reputation by sending customers simple, effective scripts to encourage 5-star Google reviews.",
   },
 ];
 
@@ -39,43 +24,25 @@ export default function Features() {
       <div className="container">
         <div className="text-center mb-16">
           <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-            An AI-First Assistant for Kirana Stores
+            Everything You Need to Grow
           </h2>
           <p className="mx-auto max-w-[800px] text-muted-foreground md:text-xl/relaxed mt-4">
-            We've reimagined how kirana stores operate by building a silent, hyper-efficient backend that works directly within WhatsApp.
+            Our Dukaan Growth Kit is packed with features to help you engage customers and increase sales, all through WhatsApp.
           </p>
         </div>
 
-        <div className="grid gap-20">
-          {features.map((feature, index) => {
-            const image = getPlaceholderImage(feature.id);
-            const isReversed = index % 2 !== 0;
-            return (
-              <div key={feature.title} className="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
-                <div className={isReversed ? 'lg:order-last' : ''}>
-                  {image && (
-                    <Image
-                      src={image.imageUrl}
-                      alt={image.description}
-                      width={600}
-                      height={400}
-                      className="rounded-lg object-cover shadow-lg aspect-[3/2]"
-                      data-ai-hint={image.imageHint}
-                    />
-                  )}
-                </div>
-                <div className="space-y-4">
-                  <div className="inline-block rounded-lg bg-primary/10 p-3">
+        <div className="grid gap-8 md:grid-cols-3">
+          {kitFeatures.map((feature) => (
+            <div key={feature.title} className="flex flex-col items-center text-center gap-4 p-8 bg-card rounded-lg shadow-sm border">
+                <div className="inline-block rounded-lg bg-primary/10 p-4">
                     {feature.icon}
-                  </div>
-                  <h3 className="font-headline text-2xl font-bold">{feature.title}</h3>
-                  <p className="text-muted-foreground text-lg">
-                    {feature.description}
-                  </p>
                 </div>
-              </div>
-            );
-          })}
+                <h3 className="font-headline text-xl font-bold">{feature.title}</h3>
+                <p className="text-muted-foreground">
+                    {feature.description}
+                </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
