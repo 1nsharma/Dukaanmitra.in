@@ -1,19 +1,28 @@
 /**
- * Core Philosophy: This ruleset implements a secure "dropbox" model for contact forms and
- * a user-centric model for profiles.
+ * This ruleset establishes a multi-tenant security model for DukaanMitra.
  *
- * Data Structure:
- * - /contactFormSubmissions: A write-only collection for public form submissions.
- * - /users: Stores user profiles, accessible only by the owning user.
- *
- * Key Security Decisions:
- * - Public Write for Contacts: `contactFormSubmissions` allows `create` from anyone to enable the public contact form. All other access is denied to protect PII.
- * - Owner-Only Access for Users: Users can only `get`, `create`, and `update` their own document in the `users` collection, keyed by their UID. This prevents users from accessing or modifying each other's data.
- * - No Data Validation: Rules focus on authorization, not data shape validation.
+ * Core Concepts:
+ * - isOwner(shopId): A helper function to verify if the requesting user owns the shop.
+ *   This is the cornerstone of the multi-tenant security.
+ * - User Profiles (`/users/{userId}`): Each user has a profile document. Only the user can
+ *   read or write to their own profile.
+ * - Shops (`/shops/{shopId}`): Any authenticated user can create a shop, but they must
+ *   set themselves as the `owner_id`. Only the owner can read, update, or delete their shop.
+ * - Shop Subcollections (`/shops/{shopId}/{collection}/{docId}`): All data belonging to a
+ *   shop (like customers, bills, etc.) is protected by the `isOwner` function, ensuring
+ *   strict data isolation between shops.
+ * - Contact Forms (`/contactFormSubmissions`): Publicly writable to allow anyone to send
+ *   a message, but unreadable to protect PII.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Helper function to check if the current user is the owner of a given shop.
+    function isOwner(shopId) {
+      let shop = get(/databases/$(database)/documents/shops/$(shopId));
+      return request.auth != null && shop.data.owner_id == request.auth.uid;
+    }
 
     /**
      * @description
@@ -27,26 +36,41 @@ service cloud.firestore {
 
     /**
      * @description
-     * User profile data. Can only be read or written by the authenticated
-     * user who owns the document.
-     *
-     * @path
-     * /users/{userId}
-     *
-     * @allow
-     * (get) An authenticated user can read their own profile.
-     *
-     * @allow
-     * (create) An authenticated user can create their own profile document.
-     *
-     * @allow
-     * (update) An authenticated user can update their own profile.
-     *
-     * @deny
-     * (get) A user cannot read another user's profile.
+     * A user can read and write to their own profile document. This is crucial
+     * for managing their own settings and associated shopId.
      */
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    /**
+     * @description
+     * Manages access to shop documents.
+     */
+    match /shops/{shopId} {
+      /**
+       * @allow (create)
+       * An authenticated user can create a new shop document. The rule enforces
+       * that the `owner_id` in the new document MUST be the UID of the user
+       * creating it. This securely links a shop to its owner upon creation.
+       */
+      allow create: if request.auth != null && request.resource.data.owner_id == request.auth.uid;
+
+      /**
+       * @allow (read, update, delete)
+       * Only the user designated as the shop's owner can read, update, or delete it.
+       * This is enforced by the `isOwner` helper function.
+       */
+      allow read, update, delete: if isOwner(shopId);
+    }
+
+    /**
+     * @description
+     * Generic rule for all subcollections under a shop (e.g., customers, bills).
+     * Access is granted only if the user is the owner of the parent shop.
+     */
+    match /shops/{shopId}/{collection}/{docId} {
+      allow read, write: if isOwner(shopId);
     }
   }
 }

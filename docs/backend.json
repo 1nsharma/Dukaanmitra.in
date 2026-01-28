@@ -64,9 +64,317 @@
           "type": "string",
           "format": "date-time",
           "description": "Timestamp of when the user account was created."
+        },
+        "shopId": {
+          "type": "string",
+          "description": "The ID of the shop this user belongs to."
         }
       },
-      "required": ["uid", "email", "createdAt"]
+      "required": [
+        "uid",
+        "email",
+        "createdAt"
+      ]
+    },
+    "Shop": {
+      "title": "Shop",
+      "description": "Represents a Kirana store in the system.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the shop (UUID)."
+        },
+        "owner_id": {
+          "type": "string",
+          "description": "The UID of the user who owns the shop."
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "whatsapp": {
+          "type": "string"
+        },
+        "owner_name": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "pincode": {
+          "type": "string"
+        },
+        "plan": {
+          "type": "string",
+          "enum": [
+            "free",
+            "basic",
+            "pro",
+            "enterprise"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "trial",
+            "suspended",
+            "cancelled"
+          ]
+        },
+        "trial_ends_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "language": {
+              "type": "string",
+              "enum": [
+                "hi",
+                "en",
+                "hinglish"
+              ]
+            },
+            "currency": {
+              "type": "string"
+            },
+            "timezone": {
+              "type": "string"
+            },
+            "auto_reply": {
+              "type": "boolean"
+            },
+            "working_hours": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": "string",
+                  "format": "time"
+                },
+                "end": {
+                  "type": "string",
+                  "format": "time"
+                },
+                "days": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "id",
+        "owner_id",
+        "name",
+        "phone"
+      ]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Represents a customer of a specific shop.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "shop_id": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "first_visit": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_visit": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "visit_count": {
+          "type": "number"
+        },
+        "total_spent": {
+          "type": "number"
+        },
+        "average_basket": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "new",
+            "regular",
+            "vip",
+            "churned",
+            "blocked"
+          ]
+        },
+        "favorite_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "whatsapp_name": {
+              "type": "string"
+            },
+            "profile_pic_url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "language_preference": {
+              "type": "string"
+            },
+            "payment_method": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "id",
+        "shop_id",
+        "phone"
+      ]
+    },
+    "Bill": {
+      "title": "Bill",
+      "description": "Represents a bill or transaction.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "shop_id": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "bill_number": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "number"
+              },
+              "price": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "quantity",
+              "price"
+            ]
+          }
+        },
+        "payment_status": {
+          "type": "string",
+          "enum": [
+            "paid",
+            "pending",
+            "partial",
+            "failed"
+          ]
+        },
+        "payment_method": {
+          "type": "string",
+          "enum": [
+            "cash",
+            "upi",
+            "card",
+            "credit"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "whatsapp",
+            "app",
+            "manual"
+          ]
+        },
+        "image_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_by": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "shop_id",
+        "amount"
+      ]
     }
   },
   "auth": {
@@ -84,7 +392,7 @@
           "schema": {
             "$ref": "#/backend/entities/ContactFormSubmission"
           },
-          "description": "Stores contact form submissions from the website. No denormalized authorization fields are needed since all submissions are publicly accessible for admin review.",
+          "description": "Stores contact form submissions from the website.",
           "params": [
             {
               "name": "contactFormSubmissionId",
@@ -100,7 +408,7 @@
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores public user profile information.",
+          "description": "Stores public user profile information, including their shop ID.",
           "params": [
             {
               "name": "userId",
@@ -108,8 +416,64 @@
             }
           ]
         }
+      },
+      {
+        "path": "/shops/{shopId}",
+        "definition": {
+          "entityName": "Shop",
+          "schema": {
+            "$ref": "#/backend/entities/Shop"
+          },
+          "description": "Stores information about individual shops.",
+          "params": [
+            {
+              "name": "shopId",
+              "description": "Unique ID for the shop."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/shops/{shopId}/customers/{customerId}",
+        "definition": {
+          "entityName": "Customer",
+          "schema": {
+            "$ref": "#/backend/entities/Customer"
+          },
+          "description": "Stores customers for a specific shop.",
+          "params": [
+            {
+              "name": "shopId",
+              "description": "Parent shop ID."
+            },
+            {
+              "name": "customerId",
+              "description": "Unique ID for the customer."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/shops/{shopId}/bills/{billId}",
+        "definition": {
+          "entityName": "Bill",
+          "schema": {
+            "$ref": "#/backend/entities/Bill"
+          },
+          "description": "Stores bills for a specific shop.",
+          "params": [
+            {
+              "name": "shopId",
+              "description": "Parent shop ID."
+            },
+            {
+              "name": "billId",
+              "description": "Unique ID for the bill."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "This Firestore structure prioritizes security and scalability. Contact form submissions are in a separate collection with write-only public access. User profiles are stored in a `users` collection, where each user can only read and write to their own document, ensuring data privacy."
+    "reasoning": "This Firestore structure organizes data by shop, allowing for secure, scalable multi-tenancy. Each shop's data (customers, bills) is nested under its own document. Security rules ensure that a user can only access data related to the shop they own."
   }
 }
