@@ -76,6 +76,7 @@ export type Bill = {
   shop_id: string;
   amount: number;
   customer_id?: string;
+  customer_name?: string;
   bill_number?: string;
   items?: {
     name: string;
@@ -91,3 +92,5 @@ export type Bill = {
   created_at?: string; // "date-time"
   created_by?: string;
 };
+
+    

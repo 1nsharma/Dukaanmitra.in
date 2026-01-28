@@ -298,6 +298,10 @@
         "customer_id": {
           "type": "string"
         },
+        "customer_name": {
+          "type": "string",
+          "description": "Denormalized name of the customer for display purposes."
+        },
         "bill_number": {
           "type": "string"
         },
@@ -477,3 +481,4 @@
     "reasoning": "This Firestore structure organizes data by shop, allowing for secure, scalable multi-tenancy. Each shop's data (customers, bills) is nested under its own document. Security rules ensure that a user can only access data related to the shop they own."
   }
 }
+    
