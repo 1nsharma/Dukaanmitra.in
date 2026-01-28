@@ -48,9 +48,9 @@ export default function BillsTab({ shopId }: BillsTabProps) {
   
   const renderPaymentStatus = (status?: string) => {
     switch (status) {
-      case 'paid': return <Badge className="bg-green-500">Paid</Badge>;
+      case 'paid': return <Badge className="border-transparent bg-success text-success-foreground shadow hover:bg-success/80">Paid</Badge>;
       case 'pending': return <Badge variant="secondary">Pending</Badge>;
-      case 'partial': return <Badge className="bg-yellow-500">Partial</Badge>;
+      case 'partial': return <Badge className="border-transparent bg-warning text-warning-foreground shadow hover:bg-warning/80">Partial</Badge>;
       case 'failed': return <Badge variant="destructive">Failed</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }

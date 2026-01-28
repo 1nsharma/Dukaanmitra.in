@@ -50,7 +50,7 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
     switch (status) {
       case 'new': return <Badge variant="secondary">New</Badge>;
       case 'regular': return <Badge>Regular</Badge>;
-      case 'vip': return <Badge className="bg-yellow-500">VIP</Badge>;
+      case 'vip': return <Badge className="border-transparent bg-accent text-accent-foreground shadow hover:bg-accent/80">VIP</Badge>;
       case 'churned': return <Badge variant="destructive">Churned</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }

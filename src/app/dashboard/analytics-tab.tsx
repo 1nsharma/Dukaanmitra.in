@@ -28,7 +28,7 @@ interface AnalyticsTabProps {
 }
 
 const StatCard = ({ title, value, icon, description }: { title: string, value: string, icon: React.ReactNode, description: string }) => (
-    <Card>
+    <Card className="transition-all hover:shadow-lg hover:-translate-y-1">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{title}</CardTitle>
             {icon}
@@ -42,7 +42,7 @@ const StatCard = ({ title, value, icon, description }: { title: string, value: s
 
 const InsightCard = ({ title, content, icon }: { title: string, content: string, icon: React.ReactNode }) => (
     <div className="flex items-start gap-4">
-        <div className="bg-primary/10 text-primary p-2 rounded-full">
+        <div className="bg-primary/10 text-primary p-3 rounded-xl">
             {icon}
         </div>
         <div>
@@ -253,27 +253,27 @@ export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
                         
                         <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="item-1">
-                                <AccordionTrigger>Detailed Analysis</AccordionTrigger>
+                                <AccordionTrigger className="bg-muted/50 hover:bg-muted/80 px-4 rounded-md">Detailed Analysis</AccordionTrigger>
                                 <AccordionContent className="pt-4 space-y-6">
                                      <InsightCard 
                                         title="Customer Insights"
                                         content={insights.customerInsights}
-                                        icon={<Users className="w-5 h-5"/>}
+                                        icon={<Users className="w-6 h-6"/>}
                                      />
                                      <InsightCard 
                                         title="Fast-Moving Items"
                                         content={insights.fastMovingItems}
-                                        icon={<ShoppingCart className="w-5 h-5"/>}
+                                        icon={<ShoppingCart className="w-6 h-6"/>}
                                      />
                                      <InsightCard 
                                         title="Operational Inefficiencies"
                                         content={insights.operationalInefficiencies}
-                                        icon={<AlertCircle className="w-5 h-5"/>}
+                                        icon={<AlertCircle className="w-6 h-6"/>}
                                      />
                                      <InsightCard 
                                         title="Revenue Leakage"
                                         content={insights.revenueLeakage}
-                                        icon={<TrendingUp className="w-5 h-5"/>}
+                                        icon={<TrendingUp className="w-6 h-6"/>}
                                      />
                                 </AccordionContent>
                             </AccordionItem>

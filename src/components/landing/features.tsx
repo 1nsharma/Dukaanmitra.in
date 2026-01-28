@@ -33,7 +33,7 @@ export default function Features() {
 
         <div className="grid gap-8 md:grid-cols-3">
           {productPillars.map((feature) => (
-            <div key={feature.title} className="flex flex-col items-center text-center gap-4 p-8 bg-card rounded-lg shadow-sm border">
+            <div key={feature.title} className="flex flex-col items-center text-center gap-4 p-8 bg-card rounded-lg shadow-sm border transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
                 <div className="inline-block rounded-lg bg-primary/10 p-4">
                     {feature.icon}
                 </div>

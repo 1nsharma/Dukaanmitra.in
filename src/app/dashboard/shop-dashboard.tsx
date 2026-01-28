@@ -48,7 +48,7 @@ export default function ShopDashboard({ shopId }: ShopDashboardProps) {
 
   return (
     <Tabs defaultValue="details" className="w-full">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
         <TabsTrigger value="details"><Store className="mr-2" /> Shop Details</TabsTrigger>
         <TabsTrigger value="customers"><Users className="mr-2" /> Customers</TabsTrigger>
         <TabsTrigger value="bills"><Receipt className="mr-2" /> Bills</TabsTrigger>

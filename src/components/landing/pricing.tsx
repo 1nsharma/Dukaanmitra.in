@@ -59,7 +59,7 @@ export default function Pricing() {
           {plans.map((plan) => (
             <Card
               key={plan.title}
-              className={cn('flex flex-col', plan.isRecommended && 'border-primary ring-2 ring-primary shadow-lg')}
+              className={cn('flex flex-col transition-all duration-300 hover:scale-[1.03]', plan.isRecommended && 'border-primary ring-2 ring-primary shadow-lg bg-primary/5')}
             >
               <CardHeader className="items-center text-center">
                 <CardTitle className="font-headline text-2xl">{plan.title}</CardTitle>
@@ -73,7 +73,7 @@ export default function Pricing() {
                 <ul className="space-y-3">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start">
-                      <Check className="w-5 h-5 text-green-500 mr-2 mt-1 shrink-0" />
+                      <Check className="w-5 h-5 text-success mr-2 mt-1 shrink-0" />
                       <span className="text-sm text-muted-foreground">{feature}</span>
                     </li>
                   ))}

@@ -18,7 +18,7 @@ export default function Hero() {
           data-ai-hint={heroImage.imageHint}
         />
       )}
-      <div className="absolute inset-0 bg-black/60" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-black/80" />
       <div className="relative z-10 container flex flex-col items-center gap-6 px-4 md:px-6">
         <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
           DukaanMitra AI-Native Retail Strategy

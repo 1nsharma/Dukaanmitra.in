@@ -43,9 +43,9 @@ export default function LoginPage() {
           data-ai-hint={bgImage.imageHint}
         />
       )}
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-background/90 backdrop-blur-md" />
       <div className="relative z-10 w-full max-w-md">
-        <Card className="w-full">
+        <Card className="w-full shadow-xl">
           <CardHeader className="text-center">
             <CardTitle className="font-headline text-2xl">{isRegister ? 'Create an Account' : 'Welcome Back'}</CardTitle>
             <CardDescription>{isRegister ? 'Enter your details to get started.' : 'Enter your credentials to access your account'}</CardDescription>
