@@ -21,17 +21,17 @@ export default function Hero() {
       <div className="absolute inset-0 bg-black/60" />
       <div className="relative z-10 container flex flex-col items-center gap-6 px-4 md:px-6">
         <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-          Dukaan Growth Kit
+          DukaanMitra AI-Native Retail Strategy
         </h1>
         <p className="max-w-[700px] text-lg text-primary-foreground/80 md:text-xl">
-          The All-in-One WhatsApp Marketing System for Indian Shops.
+          The future of Kirana retail is here. An AI-first, WhatsApp-native operating system for your store.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row">
           <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-            <Link href="#pricing">Explore Plans</Link>
+            <Link href="#pricing">See Pricing</Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-            <Link href="#features">Learn More</Link>
+            <Link href="#features">Explore Pillars</Link>
           </Button>
         </div>
       </div>

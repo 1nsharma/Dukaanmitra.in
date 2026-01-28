@@ -1,20 +1,20 @@
-import { ClipboardList, Sparkles, Star } from 'lucide-react';
+import { BrainCircuit, Camera, FileText } from 'lucide-react';
 
-const kitFeatures = [
+const productPillars = [
   {
-    icon: <ClipboardList className="w-8 h-8 text-primary" />,
-    title: 'Ready-to-Use Templates',
-    description: "Save time with pre-built WhatsApp message templates for common situations like order confirmations, payment reminders, and more.",
+    icon: <BrainCircuit className="w-8 h-8 text-primary" />,
+    title: 'AI-Native Engine',
+    description: 'An agentic, WhatsApp-first framework with retrieval-augmented generation for seamless, autonomous operation.',
   },
   {
-    icon: <Sparkles className="w-8 h-8 text-primary" />,
-    title: 'Festival & Offer Messages',
-    description: "Boost your sales during holidays and special events with targeted promotional messages. Announce discounts and special offers with a single click.",
+    icon: <Camera className="w-8 h-8 text-primary" />,
+    title: 'Digital Shutter',
+    description: 'Engage customers with AI-powered video marketing, personalized avatars, and dynamic daily offer generation.',
   },
   {
-    icon: <Star className="w-8 h-8 text-primary" />,
-    title: 'Easy Google Review Scripts',
-    description: "Improve your online reputation by sending customers simple, effective scripts to encourage 5-star Google reviews.",
+    icon: <FileText className="w-8 h-8 text-primary" />,
+    title: 'Source Ingestion & Synthesis',
+    description: 'Automatically process WhatsApp chats, voice notes, and competitor data into structured, actionable intelligence.',
   },
 ];
 
@@ -24,15 +24,15 @@ export default function Features() {
       <div className="container">
         <div className="text-center mb-16">
           <h2 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-            Everything You Need to Grow
+            Our AI-Native Product Pillars
           </h2>
           <p className="mx-auto max-w-[800px] text-muted-foreground md:text-xl/relaxed mt-4">
-            Our Dukaan Growth Kit is packed with features to help you engage customers and increase sales, all through WhatsApp.
+            DukaanMitra is built on a foundation of powerful, interconnected AI systems designed to put your store on autopilot.
           </p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-3">
-          {kitFeatures.map((feature) => (
+          {productPillars.map((feature) => (
             <div key={feature.title} className="flex flex-col items-center text-center gap-4 p-8 bg-card rounded-lg shadow-sm border">
                 <div className="inline-block rounded-lg bg-primary/10 p-4">
                     {feature.icon}
