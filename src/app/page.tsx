@@ -97,10 +97,10 @@ export default function LandingPage() {
   }, []);
 
   const dukaanFlow = [
-    { title: "Smart Ingress", desc: "Customer buys item. Shopkeeper types 'Rahul 500 Milk' in WhatsApp.", icon: "📱" },
-    { title: "AI Reasoning", desc: "Munim AI (Gemini) extracts intent, amount, and items instantly.", icon: "🧠" },
-    { title: "Ledger Update", desc: "Google Sheets or SQL DB updated automatically in the background.", icon: "📑" },
-    { title: "Auto Statement", desc: "Customer gets instant receipt. WhatsApp EOD reports sent to Owner.", icon: "📄" },
+    { title: "WhatsApp se Entry", desc: 'Sirf WhatsApp par message likho: "Ravi 200 ka tel". Koi app, koi form nahi.', icon: <MessageCircle size={40} /> },
+    { title: "AI Munim Ka Jaadu", desc: 'Hamara AI turant samajh jaata hai - customer ka naam, rakam, aur samaan.', icon: <Bot size={40} /> },
+    { title: "Automatic Hisaab", desc: 'Aapka digital ledger (khata) apne aap update ho jaata hai. No tension.', icon: <FileText size={40} /> },
+    { title: "Smart Reports & Alerts", desc: 'Customer ko instant raseed aur aapko EOD sales report, sab WhatsApp par.', icon: <BarChart size={40} /> },
   ];
 
   return (
@@ -192,7 +192,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
              {dukaanFlow.map((step, i) => (
                <div key={i} className="flow-step flex flex-col items-center text-center space-y-4 p-6 bg-background/50 rounded-3xl border border-border transition-all duration-300 hover:border-primary/50 hover:scale-105 hover:-translate-y-2">
-                  <div className="w-20 h-20 rounded-2xl bg-secondary shadow-lg flex items-center justify-center text-3xl">
+                  <div className="w-20 h-20 rounded-2xl bg-secondary shadow-lg flex items-center justify-center text-primary">
                     {step.icon}
                   </div>
                   <div className="space-y-2">
