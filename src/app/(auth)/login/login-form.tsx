@@ -3,9 +3,13 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useTransition } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { useTransition, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  signInWithPhoneNumber,
+  RecaptchaVerifier,
+  ConfirmationResult,
+} from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
@@ -21,80 +25,95 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore } from "@/firebase";
 
-
-const formSchema = z.object({
-  email: z.string().email("Please enter a valid email."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
+const phoneFormSchema = z.object({
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number with country code."),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+const otpFormSchema = z.object({
+  otp: z.string().min(6, "OTP must be 6 characters.").max(6, "OTP must be 6 characters."),
+});
+
+type PhoneFormValues = z.infer<typeof phoneFormSchema>;
+type OtpFormValues = z.infer<typeof otpFormSchema>;
 
 export default function LoginForm() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const auth = useAuth();
   const firestore = useFirestore();
 
-  const isRegister = searchParams.get('register') === 'true';
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [showOtpForm, setShowOtpForm] = useState(false);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { email: "", password: "" },
+  // Setup Recaptcha
+  useEffect(() => {
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+      'size': 'invisible',
+      'callback': (response: any) => {
+        // reCAPTCHA solved, allow signInWithPhoneNumber.
+      }
+    });
+  }, [auth]);
+
+
+  const phoneForm = useForm<PhoneFormValues>({
+    resolver: zodResolver(phoneFormSchema),
+    defaultValues: { phone: "" },
   });
 
-  const onSubmit = (values: FormValues) => {
+  const otpForm = useForm<OtpFormValues>({
+    resolver: zodResolver(otpFormSchema),
+    defaultValues: { otp: "" },
+  });
+
+  const onPhoneSubmit = (values: PhoneFormValues) => {
     startTransition(async () => {
       try {
-        if (isRegister) {
-          const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-          const user = userCredential.user;
-
-          // Create user profile in Firestore
-          await setDoc(doc(firestore, "users", user.uid), {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.email?.split('@')[0] || '',
-            createdAt: serverTimestamp(),
-          });
-
-          toast({
-            title: "Account Created!",
-            description: "You have been successfully registered.",
-          });
-          router.push('/dashboard');
-        } else {
-          await signInWithEmailAndPassword(auth, values.email, values.password);
-          toast({
-            title: "Success!",
-            description: "You have been logged in.",
-          });
-          router.push('/dashboard');
-        }
+        const verifier = window.recaptchaVerifier;
+        const result = await signInWithPhoneNumber(auth, values.phone, verifier);
+        setConfirmationResult(result);
+        setShowOtpForm(true);
+        toast({
+          title: "OTP Sent!",
+          description: "Please check your phone for the verification code.",
+        });
       } catch (error: any) {
-        let message = "An unexpected error occurred.";
-        switch(error.code) {
-          case 'auth/email-already-in-use':
-            message = "This email is already in use. Please log in or use a different email.";
-            break;
-          case 'auth/invalid-email':
-            message = "Please enter a valid email address.";
-            break;
-          case 'auth/weak-password':
-            message = "The password is too weak. Please use at least 8 characters.";
-            break;
-          case 'auth/user-not-found':
-          case 'auth/wrong-password':
-          case 'auth/invalid-credential':
-             message = 'Invalid email or password. Please try again.';
-             break;
-          default:
-            console.error(error); // Log other errors to the console
-        }
+        console.error(error);
         toast({
           title: "Authentication Failed",
-          description: message,
+          description: error.message || "Failed to send OTP. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  const onOtpSubmit = (values: OtpFormValues) => {
+    if (!confirmationResult) return;
+    startTransition(async () => {
+      try {
+        const userCredential = await confirmationResult.confirm(values.otp);
+        const user = userCredential.user;
+
+        // Create user profile in Firestore if it's a new user
+        await setDoc(doc(firestore, "users", user.uid), {
+          uid: user.uid,
+          phoneNumber: user.phoneNumber,
+          displayName: user.phoneNumber,
+          createdAt: serverTimestamp(),
+        }, { merge: true });
+
+        toast({
+          title: "Success!",
+          description: "You have been logged in.",
+        });
+        router.push('/dashboard');
+      } catch (error: any) {
+        console.error(error);
+        toast({
+          title: "Authentication Failed",
+          description: "Invalid OTP or an error occurred. Please try again.",
           variant: "destructive",
         });
       }
@@ -102,38 +121,61 @@ export default function LoginForm() {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input type="email" placeholder="you@example.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? "Authenticating..." : (isRegister ? "Create Account" : "Log In")}
-        </Button>
-      </form>
-    </Form>
+    <>
+      <div id="recaptcha-container"></div>
+      {!showOtpForm ? (
+        <Form {...phoneForm}>
+          <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-4">
+            <FormField
+              control={phoneForm.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input type="tel" placeholder="+91 98765 43210" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "Sending OTP..." : "Send OTP"}
+            </Button>
+          </form>
+        </Form>
+      ) : (
+        <Form {...otpForm}>
+          <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="space-y-4">
+            <FormField
+              control={otpForm.control}
+              name="otp"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Enter OTP</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "Verifying..." : "Verify & Log In"}
+            </Button>
+            <Button variant="link" onClick={() => setShowOtpForm(false)} className="w-full">
+              Back to phone number
+            </Button>
+          </form>
+        </Form>
+      )}
+    </>
   );
+}
+
+// Add recaptchaVerifier to window interface
+declare global {
+    interface Window {
+        recaptchaVerifier: RecaptchaVerifier;
+    }
 }

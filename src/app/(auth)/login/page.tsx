@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,8 +12,6 @@ import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const bgImage = getPlaceholderImage('login-background');
-  const searchParams = useSearchParams();
-  const isRegister = searchParams.get('register') === 'true';
   const router = useRouter();
   const { user, isUserLoading } = useUser();
 
@@ -47,17 +44,11 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-md">
         <Card className="w-full shadow-xl">
           <CardHeader className="text-center">
-            <CardTitle className="font-headline text-2xl">{isRegister ? 'Create an Account' : 'Welcome Back'}</CardTitle>
-            <CardDescription>{isRegister ? 'Enter your details to get started.' : 'Enter your credentials to access your account'}</CardDescription>
+            <CardTitle className="font-headline text-2xl">Welcome to DukaanMitra</CardTitle>
+            <CardDescription>Enter your phone number to log in or create an account.</CardDescription>
           </CardHeader>
           <CardContent>
             <LoginForm />
-            <p className="mt-4 text-center text-sm text-muted-foreground">
-              {isRegister ? 'Already have an account? ' : "Don't have an account? "}
-              <Link href={isRegister ? '/login' : '/login?register=true'} className="font-medium text-primary underline-offset-4 hover:underline">
-                {isRegister ? 'Log In' : 'Sign up'}
-              </Link>
-            </p>
           </CardContent>
         </Card>
       </div>

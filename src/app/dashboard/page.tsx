@@ -70,7 +70,7 @@ export default function DashboardPage() {
             Dashboard
           </h1>
           <p className="text-muted-foreground">
-            Welcome back, {userProfile?.displayName || user.email}!
+            Welcome back, {userProfile?.displayName || user.phoneNumber}!
           </p>
         </div>
         <Button onClick={handleSignOut} variant="destructive">
