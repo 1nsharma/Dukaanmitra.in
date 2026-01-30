@@ -7,16 +7,6 @@ export default {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  safelist: [
-    'bg-indigo-600',
-    'shadow-indigo-900/50',
-    'bg-emerald-600',
-    'shadow-emerald-900/50',
-    'bg-blue-600',
-    'shadow-blue-900/50',
-    'bg-amber-600',
-    'shadow-amber-900/50',
-  ],
   theme: {
     container: {
       center: true,
@@ -28,8 +18,9 @@ export default {
     extend: {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
-        headline: ['Space Grotesk', 'sans-serif'],
-        code: ['monospace'],
+        headline: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        mono: ['monospace'],
       },
       colors: {
         border: "hsl(var(--border))",

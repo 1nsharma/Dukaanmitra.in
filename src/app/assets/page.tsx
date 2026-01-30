@@ -78,7 +78,7 @@ Constraint:
       id: 'regex-pattern',
       title: 'ASSET 3: REGEX BACKUP PATTERN',
       description: 'High-speed regex for extracting INR amounts from unstructured Hindi/English text.',
-      content: `/(?:rs\\.?|₹|rupaye|rupees|ka|re|re\\.)\\s*(\\d+(?:\\.\\d+)?)/gi`,
+      content: `/(?:rs\.?|₹|rupaye|rupees|ka|re|re\.)\s*(\d+(?:\.\d+)?)/gi`,
       language: 'javascript'
     },
     {
@@ -105,9 +105,9 @@ CTA: Message 'YES' to [WABA Number]`,
   return (
     <div className="container py-16 md:py-24">
       <div className="space-y-12 pb-24 animate-in fade-in duration-700">
-        <header className="border-b border-slate-200 pb-8">
-          <h2 className="text-4xl font-black text-slate-900 tracking-tight">Builder's Archive</h2>
-          <p className="text-lg text-slate-500 mt-2">Production-ready configuration assets for the DukaanMitra ecosystem.</p>
+        <header className="border-b border-border pb-8">
+          <h2 className="text-4xl font-black text-foreground tracking-tight">Builder's Archive</h2>
+          <p className="text-lg text-muted-foreground mt-2">Production-ready configuration assets for the DukaanMitra ecosystem.</p>
         </header>
 
         <div className="grid grid-cols-1 gap-12">
@@ -115,21 +115,21 @@ CTA: Message 'YES' to [WABA Number]`,
             <section key={asset.id} className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900 tracking-tight uppercase italic">{asset.title}</h3>
-                  <p className="text-sm text-slate-500">{asset.description}</p>
+                  <h3 className="text-xl font-bold text-foreground tracking-tight uppercase italic">{asset.title}</h3>
+                  <p className="text-sm text-muted-foreground">{asset.description}</p>
                 </div>
-                <button 
+                <Button
                   onClick={() => copyToClipboard(asset.content)}
-                  className="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-200"
+                  size="sm"
                 >
                   COPY ASSET
-                </button>
+                </Button>
               </div>
-              <div className="bg-slate-900 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden">
-                <pre className="text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed max-h-96 whitespace-pre-wrap">
+              <div className="bg-card rounded-[2rem] p-6 shadow-2xl relative overflow-hidden border border-border">
+                <pre className="text-primary font-mono text-xs overflow-x-auto leading-relaxed max-h-96 whitespace-pre-wrap">
                   {asset.content}
                 </pre>
-                <div className="absolute top-0 right-0 p-4 opacity-10 text-white pointer-events-none select-none">
+                <div className="absolute top-0 right-0 p-4 opacity-10 text-foreground pointer-events-none select-none">
                   <span className="text-4xl font-black">{asset.language.toUpperCase()}</span>
                 </div>
               </div>
@@ -137,8 +137,8 @@ CTA: Message 'YES' to [WABA Number]`,
           ))}
         </div>
 
-        <footer className="bg-indigo-950 text-white p-12 rounded-[4rem] text-center space-y-4">
-          <p className="text-indigo-300 font-bold uppercase tracking-widest text-xs">Platform Architecture Note</p>
+        <footer className="bg-secondary text-foreground p-12 rounded-[4rem] text-center space-y-4 border border-border">
+          <p className="text-primary font-bold uppercase tracking-widest text-xs">Platform Architecture Note</p>
           <p className="text-sm opacity-70 max-w-2xl mx-auto italic">
             These assets are verified for the Dec 2025 Market Cycle. Ensure LLM temperature is set to 0.1 for Asset 1 to prevent non-deterministic JSON output.
           </p>

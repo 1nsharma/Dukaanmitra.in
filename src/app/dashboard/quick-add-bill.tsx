@@ -145,7 +145,7 @@ export default function QuickAddBill({ shopId, onBillAdded }: QuickAddBillProps)
   };
 
   return (
-    <Card className="mb-6 bg-gradient-to-br from-indigo-50/50 via-white to-emerald-50/20 border-indigo-100">
+    <Card className="mb-6 bg-gradient-to-br from-primary/10 via-card to-primary/5 border-primary/20">
         <CardHeader>
             <CardTitle className="flex items-center gap-2">
                 <Bot className="text-primary"/>

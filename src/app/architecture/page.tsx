@@ -7,34 +7,34 @@ const services = {
   overview: {
     name: 'Architecture Overview',
     icon: Cloud,
-    color: 'orange',
+    color: 'primary',
     content: (
       <div className="space-y-4">
-        <div className="bg-gradient-to-r from-orange-500 to-red-600 p-6 rounded-lg">
-          <h2 className="text-2xl font-bold text-white mb-2">100% Google Cloud Stack</h2>
-          <p className="text-orange-100">Firebase Studio + Cloud Functions + Vertex AI + Cloud Run</p>
+        <div className="bg-gradient-to-r from-primary/80 to-primary/60 p-6 rounded-lg">
+          <h2 className="text-2xl font-bold text-primary-foreground mb-2">100% Google Cloud Stack</h2>
+          <p className="text-primary-foreground/80">Firebase Studio + Cloud Functions + Vertex AI + Cloud Run</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-700 p-4 rounded-lg border-l-4 border-orange-500">
-            <div className="text-orange-400 text-sm font-semibold mb-1">Frontend</div>
-            <div className="text-white text-lg font-bold">Firebase Hosting</div>
-            <div className="text-slate-400 text-xs">Next.js deployed</div>
+          <div className="bg-card p-4 rounded-lg border-l-4 border-primary">
+            <div className="text-primary text-sm font-semibold mb-1">Frontend</div>
+            <div className="text-foreground text-lg font-bold">Firebase Hosting</div>
+            <div className="text-muted-foreground text-xs">Next.js deployed</div>
           </div>
-          <div className="bg-slate-700 p-4 rounded-lg border-l-4 border-blue-500">
+          <div className="bg-card p-4 rounded-lg border-l-4 border-blue-500">
             <div className="text-blue-400 text-sm font-semibold mb-1">Backend</div>
-            <div className="text-white text-lg font-bold">Cloud Functions</div>
-            <div className="text-slate-400 text-xs">Serverless Python</div>
+            <div className="text-foreground text-lg font-bold">Cloud Functions</div>
+            <div className="text-muted-foreground text-xs">Serverless Python</div>
           </div>
-          <div className="bg-slate-700 p-4 rounded-lg border-l-4 border-green-500">
+          <div className="bg-card p-4 rounded-lg border-l-4 border-green-500">
             <div className="text-green-400 text-sm font-semibold mb-1">Database</div>
-            <div className="text-white text-lg font-bold">Firestore + Cloud SQL</div>
-            <div className="text-slate-400 text-xs">Hybrid approach</div>
+            <div className="text-foreground text-lg font-bold">Firestore + Cloud SQL</div>
+            <div className="text-muted-foreground text-xs">Hybrid approach</div>
           </div>
-          <div className="bg-slate-700 p-4 rounded-lg border-l-4 border-purple-500">
+          <div className="bg-card p-4 rounded-lg border-l-4 border-purple-500">
             <div className="text-purple-400 text-sm font-semibold mb-1">AI</div>
-            <div className="text-white text-lg font-bold">Vertex AI</div>
-            <div className="text-slate-400 text-xs">Gemini + PaLM</div>
+            <div className="text-foreground text-lg font-bold">Vertex AI</div>
+            <div className="text-muted-foreground text-xs">Gemini + PaLM</div>
           </div>
         </div>
       </div>
@@ -46,9 +46,9 @@ const services = {
     color: 'green',
     content: (
       <div className="space-y-4">
-        <div className="bg-slate-700 p-4 rounded-lg">
-          <h3 className="font-bold text-white mb-3">Firestore Collections Structure</h3>
-          <pre className="text-xs text-green-400 bg-slate-900 p-3 rounded overflow-x-auto font-mono">
+        <div className="bg-card p-4 rounded-lg">
+          <h3 className="font-bold text-foreground mb-3">Firestore Collections Structure</h3>
+          <pre className="text-xs text-green-400 bg-background p-3 rounded overflow-x-auto font-mono">
 {`businesses/
 {businessId}/
   ├── profile
@@ -78,9 +78,9 @@ const services = {
   │   │   └── createdAt: timestamp`}
           </pre>
         </div>
-        <div className="bg-slate-700 p-4 rounded-lg">
-          <h3 className="font-bold text-white mb-3">Firestore Security Rules</h3>
-          <pre className="text-xs text-slate-300 bg-slate-900 p-3 rounded overflow-x-auto">
+        <div className="bg-card p-4 rounded-lg">
+          <h3 className="font-bold text-foreground mb-3">Firestore Security Rules</h3>
+          <pre className="text-xs text-muted-foreground bg-background p-3 rounded overflow-x-auto">
 {`rules_version = '2';
 service cloud.firestore {
 match /databases/{database}/documents {
@@ -119,23 +119,23 @@ match /databases/{database}/documents {
     color: 'blue',
     content: (
       <div className="space-y-4">
-        <div className="bg-slate-700 p-4 rounded-lg">
-          <h3 className="font-bold text-white mb-3">Cloud Functions Architecture (Gen 2)</h3>
+        <div className="bg-card p-4 rounded-lg">
+          <h3 className="font-bold text-foreground mb-3">Cloud Functions Architecture (Gen 2)</h3>
           <div className="space-y-3">
-            <div className="bg-slate-800 p-3 rounded border-l-4 border-blue-500">
+            <div className="bg-secondary p-3 rounded border-l-4 border-blue-500">
               <div className="text-blue-400 font-semibold mb-2">HTTP Functions (API Endpoints)</div>
             </div>
-            <div className="bg-slate-800 p-3 rounded border-l-4 border-purple-500">
+            <div className="bg-secondary p-3 rounded border-l-4 border-purple-500">
               <div className="text-purple-400 font-semibold mb-2">Firestore Triggers</div>
             </div>
-            <div className="bg-slate-800 p-3 rounded border-l-4 border-green-500">
+            <div className="bg-secondary p-3 rounded border-l-4 border-green-500">
               <div className="text-green-400 font-semibold mb-2">Scheduled Functions</div>
             </div>
           </div>
         </div>
-        <div className="bg-slate-700 p-4 rounded-lg">
-          <h3 className="font-bold text-white mb-3">Function Code Example</h3>
-          <pre className="text-xs text-slate-300 bg-slate-900 p-3 rounded overflow-x-auto">
+        <div className="bg-card p-4 rounded-lg">
+          <h3 className="font-bold text-foreground mb-3">Function Code Example</h3>
+          <pre className="text-xs text-muted-foreground bg-background p-3 rounded overflow-x-auto">
 {`# functions/main.py
 from firebase_functions import https_fn, firestore_fn
 from firebase_admin import initialize_app, firestore
@@ -162,9 +162,9 @@ def on_customer_created(event: firestore_fn.Event) -> None:
     color: 'purple',
     content: (
        <div className="space-y-4">
-          <div className="bg-slate-700 p-4 rounded-lg">
-            <h3 className="font-bold text-white mb-3">Message Generation with Gemini</h3>
-            <pre className="text-xs text-slate-300 bg-slate-900 p-3 rounded overflow-x-auto">
+          <div className="bg-card p-4 rounded-lg">
+            <h3 className="font-bold text-foreground mb-3">Message Generation with Gemini</h3>
+            <pre className="text-xs text-muted-foreground bg-background p-3 rounded overflow-x-auto">
 {`# functions/ai_engine.py
 from vertexai.preview.generative_models import GenerativeModel
 
@@ -187,19 +187,19 @@ def generate_welcome_message(customer_name, business_type):
     color: 'cyan',
      content: (
         <div className="space-y-4">
-          <div className="bg-slate-700 p-4 rounded-lg">
-            <h3 className="font-bold text-white mb-3">When to Use Cloud Run vs Cloud Functions</h3>
+          <div className="bg-card p-4 rounded-lg">
+            <h3 className="font-bold text-foreground mb-3">When to Use Cloud Run vs Cloud Functions</h3>
              <div className="grid grid-cols-2 gap-3">
               <div className="bg-blue-900/30 border border-blue-500 p-3 rounded">
                 <div className="text-blue-400 font-semibold mb-2">Cloud Functions</div>
-                <div className="text-xs text-slate-300 space-y-1">
+                <div className="text-xs text-muted-foreground space-y-1">
                   <div>✓ Simple CRUD operations</div>
                   <div>✓ Firestore triggers</div>
                 </div>
               </div>
               <div className="bg-cyan-900/30 border border-cyan-500 p-3 rounded">
                 <div className="text-cyan-400 font-semibold mb-2">Cloud Run</div>
-                <div className="text-xs text-slate-300 space-y-1">
+                <div className="text-xs text-muted-foreground space-y-1">
                   <div>✓ Complex FastAPI app</div>
                   <div>✓ Long-running processes</div>
                 </div>
@@ -215,8 +215,8 @@ def generate_welcome_message(customer_name, business_type):
       color: 'orange',
       content: (
         <div className="space-y-4">
-          <div className="bg-slate-700 p-4 rounded-lg">
-            <h3 className="font-bold text-white mb-3">Step-by-Step Firebase Studio Setup</h3>
+          <div className="bg-card p-4 rounded-lg">
+            <h3 className="font-bold text-foreground mb-3">Step-by-Step Firebase Studio Setup</h3>
           </div>
         </div>
       )
@@ -227,14 +227,23 @@ export default function FirebaseStudioArchitecture() {
   const [activeService, setActiveService] = useState('overview');
   const ServiceIcon = services[activeService as keyof typeof services].icon;
 
+  const getIconColor = (color: string) => {
+    if (color === 'primary') return 'text-primary';
+    if (color === 'green') return 'text-green-400';
+    if (color === 'blue') return 'text-blue-400';
+    if (color === 'purple') return 'text-purple-400';
+    if (color === 'cyan') return 'text-cyan-400';
+    return 'text-primary';
+  }
+
   return (
-    <div className="bg-[#02040a] min-h-screen font-sans">
+    <div className="bg-background min-h-screen font-sans">
       <div className="container mx-auto p-4 md:p-8">
         <header className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tighter">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tighter">
             DukaanMitra Technical Architecture
           </h1>
-          <p className="text-lg text-slate-400 mt-2">
+          <p className="text-lg text-muted-foreground mt-2">
             A 100% Google Cloud Stack for a Scalable SaaS
           </p>
         </header>
@@ -242,16 +251,16 @@ export default function FirebaseStudioArchitecture() {
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar */}
           <aside className="w-full md:w-1/4">
-            <div className="sticky top-8 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+            <div className="sticky top-8 bg-card/50 p-4 rounded-xl border border-border">
               <nav className="space-y-2">
                 {Object.entries(services).map(([key, { name, icon: Icon, color }]) => (
                   <button
                     key={key}
                     onClick={() => setActiveService(key)}
                     className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all text-sm font-semibold
-                      ${activeService === key ? 'bg-slate-700 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'}`}
+                      ${activeService === key ? 'bg-secondary text-foreground shadow-md' : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'}`}
                   >
-                    <Icon className={`w-5 h-5 text-${color}-400`} />
+                    <Icon className={`w-5 h-5 ${getIconColor(color)}`} />
                     <span>{name}</span>
                   </button>
                 ))}
@@ -261,12 +270,12 @@ export default function FirebaseStudioArchitecture() {
 
           {/* Main Content */}
           <main className="w-full md:w-3/4">
-            <div className="bg-slate-800 rounded-2xl p-6 md:p-8 border border-slate-700">
-              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-700">
-                <div className={`bg-gradient-to-br from-${services[activeService as keyof typeof services].color}-500 to-${services[activeService as keyof typeof services].color}-700 p-3 rounded-xl`}>
-                   <ServiceIcon className="w-8 h-8 text-white" />
+            <div className="bg-card rounded-2xl p-6 md:p-8 border border-border">
+              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-border">
+                <div className={`bg-gradient-to-br from-primary/80 to-primary/60 p-3 rounded-xl`}>
+                   <ServiceIcon className="w-8 h-8 text-primary-foreground" />
                 </div>
-                <h2 className="text-3xl font-bold text-white">{services[activeService as keyof typeof services].name}</h2>
+                <h2 className="text-3xl font-bold text-foreground">{services[activeService as keyof typeof services].name}</h2>
               </div>
               <div className="prose prose-invert max-w-none">
                  {services[activeService as keyof typeof services].content}

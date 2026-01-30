@@ -5,10 +5,10 @@ import React from 'react';
 
 const Section: React.FC<{title: string, id: string, children: React.ReactNode}> = ({ title, id, children }) => (
     <section id={id} className="space-y-6 scroll-mt-24">
-        <header className="border-b border-white/10 pb-4">
-            <h2 className="text-3xl md:text-4xl font-black text-emerald-400 tracking-tighter leading-none italic uppercase">{title}</h2>
+        <header className="border-b border-border/50 pb-4">
+            <h2 className="text-3xl md:text-4xl font-black text-primary tracking-tighter leading-none italic uppercase">{title}</h2>
         </header>
-        <div className="prose prose-invert prose-slate max-w-none text-slate-300 prose-pre:bg-slate-900 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-2xl prose-headings:text-emerald-400 prose-strong:text-white">
+        <div className="prose prose-invert prose-slate max-w-none text-muted-foreground prose-pre:bg-card prose-pre:border prose-pre:border-border prose-pre:rounded-2xl prose-headings:text-primary prose-strong:text-foreground">
             {children}
         </div>
     </section>
@@ -17,13 +17,13 @@ const Section: React.FC<{title: string, id: string, children: React.ReactNode}> 
 
 export default function GuidePage() {
   return (
-    <div className="bg-[#02040a] text-white font-mono animate-in fade-in duration-700">
+    <div className="bg-background text-foreground font-mono animate-in fade-in duration-700">
       <div className="container py-16 md:py-24">
         <header className="text-center space-y-4 mb-20">
-            <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-none italic uppercase">
+            <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-none italic uppercase">
                 DukaanMitra AI - A to Z Build Guide
             </h1>
-            <p className="text-lg md:text-xl text-indigo-400 max-w-3xl mx-auto leading-relaxed font-bold tracking-widest">
+            <p className="text-lg md:text-xl text-primary max-w-3xl mx-auto leading-relaxed font-bold tracking-widest">
                 Firebase + PostgreSQL Hybrid • Full-Stack SaaS • Production-Ready
             </p>
         </header>
@@ -31,8 +31,8 @@ export default function GuidePage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             <aside className="lg:col-span-3 lg:sticky top-24 self-start">
                 <nav className="space-y-2">
-                    <h3 className="font-bold text-white uppercase tracking-widest mb-4">Table of Contents</h3>
-                    <ul className="space-y-3 text-sm font-medium text-slate-400">
+                    <h3 className="font-bold text-foreground uppercase tracking-widest mb-4">Table of Contents</h3>
+                    <ul className="space-y-3 text-sm font-medium text-muted-foreground">
                         {[
                             {id: "1-project-overview", title: "1. Project Overview"},
                             {id: "2-system-architecture", title: "2. System Architecture"},
@@ -43,7 +43,7 @@ export default function GuidePage() {
                             {id: "15-scaling-strategy", title: "7. Scaling Strategy"},
                         ].map(item => (
                             <li key={item.id}>
-                                <a href={`#${item.id}`} className="hover:text-emerald-400 transition-colors block border-l-2 border-slate-700 pl-4 hover:border-emerald-400">
+                                <a href={`#${item.id}`} className="hover:text-primary transition-colors block border-l-2 border-border pl-4 hover:border-primary">
                                     {item.title}
                                 </a>
                             </li>
@@ -222,8 +222,8 @@ CREATE TABLE customers (
                     <p>How to scale the application...</p>
                 </Section>
 
-                <footer className="bg-slate-900/50 border border-white/10 p-12 rounded-[4rem] text-center space-y-4 mt-20">
-                    <p className="text-emerald-400 font-bold uppercase tracking-widest text-sm">You are ready to build.</p>
+                <footer className="bg-card border border-border p-12 rounded-[4rem] text-center space-y-4 mt-20">
+                    <p className="text-primary font-bold uppercase tracking-widest text-sm">You are ready to build.</p>
                     <p className="text-lg opacity-80 max-w-2xl mx-auto italic">
                         This guide provides the complete architectural and strategic foundation. Now, let's bring this vision to life, one feature at a time.
                     </p>
