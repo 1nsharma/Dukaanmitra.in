@@ -121,10 +121,10 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
-                <SheetHeader>
-                  <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
-                  <SheetDescription className="sr-only">Navigation links and user actions.</SheetDescription>
-                </SheetHeader>
+              <SheetHeader>
+                <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+                <SheetDescription className="sr-only">Navigation links and user actions.</SheetDescription>
+              </SheetHeader>
               <div className="flex flex-col gap-6 pt-8">
                 <Link
                   href="/"
