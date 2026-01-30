@@ -127,6 +127,13 @@ export default function LandingPage() {
         icon: <Send size={32} />
       }
   ];
+  
+  const trustFeatures = [
+    "Made for Indian Kiranas",
+    "Works on your existing WhatsApp",
+    "No app download needed",
+    "Secure & auto-backed up data"
+  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-headline">
@@ -209,8 +216,22 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Trust Bar Section */}
+      <section className="py-12 bg-card border-y border-border">
+        <div className="container mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                {trustFeatures.map((text, i) => (
+                    <div key={i} className="flex flex-col items-center gap-2">
+                        <Check className="w-6 h-6 text-primary" />
+                        <p className="text-sm font-semibold text-muted-foreground">{text}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+      </section>
+
       {/* Munim Flow Section */}
-      <section id="features" className="py-24 sm:py-32 px-4 bg-card border-y border-border">
+      <section id="features" className="py-24 sm:py-32 px-4">
         <div className="container mx-auto space-y-16 text-center">
           <div className="max-w-3xl mx-auto">
              <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">The Munim Flow</h2>
@@ -219,7 +240,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
              {dukaanFlow.map((step, i) => (
-               <div key={i} className="flow-step flex flex-col items-center text-center space-y-4 p-6 bg-background/50 rounded-3xl border border-border transition-all duration-300 hover:border-primary/50 hover:scale-105 hover:-translate-y-2">
+               <div key={i} className="flow-step flex flex-col items-center text-center space-y-4 p-6 bg-card/50 rounded-3xl border border-border transition-all duration-300 hover:border-primary/50 hover:scale-105 hover:-translate-y-2">
                   <div className="w-20 h-20 rounded-2xl bg-secondary shadow-lg flex items-center justify-center text-primary">
                     {step.icon}
                   </div>
@@ -234,7 +255,7 @@ export default function LandingPage() {
       </section>
 
        {/* Digital Khata Benefits Section */}
-      <section className="py-24 sm:py-32 px-4">
+      <section className="py-24 sm:py-32 px-4 bg-card border-y border-border">
         <div className="container mx-auto text-center">
           <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Digital Khata Ke Fayde</h2>
           <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">Manual hisaab ki tension chodo aur business badhao.</p>
@@ -253,45 +274,58 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      
+      {/* Testimonial */}
+      <section className="py-24 sm:py-32">
+        <div className="container mx-auto">
+            <div className="bg-secondary p-8 md:p-12 rounded-3xl text-center max-w-4xl mx-auto border border-border">
+                <blockquote className="text-2xl md:text-3xl font-bold italic text-foreground">
+                    “Digital udhaar reminders se meri recovery 2x fast ho gayi.”
+                </blockquote>
+                <cite className="mt-6 block text-lg font-semibold text-primary not-italic">
+                    – Ramesh Gupta, Kirana Owner, Delhi
+                </cite>
+            </div>
+        </div>
+      </section>
 
       {/* Live Dashboard Preview Section */}
-      <section className="py-24 sm:py-32 px-4 bg-card border-y border-border">
+      <section className="pb-24 sm:pb-32 px-4">
           <div className="container mx-auto">
               <div className="max-w-3xl mx-auto text-center mb-16">
                   <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Live Dashboard Preview</h2>
                   <p className="text-lg text-muted-foreground mt-4">Apni dukaan ka poora control ek hi screen par. Aisa dikhta hai aapka dashboard.</p>
               </div>
-              <div className="bg-background/50 border-2 border-border p-4 sm:p-8 rounded-3xl shadow-2xl max-w-5xl mx-auto">
+              
+              <AppWindow title="DukaanMitra Dashboard" icon={<Store size={14}/>} className="max-w-5xl mx-auto" headerClass="bg-primary/10">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                      {/* Metric Cards */}
-                      <Card className="lg:col-span-1">
+                      <Card className="lg:col-span-1 bg-secondary/30">
                           <CardHeader className="pb-2">
                               <CardDescription>Today's Revenue</CardDescription>
                               <CardTitle className="text-3xl text-primary flex items-center"><IndianRupee size={24} className="mr-1"/>12,500</CardTitle>
                           </CardHeader>
                       </Card>
-                      <Card className="lg:col-span-1">
+                      <Card className="lg:col-span-1 bg-secondary/30">
                           <CardHeader className="pb-2">
                               <CardDescription>Total Udhaar</CardDescription>
                               <CardTitle className="text-3xl flex items-center"><IndianRupee size={24} className="mr-1"/>84,350</CardTitle>
                           </CardHeader>
                       </Card>
-                      <Card className="lg:col-span-2">
+                      <Card className="lg:col-span-2 bg-secondary/30">
                            <CardHeader className="pb-2">
                               <CardDescription className="flex items-center gap-2"><AlertTriangle className="text-yellow-400" /> Low Stock Alerts</CardDescription>
                               <CardTitle className="text-2xl">Parle-G, Amul Milk (1L)</CardTitle>
                           </CardHeader>
                       </Card>
 
-                      {/* Customer List Card */}
-                      <Card className="md:col-span-2 lg:col-span-4">
+                      <Card className="md:col-span-2 lg:col-span-4 bg-secondary/30">
                           <CardHeader>
                               <CardTitle>Top 5 Customers by Credit</CardTitle>
                           </CardHeader>
                           <CardContent>
                               <ul className="space-y-3">
                                   {["Ravi Sharma", "Sunita Devi", "Pappu General Store", "Anjali Mehra", "Vikas Kumar"].map((name, i) => (
-                                      <li key={i} className="flex justify-between items-center bg-secondary p-3 rounded-lg">
+                                      <li key={i} className="flex justify-between items-center bg-background/50 p-3 rounded-lg">
                                           <div className="flex items-center gap-3">
                                               <Users size={16} className="text-muted-foreground"/>
                                               <span className="font-medium">{name}</span>
@@ -303,18 +337,26 @@ export default function LandingPage() {
                           </CardContent>
                       </Card>
                   </div>
+              </AppWindow>
+
+               <div className="text-center mt-8">
+                  <p className="text-sm font-semibold text-muted-foreground flex items-center justify-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-green-400" />
+                      Aapka pura hisaab secure cloud par auto backup hota hai. Data kabhi lose nahi hota.
+                  </p>
               </div>
           </div>
       </section>
 
       {/* Setup Section */}
-      <section className="py-24 sm:py-32 px-4">
+      <section className="py-24 sm:py-32 px-4 bg-card border-y border-border">
         <div className="container mx-auto text-center">
             <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Setup in 10 Minutes</h2>
             <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">System complicated nahi, bahot simple hai. Bas 3 aasaan steps.</p>
+            <p className="mt-4 text-primary font-bold">10 minute me live hone ke liye free personal onboarding support.</p>
             <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center max-w-5xl mx-auto">
                 {setupSteps.map((step, index) => (
-                    <div key={index} className="flex flex-col items-center p-6 bg-card border border-border rounded-2xl">
+                    <div key={index} className="flex flex-col items-center p-6 bg-secondary/50 border border-border rounded-2xl">
                         <div className="w-16 h-16 bg-primary/10 text-primary flex items-center justify-center rounded-full mb-4 ring-8 ring-primary/5">
                             {step.icon}
                         </div>
@@ -330,7 +372,7 @@ export default function LandingPage() {
       </section>
       
       {/* Insights Section */}
-      <section id="insights" className="py-24 sm:py-32 px-4 bg-card border-y border-border">
+      <section id="insights" className="py-24 sm:py-32 px-4">
         <div className="container mx-auto space-y-16">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-border pb-8">
             <div className="max-w-2xl">
@@ -354,7 +396,7 @@ export default function LandingPage() {
               { title: "Managing Winter Stocks in Northern India", tag: "Inventory", excerpt: "Strategic stock management for Tier-2 cities during the coldest months." },
               { title: "Building Trust with Digital Udhaar Reminders", tag: "Retention", excerpt: "Data shows 40% faster recovery when reminders are sent via WhatsApp." }
             ].map((b, i) => (
-              <Card key={i} className="bg-background/50 rounded-3xl shadow-lg border border-border hover:border-primary/50 hover:scale-105 transition-transform duration-300 group flex flex-col">
+              <Card key={i} className="bg-card/80 rounded-3xl shadow-lg border border-border hover:border-primary/50 hover:scale-105 transition-transform duration-300 group flex flex-col">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors">{b.title}</CardTitle>
                   <span className="text-sm font-semibold text-muted-foreground group-hover:text-primary/80 transition-colors pt-1">{b.tag}</span>
@@ -378,7 +420,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 sm:py-32">
+      <section id="pricing" className="py-24 sm:py-32 bg-card border-y border-border">
         <div className="container">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Pricing</h2>
@@ -389,7 +431,7 @@ export default function LandingPage() {
                 <Card
                   key={plan.title}
                   className={cn(
-                    'flex flex-col rounded-3xl bg-card border-2 border-border transition-all duration-300 hover:scale-[1.03] hover:border-primary', 
+                    'flex flex-col rounded-3xl bg-secondary/50 border-2 border-border transition-all duration-300 hover:scale-[1.03] hover:border-primary', 
                     plan.isRecommended && 'border-primary ring-4 ring-primary/20 shadow-2xl shadow-primary/10'
                   )}
                 >
