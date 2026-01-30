@@ -1,7 +1,8 @@
+
 "use client";
 
 import Link from "next/link";
-import { Menu, Store } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -10,83 +11,85 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useUser, useAuth } from "@/firebase";
 
 const navLinks = [
-  { href: "/#features", label: "Features" },
-  { href: "/#pricing", label: "Pricing" },
+  { href: "#features", label: "Features" },
+  { href: "#flow", label: "How it Works" },
+  { href: "#pricing", label: "Pricing" },
+  { href: "/insights", label: "Insights Hub" },
   { href: "/docs", label: "Docs" },
-  { href: "/#contact", label: "Contact" },
 ];
 
 export default function Header() {
   const pathname = usePathname();
-  if (pathname === '/') {
-    return null;
-  }
-
+  const router = useRouter();
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
-  const router = useRouter();
 
   const handleSignOut = async () => {
     await auth.signOut();
     router.push('/');
   };
 
-  return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center">
-        <div className="mr-4 flex items-center">
-          <Link href="/" className="flex items-center gap-2 font-headline text-lg font-bold">
-            <Store className="h-6 w-6 text-primary" />
-            <span className="font-semibold">DukaanMitra</span>
-          </Link>
-        </div>
+  const isLandingPage = pathname === '/';
 
+  const NavLink = ({ href, label }: { href: string, label: string }) => {
+    const finalHref = !isLandingPage && href.startsWith('#') ? `/${href}` : href;
+    return (
+        <Link 
+            href={finalHref} 
+            className="hover:text-indigo-600 transition-colors"
+            onClick={() => setMobileMenuOpen(false)}
+        >
+            {label}
+        </Link>
+    );
+  };
+
+  return (
+    <header className="px-6 lg:px-20 py-8 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-xl z-[100] border-b border-slate-100 shadow-sm transition-all duration-500">
+        <Link href="/" className="flex items-center gap-3 cursor-pointer">
+          <div className="w-10 h-10 bg-indigo-600 rounded-[1.2rem] flex items-center justify-center shadow-lg shadow-indigo-200">
+             <span className="text-white text-xl font-black italic">D</span>
+          </div>
+          <h1 className="text-3xl font-black italic tracking-tighter text-slate-900">DukaanMitra</h1>
+        </Link>
+        
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex md:flex-1 items-center justify-center gap-6 text-sm">
-          {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="font-medium text-foreground/60 transition-colors hover:text-foreground/80"
-            >
-              {link.label}
-            </Link>
-          ))}
-          {user && (
-             <Link
-              href="/dashboard"
-              className="font-medium text-foreground/60 transition-colors hover:text-foreground/80"
-            >
-              Dashboard
-            </Link>
-          )}
+        <nav className="hidden lg:flex space-x-12 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] items-center">
+          {navLinks.map(link => <NavLink key={link.href} {...link} />)}
         </nav>
 
-        <div className="flex flex-1 items-center justify-end space-x-2">
-          {!isUserLoading && (
-            <>
-              {user ? (
-                <Button onClick={handleSignOut} variant="ghost">Sign Out</Button>
-              ) : (
-                <>
-                  <Button asChild variant="ghost">
-                    <Link href="/login">Log In</Link>
-                  </Button>
-                  <Button asChild className="bg-primary hover:bg-primary/90">
-                    <Link href="/login?register=true">Get Started</Link>
-                  </Button>
-                </>
-              )}
-            </>
-          )}
-          
-          {/* Mobile Navigation */}
-          <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <div className="flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-4">
+                {!isUserLoading && (
+                    <>
+                    {user ? (
+                        <Button
+                            onClick={() => router.push('/dashboard')}
+                            className="bg-slate-900 text-white px-8 py-3 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl hover:bg-indigo-600 transition-all active:scale-95 flex items-center gap-3"
+                        >
+                            <span>Dashboard</span>
+                            <span className="text-lg">➔</span>
+                        </Button>
+                    ) : (
+                        <Button
+                            onClick={() => router.push('/dashboard')}
+                            className="bg-slate-900 text-white px-8 py-3 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl hover:bg-indigo-600 transition-all active:scale-95 flex items-center gap-3"
+                        >
+                            <span>Go to App</span>
+                            <span className="text-lg">➔</span>
+                        </Button>
+                    )}
+                    </>
+                )}
+            </div>
+
+            {/* Mobile Navigation */}
+            <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
-                className="md:hidden"
+                className="lg:hidden"
                 size="icon"
                 aria-label="Open menu"
               >
@@ -97,38 +100,38 @@ export default function Header() {
               <div className="flex flex-col gap-6 pt-8">
                 <Link
                   href="/"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-3"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Store className="h-6 w-6 text-primary" />
-                  <span className="font-headline text-lg font-bold">DukaanMitra</span>
+                    <div className="w-10 h-10 bg-indigo-600 rounded-[1.2rem] flex items-center justify-center shadow-lg shadow-indigo-200">
+                        <span className="text-white text-xl font-black italic">D</span>
+                    </div>
+                    <h1 className="text-3xl font-black italic tracking-tighter text-slate-900">DukaanMitra</h1>
                 </Link>
-                <nav className="flex flex-col gap-4">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      className="text-lg font-medium"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                  {user && (
-                    <Link
-                      href="/dashboard"
-                      className="text-lg font-medium"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                  )}
+                <nav className="flex flex-col gap-4 mt-8 text-lg font-medium">
+                  {navLinks.map((link) => <NavLink key={link.href} {...link} />)}
                 </nav>
+                <div className="mt-auto flex flex-col gap-4">
+                    {!isUserLoading && (
+                        <>
+                        {user ? (
+                            <>
+                                <Button onClick={() => {router.push('/dashboard'); setMobileMenuOpen(false);}} size="lg">Dashboard</Button>
+                                <Button onClick={() => {handleSignOut(); setMobileMenuOpen(false);}} variant="outline" size="lg">Sign Out</Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button onClick={() => {router.push('/login'); setMobileMenuOpen(false);}} size="lg">Log In</Button>
+                                <Button onClick={() => {router.push('/login?register=true'); setMobileMenuOpen(false);}} variant="outline" size="lg">Sign Up</Button>
+                            </>
+                        )}
+                        </>
+                    )}
+                </div>
               </div>
             </SheetContent>
           </Sheet>
         </div>
-      </div>
     </header>
   );
 }

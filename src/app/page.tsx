@@ -4,6 +4,51 @@
 import React, { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import anime from 'animejs';
+import { Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+
+const plans = [
+  {
+    title: 'Free Trial',
+    price: '₹0',
+    period: '/ 14 days',
+    description: 'Get a feel for our platform.',
+    features: ['Basic WhatsApp Integration', '1 Admin User', 'Basic Analytics'],
+    isRecommended: false,
+    cta: 'Start Trial',
+  },
+  {
+    title: 'Basic',
+    price: '₹1999',
+    period: '/ month',
+    description: 'Perfect for small stores just getting started.',
+    features: ['Full WhatsApp Integration', 'Mobile App Access', '2 Admin Users', 'Standard Analytics'],
+    isRecommended: false,
+    cta: 'Choose Basic',
+  },
+  {
+    title: 'Pro',
+    price: '₹4999',
+    period: '/ month',
+    description: 'For growing businesses that need more power.',
+    features: ['All Basic features', 'AI-Powered Tools', '5 Admin Users', 'Advanced Analytics & Reports'],
+    isRecommended: true,
+    cta: 'Choose Pro',
+  },
+  {
+    title: 'Enterprise',
+    price: 'Custom',
+    period: '',
+    description: 'Tailored solutions for large-scale operations.',
+    features: ['All Pro features', 'Dedicated API Access', 'Unlimited Users', 'Dedicated Support'],
+    isRecommended: false,
+    cta: 'Contact Us',
+  },
+];
+
 
 export default function LandingPage() {
   const router = useRouter();
@@ -41,34 +86,6 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* Navbar */}
-      <nav className="px-6 lg:px-20 py-8 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-xl z-[100] border-b border-slate-100 shadow-sm transition-all duration-500">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
-          <div className="w-10 h-10 bg-indigo-600 rounded-[1.2rem] flex items-center justify-center shadow-lg shadow-indigo-200">
-             <span className="text-white text-xl font-black italic">D</span>
-          </div>
-          <h1 className="text-3xl font-black italic tracking-tighter text-slate-900">DukaanMitra</h1>
-        </div>
-        <div className="hidden lg:flex space-x-12 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] items-center">
-          <a href="#features" className="hover:text-indigo-600 transition-colors">Features</a>
-          <a href="#flow" className="hover:text-indigo-600 transition-colors">How it Works</a>
-          <a href="#pricing" className="hover:text-indigo-600 transition-colors">Pricing</a>
-          <button 
-            onClick={() => router.push('/insights')}
-            className="text-slate-900 border-b-2 border-indigo-600 pb-0.5 hover:opacity-70 transition-all"
-          >
-            Insights Hub
-          </button>
-        </div>
-        <button 
-          onClick={() => router.push('/dashboard')}
-          className="bg-slate-900 text-white px-8 py-3 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl hover:bg-indigo-600 transition-all active:scale-95 flex items-center gap-3"
-        >
-          <span>Go to App</span>
-          <span className="text-lg">➔</span>
-        </button>
-      </nav>
-
       {/* Hero Section */}
       <section className="px-6 lg:px-20 py-24 lg:py-40 bg-gradient-to-br from-indigo-50/30 via-white to-emerald-50/20 relative overflow-hidden">
         <div className="max-w-[1600px] mx-auto grid lg:grid-cols-2 gap-24 items-center relative z-10">
@@ -195,6 +212,49 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-16 md:py-24 bg-white">
+        <div className="container">
+            <div className="text-center mb-12">
+            <h2 className="text-6xl lg:text-8xl font-black italic tracking-tighter uppercase leading-none">Pricing</h2>
+            <p className="text-xl text-slate-500 font-bold tracking-widest uppercase mt-4">Simple, transparent plans.</p>
+            </div>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+            {plans.map((plan) => (
+                <Card
+                key={plan.title}
+                className={cn('flex flex-col transition-all duration-300 hover:scale-[1.03] rounded-[2rem]', plan.isRecommended && 'border-indigo-600 ring-4 ring-indigo-200 shadow-2xl bg-indigo-50')}
+                >
+                <CardHeader className="items-center text-center">
+                    <CardTitle className="font-headline text-2xl">{plan.title}</CardTitle>
+                    <div className="flex items-baseline">
+                    <span className="text-4xl font-bold">{plan.price}</span>
+                    {plan.period && <span className="text-muted-foreground">{plan.period}</span>}
+                    </div>
+                    <CardDescription>{plan.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1">
+                    <ul className="space-y-3">
+                    {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-start">
+                        <Check className="w-5 h-5 text-emerald-500 mr-2 mt-1 shrink-0" />
+                        <span className="text-sm text-muted-foreground">{feature}</span>
+                        </li>
+                    ))}
+                    </ul>
+                </CardContent>
+                <CardFooter>
+                    <Button asChild className={cn('w-full rounded-[1.5rem] font-bold text-lg py-6', plan.isRecommended ? 'bg-indigo-600' : 'bg-slate-800')} variant={plan.isRecommended ? "default" : "secondary"}>
+                    <Link href="/login?register=true">{plan.cta}</Link>
+                    </Button>
+                </CardFooter>
+                </Card>
+            ))}
+            </div>
+        </div>
+      </section>
+
 
       {/* CTA Section */}
       <section id="contact" className="py-32 px-6 lg:px-20 bg-slate-900 text-white rounded-[6rem] mx-4 lg:mx-10 my-20 relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]">
