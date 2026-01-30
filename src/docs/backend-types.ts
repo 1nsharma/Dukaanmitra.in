@@ -7,7 +7,7 @@ export type ContactFormSubmission = {
   email: string;
   subject: string;
   message: string;
-  submittedAt: string; // "date-time"
+  submittedAt: any;
 };
 
 export type UserProfile = {
@@ -15,7 +15,7 @@ export type UserProfile = {
   email: string;
   displayName?: string;
   photoURL?: string; // "uri"
-  createdAt: string; // "date-time"
+  createdAt: any;
   shopId?: string;
 };
 
@@ -32,9 +32,9 @@ export type Shop = {
   pincode?: string;
   plan?: "free" | "basic" | "pro" | "enterprise";
   status?: "active" | "trial" | "suspended" | "cancelled";
-  trial_ends_at?: string; // "date-time"
-  created_at?: string; // "date-time"
-  updated_at?: string; // "date-time"
+  trial_ends_at?: any;
+  created_at?: any;
+  updated_at?: any;
   settings?: {
     language?: "hi" | "en" | "hinglish";
     currency?: string;
@@ -53,8 +53,8 @@ export type Customer = {
   shop_id: string;
   phone: string;
   name?: string;
-  first_visit?: string; // "date-time"
-  last_visit?: string; // "date-time"
+  first_visit?: any;
+  last_visit?: any;
   visit_count?: number;
   total_spent?: number;
   average_basket?: number;
@@ -62,8 +62,8 @@ export type Customer = {
   favorite_items?: string[];
   notes?: string;
   tags?: string[];
-  created_at?: string; // "date-time"
-  updated_at?: string; // "date-time"
+  created_at?: any;
+  updated_at?: any;
   metadata?: {
     whatsapp_name?: string;
     profile_pic_url?: string; // "uri"
@@ -90,8 +90,6 @@ export type Bill = {
   source?: "whatsapp" | "app" | "manual";
   image_url?: string; // "uri"
   notes?: string;
-  created_at?: string; // "date-time"
+  created_at?: any;
   created_by?: string;
 };
-
-    
