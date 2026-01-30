@@ -13,11 +13,12 @@ import { useUser, useAuth } from "@/firebase";
 const navLinks = [
   { href: "/#features", label: "Features" },
   { href: "/architecture", label: "How it Works" },
+  { href: "/guide", label: "A-Z Guide" },
+  { href: "/assets", label: "Builder Archive" },
+  { href: "/build", label: "Build Guide" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/insights", label: "Insights Hub" },
   { href: "/docs", label: "Docs" },
-  { href: "/assets", label: "Builder Archive" },
-  { href: "/build", label: "Build Guide" },
 ];
 
 export default function Header() {
@@ -38,16 +39,17 @@ export default function Header() {
     // For in-page links on the landing page, we want smooth scroll.
     // For other pages, we do a standard navigation.
     const isExternalPageLink = href.startsWith('/');
-    const finalHref = !isLandingPage && href.startsWith('/#') ? href.substring(1) : href;
+    const finalHref = !isLandingPage && href.startsWith('/#') ? `/${href}` : href;
     
-    if (isLandingPage && !isExternalPageLink) {
+    if (isLandingPage && href.startsWith('/#')) {
          return (
             <a 
                 href={href} 
                 className="hover:text-indigo-600 transition-colors"
                 onClick={(e) => {
                     e.preventDefault();
-                    document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+                    const targetId = href.substring(1);
+                    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
                     setMobileMenuOpen(false)
                 }}
             >
