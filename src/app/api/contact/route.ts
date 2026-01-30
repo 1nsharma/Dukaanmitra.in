@@ -1,30 +1,27 @@
 import { NextResponse } from 'next/server';
-import sgMail from '@sendgrid/mail';
+import Mailgun from 'mailgun.js';
+import formData from 'form-data';
 
 export async function POST(request: Request) {
-  if (!process.env.SENDGRID_API_KEY || !process.env.CONTACT_EMAIL_RECIPIENT || !process.env.SENDGRID_FROM_EMAIL) {
-    console.error('Missing required environment variables for email sending with SendGrid.');
+  const { MAILGUN_API_KEY, MAILGUN_DOMAIN, CONTACT_EMAIL_RECIPIENT, MAILGUN_FROM_EMAIL } = process.env;
+
+  if (!MAILGUN_API_KEY || !MAILGUN_DOMAIN || !CONTACT_EMAIL_RECIPIENT || !MAILGUN_FROM_EMAIL) {
+    console.error('Missing required environment variables for email sending with Mailgun.');
     return NextResponse.json(
       { message: 'Server is not configured for sending emails.' },
       { status: 500 }
     );
   }
 
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  const mailgun = new Mailgun(formData);
+  const mg = mailgun.client({ username: 'api', key: MAILGUN_API_KEY });
 
   try {
     const { name, email, subject, message } = await request.json();
 
-    const msg = {
-      to: process.env.CONTACT_EMAIL_RECIPIENT,
-      from: {
-        name: 'DukaanMitra Contact Form',
-        email: process.env.SENDGRID_FROM_EMAIL
-      },
-      replyTo: {
-        name: name,
-        email: email
-      },
+    const data = {
+      from: MAILGUN_FROM_EMAIL,
+      to: [CONTACT_EMAIL_RECIPIENT],
       subject: `New DukaanMitra Contact Form: ${subject}`,
       text: `You have a new message from ${name} (${email}):\n\n${message}`,
       html: `
@@ -38,9 +35,10 @@ export async function POST(request: Request) {
           <p>${message.replace(/\n/g, '<br>')}</p>
         </div>
       `,
+      'h:Reply-To': email,
     };
 
-    await sgMail.send(msg);
+    await mg.messages.create(MAILGUN_DOMAIN, data);
 
     return NextResponse.json(
       { message: 'Message sent successfully' },
@@ -48,9 +46,6 @@ export async function POST(request: Request) {
     );
   } catch (error: any) {
     console.error('Email sending error:', error);
-    if (error.response) {
-      console.error(error.response.body)
-    }
     return NextResponse.json(
       { message: 'Failed to send message' },
       { status: 500 }
