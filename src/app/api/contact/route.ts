@@ -1,38 +1,30 @@
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
 export async function POST(request: Request) {
-  if (
-    !process.env.SMTP_HOST ||
-    !process.env.SMTP_PORT ||
-    !process.env.SMTP_USER ||
-    !process.env.SMTP_PASS ||
-    !process.env.CONTACT_EMAIL_RECIPIENT
-  ) {
-    console.error('Missing required environment variables for email sending.');
+  if (!process.env.SENDGRID_API_KEY || !process.env.CONTACT_EMAIL_RECIPIENT || !process.env.SENDGRID_FROM_EMAIL) {
+    console.error('Missing required environment variables for email sending with SendGrid.');
     return NextResponse.json(
       { message: 'Server is not configured for sending emails.' },
       { status: 500 }
     );
   }
 
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
   try {
     const { name, email, subject, message } = await request.json();
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: process.env.SMTP_PORT === '465',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
-    const mailOptions = {
-      from: `"${name}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
+    const msg = {
       to: process.env.CONTACT_EMAIL_RECIPIENT,
-      replyTo: email,
+      from: {
+        name: 'DukaanMitra Contact Form',
+        email: process.env.SENDGRID_FROM_EMAIL
+      },
+      replyTo: {
+        name: name,
+        email: email
+      },
       subject: `New DukaanMitra Contact Form: ${subject}`,
       text: `You have a new message from ${name} (${email}):\n\n${message}`,
       html: `
@@ -48,14 +40,17 @@ export async function POST(request: Request) {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(msg);
 
     return NextResponse.json(
       { message: 'Message sent successfully' },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Email sending error:', error);
+    if (error.response) {
+      console.error(error.response.body)
+    }
     return NextResponse.json(
       { message: 'Failed to send message' },
       { status: 500 }
