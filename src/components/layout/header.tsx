@@ -16,6 +16,8 @@ const navLinks = [
   { href: "/#pricing", label: "Pricing" },
   { href: "/insights", label: "Insights Hub" },
   { href: "/docs", label: "Docs" },
+  { href: "/assets", label: "Builder Archive" },
+  { href: "/build", label: "Build Guide" },
 ];
 
 export default function Header() {
