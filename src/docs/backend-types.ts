@@ -12,8 +12,9 @@ export type ContactFormSubmission = {
 
 export type UserProfile = {
   uid: string;
-  phoneNumber: string;
+  email: string;
   displayName?: string;
+  photoURL?: string; // "uri"
   createdAt: string; // "date-time"
   shopId?: string;
 };
@@ -92,3 +93,5 @@ export type Bill = {
   created_at?: string; // "date-time"
   created_by?: string;
 };
+
+    

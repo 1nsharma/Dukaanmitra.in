@@ -51,13 +51,19 @@
           "type": "string",
           "description": "The user's unique ID from Firebase Authentication."
         },
-        "phoneNumber": {
+        "email": {
           "type": "string",
-          "description": "The user's phone number."
+          "format": "email",
+          "description": "The user's email address."
         },
         "displayName": {
           "type": "string",
           "description": "The user's chosen display name."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
         },
         "createdAt": {
           "type": "string",
@@ -71,7 +77,7 @@
       },
       "required": [
         "uid",
-        "phoneNumber",
+        "email",
         "createdAt"
       ]
     },
@@ -382,7 +388,7 @@
   },
   "auth": {
     "providers": [
-      "phone",
+      "google",
       "anonymous"
     ]
   },
@@ -480,3 +486,4 @@
     "reasoning": "This Firestore structure organizes data by shop, allowing for secure, scalable multi-tenancy. Each shop's data (customers, bills) is nested under its own document. Security rules ensure that a user can only access data related to the shop they own."
   }
 }
+    
