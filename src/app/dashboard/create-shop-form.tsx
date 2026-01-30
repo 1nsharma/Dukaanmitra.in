@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTransition } from "react";
-import { collection, serverTimestamp, doc, updateDoc, setDoc } from "firebase/firestore";
+import { collection, serverTimestamp, doc, updateDoc, setDoc, writeBatch } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -57,8 +57,10 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
     }
 
     startTransition(async () => {
-        const shopCollection = collection(firestore, "shops");
-        const newShopRef = doc(shopCollection);
+        // Use a batch for atomic writes
+        const batch = writeBatch(firestore);
+        
+        const newShopRef = doc(collection(firestore, "shops"));
         const shopId = newShopRef.id;
 
         const shopData = {
@@ -72,13 +74,14 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
             status: 'trial',
             trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
         };
+        batch.set(newShopRef, shopData);
+
+        const userProfileRef = doc(firestore, "users", user.uid);
+        const userProfileData = { shopId: shopId };
+        batch.update(userProfileRef, userProfileData);
 
         try {
-             await setDoc(newShopRef, shopData);
-
-             const userProfileRef = doc(firestore, "users", user.uid);
-             const userProfileData = { shopId: shopId };
-             await updateDoc(userProfileRef, userProfileData);
+             await batch.commit();
 
              toast({
                  title: "Shop Created!",
@@ -89,12 +92,12 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
 
         } catch(serverError) {
              const permissionError = new FirestorePermissionError({
-                 path: newShopRef.path,
-                 operation: 'create',
-                 requestResourceData: shopData,
+                 path: `batched write (shops/${shopId} and users/${user.uid})`,
+                 operation: 'write',
+                 requestResourceData: {shop: shopData, userUpdate: userProfileData},
              });
              errorEmitter.emit('permission-error', permissionError);
-             toast({ title: "Error", description: "Could not create shop.", variant: "destructive" });
+             toast({ title: "Error", description: "Could not create shop. Please check permissions.", variant: "destructive" });
         }
     });
   };
