@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from 'react';
@@ -45,7 +46,7 @@ export default function LoginPage() {
         <Card className="w-full shadow-xl">
           <CardHeader className="text-center">
             <CardTitle className="font-headline text-2xl">Welcome to DukaanMitra</CardTitle>
-            <CardDescription>Use your Google account to log in or create an account.</CardDescription>
+            <CardDescription>Enter your email and password to access your account.</CardDescription>
           </CardHeader>
           <CardContent>
             <LoginForm />
@@ -55,5 +56,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-    
