@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { collection, query, orderBy } from "firebase/firestore";
-import { Loader2, PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle, Download } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,6 +64,47 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
     return format(parseISO(date as string), "PPP");
   }
 
+  const handleExport = () => {
+    if (!customers) return;
+
+    const headers = [
+      "ID", "Name", "Phone", "Status", "Last Visit", "Total Spent (₹)", "Visit Count"
+    ];
+
+    const csvRows = customers.map(customer => {
+      const row = [
+        customer.id,
+        customer.name || "",
+        customer.phone || "",
+        customer.status || "N/A",
+        customer.last_visit ? formatDate(customer.last_visit) : "N/A",
+        customer.total_spent || 0,
+        customer.visit_count || 0
+      ];
+      // Escape commas by wrapping in double quotes
+      return row.map(value => {
+        const strValue = String(value);
+        if (strValue.includes(',')) {
+          return `"${strValue}"`;
+        }
+        return strValue;
+      }).join(',');
+    });
+
+    const csvContent = [headers.join(','), ...csvRows].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `dukaanmitra-customers-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -71,23 +112,29 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
           <CardTitle>Customers</CardTitle>
           <CardDescription>Manage your shop's customers.</CardDescription>
         </div>
-        <Dialog open={isAddCustomerOpen} onOpenChange={setAddCustomerOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2" />
-              Add Customer
+        <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleExport} disabled={!customers || customers.length === 0}>
+                <Download className="mr-2" />
+                Export CSV
             </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add a New Customer</DialogTitle>
-              <DialogDescription>
-                Enter the details of the new customer to add them to your shop.
-              </DialogDescription>
-            </DialogHeader>
-            <AddCustomerForm shopId={shopId} onFinished={() => setAddCustomerOpen(false)} />
-          </DialogContent>
-        </Dialog>
+            <Dialog open={isAddCustomerOpen} onOpenChange={setAddCustomerOpen}>
+            <DialogTrigger asChild>
+                <Button>
+                <PlusCircle className="mr-2" />
+                Add Customer
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                <DialogTitle>Add a New Customer</DialogTitle>
+                <DialogDescription>
+                    Enter the details of the new customer to add them to your shop.
+                </DialogDescription>
+                </DialogHeader>
+                <AddCustomerForm shopId={shopId} onFinished={() => setAddCustomerOpen(false)} />
+            </DialogContent>
+            </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading && <Loader2 className="mx-auto my-12 h-8 w-8 animate-spin text-primary" />}

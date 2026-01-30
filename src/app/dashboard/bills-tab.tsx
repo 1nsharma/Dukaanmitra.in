@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { collection, query, orderBy } from "firebase/firestore";
-import { Loader2, PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle, Download } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +65,36 @@ export default function BillsTab({ shopId }: BillsTabProps) {
     return format(parseISO(date as string), "PPp");
   }
 
+  const handleExport = () => {
+    if (!bills) return;
+    const headers = ["ID", "Customer Name", "Amount (₹)", "Payment Status", "Payment Method", "Date"];
+    const csvRows = bills.map(bill => {
+      const row = [
+        bill.id,
+        bill.customer_name || 'N/A',
+        bill.amount.toFixed(2),
+        bill.payment_status || 'N/A',
+        bill.payment_method || 'N/A',
+        formatDate(bill.created_at)
+      ];
+      return row.map(value => {
+          const strValue = String(value);
+          if (strValue.includes(',')) return `"${strValue}"`;
+          return strValue;
+      }).join(',');
+    });
+    const csvContent = [headers.join(','), ...csvRows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `dukaanmitra-bills-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div>
       <QuickAddBill shopId={shopId} onBillAdded={() => {}} />
@@ -75,23 +105,29 @@ export default function BillsTab({ shopId }: BillsTabProps) {
             <CardTitle>All Bills</CardTitle>
             <CardDescription>Manually manage your shop's bills and transactions.</CardDescription>
           </div>
-          <Dialog open={isAddBillOpen} onOpenChange={setAddBillOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2" />
-                Add Manually
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Add a New Bill</DialogTitle>
-                <DialogDescription>
-                  Record a new transaction for a customer.
-                </DialogDescription>
-              </DialogHeader>
-              <AddBillForm shopId={shopId} onFinished={() => setAddBillOpen(false)} />
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleExport} disabled={!bills || bills.length === 0}>
+                <Download className="mr-2" />
+                Export CSV
+            </Button>
+            <Dialog open={isAddBillOpen} onOpenChange={setAddBillOpen}>
+                <DialogTrigger asChild>
+                <Button>
+                    <PlusCircle className="mr-2" />
+                    Add Manually
+                </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Add a New Bill</DialogTitle>
+                    <DialogDescription>
+                    Record a new transaction for a customer.
+                    </DialogDescription>
+                </DialogHeader>
+                <AddBillForm shopId={shopId} onFinished={() => setAddBillOpen(false)} />
+                </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading && <Loader2 className="mx-auto my-12 h-8 w-8 animate-spin text-primary" />}
