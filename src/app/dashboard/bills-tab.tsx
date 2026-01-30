@@ -78,8 +78,10 @@ export default function BillsTab({ shopId }: BillsTabProps) {
         formatDate(bill.created_at)
       ];
       return row.map(value => {
-          const strValue = String(value);
-          if (strValue.includes(',')) return `"${strValue}"`;
+          const strValue = String(value ?? '');
+          if (/[",\n\r]/.test(strValue)) {
+            return `"${strValue.replace(/"/g, '""')}"`;
+          }
           return strValue;
       }).join(',');
     });

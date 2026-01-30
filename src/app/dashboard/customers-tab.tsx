@@ -81,11 +81,10 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
         customer.total_spent || 0,
         customer.visit_count || 0
       ];
-      // Escape commas by wrapping in double quotes
       return row.map(value => {
-        const strValue = String(value);
-        if (strValue.includes(',')) {
-          return `"${strValue}"`;
+        const strValue = String(value ?? '');
+        if (/[",\n\r]/.test(strValue)) {
+          return `"${strValue.replace(/"/g, '""')}"`;
         }
         return strValue;
       }).join(',');
