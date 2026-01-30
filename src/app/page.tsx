@@ -254,19 +254,6 @@ export default function LandingPage() {
             </div>
         </div>
       </section>
-
-
-      {/* CTA Section */}
-      <section id="contact" className="py-32 px-6 lg:px-20 bg-slate-900 text-white rounded-[6rem] mx-4 lg:mx-10 my-20 relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]">
-        <div className="max-w-5xl mx-auto text-center space-y-16 relative z-10">
-          <h2 className="text-7xl lg:text-9xl font-black italic tracking-tighter leading-none">Ready to digitize your dhanda?</h2>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-            <button className="w-full md:w-auto px-16 py-8 bg-emerald-500 text-slate-900 rounded-[3rem] font-black text-3xl hover:bg-emerald-400 transition-all shadow-2xl active:scale-95 italic tracking-tighter">
-              Call Us: +91 9876543210
-            </button>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };

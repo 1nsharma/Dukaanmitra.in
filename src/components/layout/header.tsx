@@ -13,8 +13,8 @@ import { useUser, useAuth } from "@/firebase";
 const navLinks = [
   { href: "/#features", label: "Features" },
   { href: "/#pricing", label: "Pricing" },
-  { href: "/insights", label: "Insights" },
   { href: "/docs", label: "Docs" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export default function Header() {
