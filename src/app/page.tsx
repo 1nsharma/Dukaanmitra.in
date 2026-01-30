@@ -148,7 +148,7 @@ export default function LandingPage() {
       </section>
 
       {/* Munim Flow Section */}
-      <section id="flow" className="py-32 px-6 lg:px-20 bg-slate-900 text-white overflow-hidden">
+      <section id="features" className="py-32 px-6 lg:px-20 bg-slate-900 text-white overflow-hidden">
         <div className="max-w-[1600px] mx-auto space-y-24">
           <div className="text-center space-y-4">
              <h2 className="text-6xl lg:text-8xl font-black italic tracking-tighter uppercase leading-none">The Munim Flow</h2>
@@ -174,7 +174,7 @@ export default function LandingPage() {
       </section>
 
       {/* Insights Section */}
-      <section id="features" className="py-32 px-6 lg:px-20 bg-slate-50">
+      <section id="insights" className="py-32 px-6 lg:px-20 bg-slate-50">
         <div className="max-w-[1600px] mx-auto space-y-20">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 border-b border-slate-200 pb-12">
             <div className="space-y-4">

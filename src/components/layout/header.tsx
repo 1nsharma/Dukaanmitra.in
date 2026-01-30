@@ -7,17 +7,13 @@ import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { useUser, useAuth } from "@/firebase";
 
 const navLinks = [
   { href: "/#features", label: "Features" },
-  { href: "/architecture", label: "How it Works" },
-  { href: "/guide", label: "A-Z Guide" },
-  { href: "/assets", label: "Builder Archive" },
-  { href: "/build", label: "Build Guide" },
   { href: "/#pricing", label: "Pricing" },
-  { href: "/insights", label: "Insights Hub" },
+  { href: "/insights", label: "Insights" },
   { href: "/docs", label: "Docs" },
 ];
 
