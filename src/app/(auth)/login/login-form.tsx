@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
@@ -25,28 +26,39 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 
-const formSchema = z.object({
+const loginFormSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(6, "Password must be at least 6 characters."),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+const resetFormSchema = z.object({
+  email: z.string().email("Please enter a valid email address."),
+});
+
+type LoginFormValues = z.infer<typeof loginFormSchema>;
+type ResetFormValues = z.infer<typeof resetFormSchema>;
 
 export default function LoginForm() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [authAction, setAuthAction] = useState<"login" | "signup" | "reset">("login");
   const router = useRouter();
   const auth = useAuth();
   const firestore = useFirestore();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginFormSchema),
     defaultValues: { email: "", password: "" },
   });
+  
+  const resetForm = useForm<ResetFormValues>({
+    resolver: zodResolver(resetFormSchema),
+    defaultValues: { email: "" },
+  });
 
-  const onSubmit = (values: FormValues) => {
+  const onLoginSubmit = (values: LoginFormValues) => {
     startTransition(() => {
+      const isSignUp = authAction === "signup";
       const authPromise = isSignUp
         ? createUserWithEmailAndPassword(auth, values.email, values.password)
         : signInWithEmailAndPassword(auth, values.email, values.password);
@@ -91,11 +103,66 @@ export default function LoginForm() {
         });
     });
   };
+  
+  const onResetSubmit = (values: ResetFormValues) => {
+    startTransition(() => {
+      sendPasswordResetEmail(auth, values.email)
+        .then(() => {
+          toast({
+            title: "Password Reset Email Sent",
+            description: "Please check your inbox for a link to reset your password.",
+          });
+          setAuthAction("login");
+        })
+        .catch((error: any) => {
+          console.error(error);
+          toast({
+            title: "Error",
+            description: error.message || "Could not send password reset email. Please try again.",
+            variant: "destructive",
+          });
+        });
+    });
+  };
+  
+  if (authAction === "reset") {
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-center text-muted-foreground">Enter your email and we'll send you a link to reset your password.</p>
+        <Form {...resetForm}>
+          <form onSubmit={resetForm.handleSubmit(onResetSubmit)} className="space-y-4">
+            <FormField
+              control={resetForm.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="you@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "Sending..." : "Send Reset Link"}
+            </Button>
+          </form>
+        </Form>
+         <div className="text-center text-sm">
+          Remembered your password?{" "}
+          <Button variant="link" className="p-0 h-auto" onClick={() => setAuthAction("login")}>
+            Sign In
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onLoginSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="email"
@@ -123,15 +190,22 @@ export default function LoginForm() {
             )}
           />
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (isSignUp ? "Creating account..." : "Signing in...") : (isSignUp ? "Create Account" : "Sign In")}
+            {isPending ? (authAction === "signup" ? "Creating account..." : "Signing in...") : (authAction === "signup" ? "Create Account" : "Sign In")}
           </Button>
         </form>
       </Form>
-      <div className="text-center text-sm">
-        {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-        <Button variant="link" className="p-0 h-auto" onClick={() => setIsSignUp(!isSignUp)}>
-          {isSignUp ? "Sign In" : "Sign Up"}
-        </Button>
+      <div className="flex justify-between items-center text-sm">
+        <div>
+          {authAction === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
+          <Button variant="link" className="p-0 h-auto" onClick={() => setAuthAction(authAction === "login" ? "signup" : "login")}>
+            {authAction === "login" ? "Sign Up" : "Sign In"}
+          </Button>
+        </div>
+        {authAction === "login" && (
+            <Button variant="link" className="p-0 h-auto text-xs text-muted-foreground" onClick={() => setAuthAction("reset")}>
+                Forgot Password?
+            </Button>
+        )}
       </div>
     </div>
   );
