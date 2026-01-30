@@ -7,13 +7,13 @@ import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { useUser, useAuth } from "@/firebase";
 
 const navLinks = [
-  { href: "#features", label: "Features" },
-  { href: "#flow", label: "How it Works" },
-  { href: "#pricing", label: "Pricing" },
+  { href: "/#features", label: "Features" },
+  { href: "/architecture", label: "How it Works" },
+  { href: "/#pricing", label: "Pricing" },
   { href: "/insights", label: "Insights Hub" },
   { href: "/docs", label: "Docs" },
 ];
@@ -33,7 +33,27 @@ export default function Header() {
   const isLandingPage = pathname === '/';
 
   const NavLink = ({ href, label }: { href: string, label: string }) => {
-    const finalHref = !isLandingPage && href.startsWith('#') ? `/${href}` : href;
+    // For in-page links on the landing page, we want smooth scroll.
+    // For other pages, we do a standard navigation.
+    const isExternalPageLink = href.startsWith('/');
+    const finalHref = !isLandingPage && href.startsWith('/#') ? href.substring(1) : href;
+    
+    if (isLandingPage && !isExternalPageLink) {
+         return (
+            <a 
+                href={href} 
+                className="hover:text-indigo-600 transition-colors"
+                onClick={(e) => {
+                    e.preventDefault();
+                    document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+                    setMobileMenuOpen(false)
+                }}
+            >
+                {label}
+            </a>
+        );
+    }
+
     return (
         <Link 
             href={finalHref} 
@@ -97,10 +117,10 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
-              <SheetHeader className="sr-only">
-                <SheetTitle>Mobile Menu</SheetTitle>
-                <SheetDescription>Navigation links and user actions.</SheetDescription>
-              </SheetHeader>
+                <SheetHeader>
+                  <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+                  <SheetDescription className="sr-only">Navigation links and user actions.</SheetDescription>
+                </SheetHeader>
               <div className="flex flex-col gap-6 pt-8">
                 <Link
                   href="/"
