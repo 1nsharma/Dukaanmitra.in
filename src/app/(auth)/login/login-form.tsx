@@ -57,50 +57,55 @@ export default function LoginForm() {
   });
 
   const onLoginSubmit = (values: LoginFormValues) => {
-    startTransition(() => {
+    startTransition(async () => {
       const isSignUp = authAction === "signup";
-      const authPromise = isSignUp
-        ? createUserWithEmailAndPassword(auth, values.email, values.password)
-        : signInWithEmailAndPassword(auth, values.email, values.password);
+      
+      try {
+        const userCredential = await (isSignUp
+          ? createUserWithEmailAndPassword(auth, values.email, values.password)
+          : signInWithEmailAndPassword(auth, values.email, values.password));
+        
+        const user = userCredential.user;
 
-      authPromise
-        .then((userCredential) => {
-          const user = userCredential.user;
-
-          if (isSignUp) {
-            // Create user profile in Firestore for new users
+        if (isSignUp) {
+          try {
             const userProfileRef = doc(firestore, "users", user.uid);
             const profileData = {
               uid: user.uid,
               email: user.email,
               createdAt: serverTimestamp(),
             };
-            
-            setDoc(userProfileRef, profileData, { merge: true })
-              .catch(serverError => {
-                const permissionError = new FirestorePermissionError({
-                  path: userProfileRef.path,
+            await setDoc(userProfileRef, profileData, { merge: true });
+          } catch (profileError: any) {
+             const permissionError = new FirestorePermissionError({
+                  path: `users/${user.uid}`,
                   operation: 'write',
-                  requestResourceData: profileData
-                });
-                errorEmitter.emit('permission-error', permissionError);
+                  requestResourceData: {uid: user.uid, email: user.email},
+              });
+              errorEmitter.emit('permission-error', permissionError);
+              // We can still proceed, but warn the user.
+              toast({
+                  title: "Profile Creation Issue",
+                  description: "Your account was created, but we couldn't save your profile. Please contact support.",
+                  variant: "destructive"
               });
           }
+        }
 
-          toast({
-            title: "Success!",
-            description: isSignUp ? "Your account has been created." : "You have been logged in.",
-          });
-          router.push('/dashboard');
-        })
-        .catch((error: any) => {
-          console.error(error);
-          toast({
-            title: "Authentication Failed",
-            description: error.message || "An unexpected error occurred. Please try again.",
-            variant: "destructive",
-          });
+        toast({
+          title: "Success!",
+          description: isSignUp ? "Your account has been created." : "You have been logged in.",
         });
+        router.push('/dashboard');
+
+      } catch (authError: any) {
+        console.error(authError);
+        toast({
+          title: "Authentication Failed",
+          description: authError.message || "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
     });
   };
   

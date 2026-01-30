@@ -78,7 +78,9 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
 
         const userProfileRef = doc(firestore, "users", user.uid);
         const userProfileData = { shopId: shopId };
-        batch.update(userProfileRef, userProfileData);
+        // Use set with merge to create the doc if it doesn't exist or update it if it does.
+        // This is more robust than update() and fixes the permission error.
+        batch.set(userProfileRef, userProfileData, { merge: true });
 
         try {
              await batch.commit();
@@ -92,8 +94,8 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
 
         } catch(serverError) {
              const permissionError = new FirestorePermissionError({
-                 path: `batched write (shops/${shopId} and users/${user.uid})`,
-                 operation: 'write',
+                 path: newShopRef.path, // Report the path of the primary failed operation
+                 operation: 'write', // Generic operation for a batch
                  requestResourceData: {shop: shopData, userUpdate: userProfileData},
              });
              errorEmitter.emit('permission-error', permissionError);
