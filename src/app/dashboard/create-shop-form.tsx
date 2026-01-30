@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -55,8 +56,7 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
       return;
     }
 
-    startTransition(() => {
-        // 1. Create a new document reference with an auto-generated ID
+    startTransition(async () => {
         const shopCollection = collection(firestore, "shops");
         const newShopRef = doc(shopCollection);
         const shopId = newShopRef.id;
@@ -73,38 +73,29 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
             trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
         };
 
-        // 2. Create the shop document with setDoc
-        setDoc(newShopRef, shopData)
-            .catch(serverError => {
-                const permissionError = new FirestorePermissionError({
-                    path: newShopRef.path,
-                    operation: 'create',
-                    requestResourceData: shopData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-                toast({ title: "Error", description: "Could not create shop.", variant: "destructive" });
-            });
+        try {
+             await setDoc(newShopRef, shopData);
 
-        // 3. Update the user's profile with the new shopId
-        const userProfileRef = doc(firestore, "users", user.uid);
-        const userProfileData = { shopId: shopId };
-        updateDoc(userProfileRef, userProfileData)
-            .catch(serverError => {
-                const permissionError = new FirestorePermissionError({
-                    path: userProfileRef.path,
-                    operation: 'update',
-                    requestResourceData: userProfileData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-                toast({ title: "Error", description: "Could not link shop to your profile.", variant: "destructive" });
-            });
+             const userProfileRef = doc(firestore, "users", user.uid);
+             const userProfileData = { shopId: shopId };
+             await updateDoc(userProfileRef, userProfileData);
 
-        toast({
-          title: "Shop Created!",
-          description: "Your shop has been successfully created.",
-        });
+             toast({
+                 title: "Shop Created!",
+                 description: "Your shop has been successfully created.",
+             });
+     
+             onShopCreated(shopId);
 
-        onShopCreated(shopId);
+        } catch(serverError) {
+             const permissionError = new FirestorePermissionError({
+                 path: newShopRef.path,
+                 operation: 'create',
+                 requestResourceData: shopData,
+             });
+             errorEmitter.emit('permission-error', permissionError);
+             toast({ title: "Error", description: "Could not create shop.", variant: "destructive" });
+        }
     });
   };
 
