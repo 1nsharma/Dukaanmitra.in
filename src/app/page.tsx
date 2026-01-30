@@ -230,6 +230,16 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Differentiation Line */}
+      <section className="py-16 text-center bg-background">
+        <div className="container">
+          <p className="text-xl font-semibold text-muted-foreground italic max-w-3xl mx-auto">
+            “Not an app, not a software – aapka apna WhatsApp hi aapka digital munim ban jaata hai.”
+          </p>
+        </div>
+      </section>
+
+
       {/* Munim Flow Section */}
       <section id="features" className="py-24 sm:py-32 px-4">
         <div className="container mx-auto space-y-16 text-center">
@@ -280,11 +290,16 @@ export default function LandingPage() {
         <div className="container mx-auto">
             <div className="bg-secondary p-8 md:p-12 rounded-3xl text-center max-w-4xl mx-auto border border-border">
                 <blockquote className="text-2xl md:text-3xl font-bold italic text-foreground">
-                    “Digital udhaar reminders se meri recovery 2x fast ho gayi.”
+                    “Pehle 10–12 din lagte the udhaar wapas aane me, ab 4–5 din me payment aa jata hai.”
                 </blockquote>
                 <cite className="mt-6 block text-lg font-semibold text-primary not-italic">
                     – Ramesh Gupta, Kirana Owner, Delhi
                 </cite>
+            </div>
+            <div className="text-center mt-12">
+                 <Button onClick={() => router.push('/dashboard')} size="lg" className="px-8 py-6 rounded-full font-bold text-lg">
+                    Start Free Trial 🚀
+                </Button>
             </div>
         </div>
       </section>
@@ -293,7 +308,7 @@ export default function LandingPage() {
       <section className="pb-24 sm:pb-32 px-4">
           <div className="container mx-auto">
               <div className="max-w-3xl mx-auto text-center mb-16">
-                  <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Live Dashboard Preview</h2>
+                  <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Aapki Poori Dukaan, Ek Digital Nazar Me.</h2>
                   <p className="text-lg text-muted-foreground mt-4">Apni dukaan ka poora control ek hi screen par. Aisa dikhta hai aapka dashboard.</p>
               </div>
               
@@ -461,6 +476,16 @@ export default function LandingPage() {
                 </Card>
             ))}
             </div>
+        </div>
+      </section>
+
+      {/* Support Section */}
+      <section className="py-24 sm:py-32 text-center">
+        <div className="container">
+            <h2 className="text-3xl font-bold text-primary">Koi Bhi Dikkat?</h2>
+            <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">
+                Direct WhatsApp ya call par <span className="text-foreground font-bold">real insaan</span> se madad. Hum yahaan hain aapke liye.
+            </p>
         </div>
       </section>
     </div>
