@@ -7,7 +7,7 @@ import { useTransition } from "react";
 import { collection, serverTimestamp, doc, addDoc, getDocs, updateDoc, query, where } from "firebase/firestore";
 import { Bot, Loader2 } from "lucide-react";
 
-import { useFirestore, useCollection, useMemoFirebase, type WithId } from "@/firebase";
+import { useFirestore, useCollection, useMemoFirebase, type WithId, FirestorePermissionError, errorEmitter } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -82,7 +82,7 @@ export default function QuickAddBill({ shopId, onBillAdded }: QuickAddBillProps)
         // 3. Create the new bill
         const billCollection = collection(firestore, "shops", shopId, "bills");
         const newBillRef = doc(billCollection);
-        await addDoc(billCollection, {
+        const billData = {
             id: newBillRef.id,
             shop_id: shopId,
             customer_id: customerId,
@@ -93,7 +93,17 @@ export default function QuickAddBill({ shopId, onBillAdded }: QuickAddBillProps)
             items: [{ name: parsed.items, quantity: 1, price: parsed.amount }],
             created_at: serverTimestamp(),
             source: 'app-ai',
-        });
+        };
+
+        addDoc(billCollection, billData)
+          .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: billCollection.path,
+                operation: 'create',
+                requestResourceData: billData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+          });
 
         // 4. Update customer stats if a unique customer was found
         if (targetCustomer && customerId) {
@@ -104,7 +114,15 @@ export default function QuickAddBill({ shopId, onBillAdded }: QuickAddBillProps)
               last_visit: serverTimestamp(),
               updated_at: serverTimestamp(),
             };
-            await updateDoc(customerRef, updatedCustomerData);
+            updateDoc(customerRef, updatedCustomerData)
+              .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: customerRef.path,
+                    operation: 'update',
+                    requestResourceData: updatedCustomerData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+              });
         }
 
         toast({

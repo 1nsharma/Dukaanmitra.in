@@ -11,6 +11,8 @@
  * - Shop Subcollections (`/shops/{shopId}/{collection}/{docId}`): All data belonging to a
  *   shop (like customers, bills, etc.) is protected by the `isOwner` function, ensuring
  *   strict data isolation between shops.
+ * - Bills (`/shops/{shopId}/bills/{billId}`): Bills are made immutable to protect financial records.
+ *   They can be created but never updated or deleted.
  * - Contact Forms (`/contactFormSubmissions`): Publicly writable to allow anyone to send
  *   a message, but unreadable to protect PII.
  */
@@ -63,14 +65,31 @@ service cloud.firestore {
        */
       allow read, update, delete: if isOwner(shopId);
     }
+    
+    /**
+     * @description
+     * Generic rule for all subcollections under a shop EXCEPT bills.
+     * Access is granted only if the user is the owner of the parent shop.
+     */
+    match /shops/{shopId}/customers/{docId} {
+      allow read, write: if isOwner(shopId);
+    }
 
     /**
      * @description
-     * Generic rule for all subcollections under a shop (e.g., customers, bills).
-     * Access is granted only if the user is the owner of the parent shop.
+     * Protects financial records by making bills immutable.
      */
-    match /shops/{shopId}/{collection}/{docId} {
-      allow read, write: if isOwner(shopId);
+    match /shops/{shopId}/bills/{billId} {
+       /**
+       * @allow (read, create)
+       * Only the shop owner can read their bills or create new ones.
+       */
+      allow read, create: if isOwner(shopId);
+       /**
+       * @allow (update, delete)
+       * Bills are immutable and cannot be changed or deleted.
+       */
+      allow update, delete: if false;
     }
   }
 }

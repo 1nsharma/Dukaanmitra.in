@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore } from "@/firebase";
+import { useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 import type { Shop } from '@/docs/backend-types';
 
 const formSchema = z.object({
@@ -54,26 +54,33 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
   });
 
   const onSubmit = (values: FormValues) => {
-    startTransition(async () => {
-      try {
-        const shopRef = doc(firestore, "shops", shop.id);
-        await updateDoc(shopRef, {
-          ...values,
-          updated_at: serverTimestamp(),
+    startTransition(() => {
+      const shopRef = doc(firestore, "shops", shop.id);
+      const shopData = {
+        ...values,
+        updated_at: serverTimestamp(),
+      };
+      
+      updateDoc(shopRef, shopData)
+        .then(() => {
+            toast({
+              title: "Shop Updated!",
+              description: "Your shop details have been saved.",
+            });
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: shopRef.path,
+                operation: 'update',
+                requestResourceData: shopData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            toast({
+              title: "Error",
+              description: "Failed to update shop details. Please try again.",
+              variant: "destructive",
+            });
         });
-
-        toast({
-          title: "Shop Updated!",
-          description: "Your shop details have been saved.",
-        });
-      } catch (error: any) {
-        console.error("Error updating shop: ", error);
-        toast({
-          title: "Error",
-          description: "Failed to update shop details. Please try again.",
-          variant: "destructive",
-        });
-      }
     });
   };
 

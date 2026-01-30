@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore, useCollection, useMemoFirebase, type WithId } from "@/firebase";
+import { useFirestore, useCollection, useMemoFirebase, type WithId, FirestorePermissionError, errorEmitter } from "@/firebase";
 import type { Customer } from "@/docs/backend-types";
 import { Loader2 } from "lucide-react";
 
@@ -65,51 +65,63 @@ export default function AddBillForm({ shopId, onFinished }: AddBillFormProps) {
   const onSubmit = (values: FormValues) => {
     if (!customers) return;
 
-    startTransition(async () => {
-      try {
-        const customer = customers.find(c => c.id === values.customer_id);
-        if (!customer) throw new Error("Customer not found");
-
-        // 1. Create the new bill
-        const billCollection = collection(firestore, "shops", shopId, "bills");
-        const newBillRef = doc(billCollection);
-        await addDoc(billCollection, {
-            id: newBillRef.id,
-            shop_id: shopId,
-            customer_id: values.customer_id,
-            customer_name: customer.name, // Denormalized
-            amount: values.amount,
-            payment_status: values.payment_status,
-            payment_method: values.payment_method,
-            created_at: serverTimestamp(),
-            source: 'app',
-        });
-
-        // 2. Update customer statistics
-        const customerRef = doc(firestore, "shops", shopId, "customers", values.customer_id);
-        // We use the existing customer data from the hook to avoid another read
-        const updatedCustomerData = {
-          visit_count: (customer.visit_count || 0) + 1,
-          total_spent: (customer.total_spent || 0) + values.amount,
-          last_visit: serverTimestamp(),
-          updated_at: serverTimestamp(),
-        };
-        await updateDoc(customerRef, updatedCustomerData);
-
-        toast({
-          title: "Bill Added!",
-          description: `A new bill for ${customer.name} has been recorded.`,
-        });
-
-        onFinished();
-      } catch (error: any) {
-        console.error("Error adding bill: ", error);
-        toast({
-          title: "Error",
-          description: "Failed to add bill. Please try again.",
-          variant: "destructive",
-        });
+    startTransition(() => {
+      const customer = customers.find(c => c.id === values.customer_id);
+      if (!customer) {
+        toast({ title: "Error", description: "Customer not found.", variant: "destructive" });
+        return;
       }
+      
+      const billCollection = collection(firestore, "shops", shopId, "bills");
+      const newBillRef = doc(billCollection);
+      const billData = {
+          id: newBillRef.id,
+          shop_id: shopId,
+          customer_id: values.customer_id,
+          customer_name: customer.name, // Denormalized
+          amount: values.amount,
+          payment_status: values.payment_status,
+          payment_method: values.payment_method,
+          created_at: serverTimestamp(),
+          source: 'app',
+      };
+
+      addDoc(billCollection, billData)
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: billCollection.path,
+                operation: 'create',
+                requestResourceData: billData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            toast({ title: "Error", description: "Could not save bill.", variant: "destructive" });
+        });
+      
+      const customerRef = doc(firestore, "shops", shopId, "customers", values.customer_id);
+      const updatedCustomerData = {
+        visit_count: (customer.visit_count || 0) + 1,
+        total_spent: (customer.total_spent || 0) + values.amount,
+        last_visit: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      };
+      
+      updateDoc(customerRef, updatedCustomerData)
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: customerRef.path,
+                operation: 'update',
+                requestResourceData: updatedCustomerData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            toast({ title: "Error", description: "Could not update customer stats.", variant: "destructive" });
+        });
+
+      toast({
+        title: "Bill Added!",
+        description: `A new bill for ${customer.name} has been recorded.`,
+      });
+
+      onFinished();
     });
   };
 
@@ -218,5 +230,3 @@ export default function AddBillForm({ shopId, onFinished }: AddBillFormProps) {
     </Form>
   );
 }
-
-    

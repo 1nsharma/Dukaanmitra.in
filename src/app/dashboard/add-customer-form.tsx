@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore } from "@/firebase";
+import { useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -42,13 +42,11 @@ export default function AddCustomerForm({ shopId, onFinished }: AddCustomerFormP
   });
 
   const onSubmit = (values: FormValues) => {
-    startTransition(async () => {
-      try {
+    startTransition(() => {
         const customerCollection = collection(firestore, "shops", shopId, "customers");
-        
         const newCustomerRef = doc(customerCollection);
         
-        await addDoc(customerCollection, {
+        const customerData = {
             id: newCustomerRef.id,
             shop_id: shopId,
             name: values.name,
@@ -58,22 +56,29 @@ export default function AddCustomerForm({ shopId, onFinished }: AddCustomerFormP
             status: 'new',
             visit_count: 0,
             total_spent: 0,
-        });
+        };
 
-        toast({
-          title: "Customer Added!",
-          description: `${values.name} has been added to your customer list.`,
-        });
-
-        onFinished();
-      } catch (error: any) {
-        console.error("Error adding customer: ", error);
-        toast({
-          title: "Error",
-          description: "Failed to add customer. Please try again.",
-          variant: "destructive",
-        });
-      }
+        addDoc(customerCollection, customerData)
+            .then(() => {
+                toast({
+                    title: "Customer Added!",
+                    description: `${values.name} has been added to your customer list.`,
+                });
+                onFinished();
+            })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: customerCollection.path,
+                    operation: 'create',
+                    requestResourceData: customerData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                toast({
+                    title: "Error",
+                    description: "Failed to add customer. Please try again.",
+                    variant: "destructive",
+                });
+            });
     });
   };
 
@@ -115,5 +120,3 @@ export default function AddCustomerForm({ shopId, onFinished }: AddCustomerFormP
     </Form>
   );
 }
-
-    

@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore } from "@/firebase";
+import { useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -46,27 +46,34 @@ export default function ContactForm() {
   });
 
   const onSubmit = (values: FormValues) => {
-    startTransition(async () => {
-      try {
-        const submissionsCollection = collection(firestore, "contactFormSubmissions");
-        await addDoc(submissionsCollection, {
-          ...values,
-          submittedAt: serverTimestamp(),
+    startTransition(() => {
+      const submissionsCollection = collection(firestore, "contactFormSubmissions");
+      const submissionData = {
+        ...values,
+        submittedAt: serverTimestamp(),
+      };
+      
+      addDoc(submissionsCollection, submissionData)
+        .then(() => {
+            toast({
+              title: "Message Sent!",
+              description: "Your message has been sent successfully!",
+            });
+            form.reset();
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: submissionsCollection.path,
+                operation: 'create',
+                requestResourceData: submissionData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            toast({
+              title: "Error",
+              description: "Failed to send message. Please try again.",
+              variant: "destructive",
+            });
         });
-        
-        toast({
-          title: "Message Sent!",
-          description: "Your message has been sent successfully!",
-        });
-        form.reset();
-      } catch (error: any) {
-        console.error("Error submitting form: ", error);
-        toast({
-          title: "Error",
-          description: "Failed to send message. Please try again.",
-          variant: "destructive",
-        });
-      }
     });
   };
 

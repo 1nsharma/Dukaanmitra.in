@@ -10,7 +10,7 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, useFirestore } from "@/firebase";
+import { useAuth, useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 
 export default function LoginForm() {
   const { toast } = useToast();
@@ -21,41 +21,53 @@ export default function LoginForm() {
 
   const handleGoogleSignIn = () => {
     const provider = new GoogleAuthProvider();
-    startTransition(async () => {
-      try {
-        const userCredential = await signInWithPopup(auth, provider);
-        const user = userCredential.user;
+    startTransition(() => {
+      signInWithPopup(auth, provider)
+        .then(userCredential => {
+          const user = userCredential.user;
+          const userProfileRef = doc(firestore, "users", user.uid);
+          
+          const profileData = {
+            uid: user.uid,
+            displayName: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            createdAt: serverTimestamp(),
+          };
 
-        // Create user profile in Firestore if it's a new user
-        await setDoc(doc(firestore, "users", user.uid), {
-          uid: user.uid,
-          displayName: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          createdAt: serverTimestamp(),
-        }, { merge: true });
+          // Create user profile in Firestore if it's a new user
+          setDoc(userProfileRef, profileData, { merge: true })
+            .catch(serverError => {
+              const permissionError = new FirestorePermissionError({
+                path: userProfileRef.path,
+                operation: 'write',
+                requestResourceData: profileData
+              });
+              errorEmitter.emit('permission-error', permissionError);
+            });
 
-        toast({
-          title: "Success!",
-          description: "You have been logged in.",
+          toast({
+            title: "Success!",
+            description: "You have been logged in.",
+          });
+          router.push('/dashboard');
+        })
+        .catch((error: any) => {
+          console.error(error);
+          if (error.code === 'auth/popup-closed-by-user') {
+              toast({
+                  title: "Sign-in cancelled",
+                  description: "You closed the sign-in window. Please try again.",
+                  variant: "destructive",
+              });
+          } else {
+              toast({
+                  title: "Authentication Failed",
+                  description: error.message || "Failed to sign in with Google. Please try again.",
+                  variant: "destructive",
+              });
+          }
         });
-        router.push('/dashboard');
-      } catch (error: any) {
-        console.error(error);
-        if (error.code === 'auth/popup-closed-by-user') {
-            toast({
-                title: "Sign-in cancelled",
-                description: "You closed the sign-in window. Please try again.",
-                variant: "destructive",
-            });
-        } else {
-            toast({
-                title: "Authentication Failed",
-                description: error.message || "Failed to sign in with Google. Please try again.",
-                variant: "destructive",
-            });
-        }
-      }
     });
   };
 
@@ -86,5 +98,3 @@ export default function LoginForm() {
     </Button>
   );
 }
-
-    

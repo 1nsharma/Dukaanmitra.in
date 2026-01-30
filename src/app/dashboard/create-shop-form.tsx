@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore, useUser } from "@/firebase";
+import { useFirestore, useUser, FirestorePermissionError, errorEmitter } from "@/firebase";
 
 const formSchema = z.object({
   name: z.string().min(2, "Shop name must be at least 2 characters."),
@@ -55,15 +55,13 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
       return;
     }
 
-    startTransition(async () => {
-      try {
+    startTransition(() => {
         // 1. Create a new document reference with an auto-generated ID
         const shopCollection = collection(firestore, "shops");
         const newShopRef = doc(shopCollection);
         const shopId = newShopRef.id;
 
-        // 2. Create the shop document with setDoc
-        await setDoc(newShopRef, {
+        const shopData = {
             id: shopId,
             owner_id: user.uid,
             name: values.name,
@@ -73,13 +71,33 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
             plan: 'free',
             status: 'trial',
             trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
-        });
+        };
+
+        // 2. Create the shop document with setDoc
+        setDoc(newShopRef, shopData)
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: newShopRef.path,
+                    operation: 'create',
+                    requestResourceData: shopData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                toast({ title: "Error", description: "Could not create shop.", variant: "destructive" });
+            });
 
         // 3. Update the user's profile with the new shopId
         const userProfileRef = doc(firestore, "users", user.uid);
-        await updateDoc(userProfileRef, {
-          shopId: shopId,
-        });
+        const userProfileData = { shopId: shopId };
+        updateDoc(userProfileRef, userProfileData)
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: userProfileRef.path,
+                    operation: 'update',
+                    requestResourceData: userProfileData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                toast({ title: "Error", description: "Could not link shop to your profile.", variant: "destructive" });
+            });
 
         toast({
           title: "Shop Created!",
@@ -87,15 +105,6 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
         });
 
         onShopCreated(shopId);
-
-      } catch (error: any) {
-        console.error("Error creating shop: ", error);
-        toast({
-          title: "Error",
-          description: "Failed to create shop. Please try again.",
-          variant: "destructive",
-        });
-      }
     });
   };
 
