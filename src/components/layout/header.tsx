@@ -7,12 +7,13 @@ import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { useUser, useAuth } from "@/firebase";
 
 const navLinks = [
   { href: "/#features", label: "Features" },
   { href: "/#pricing", label: "Pricing" },
+  { href: "/insights", label: "Insights" },
   { href: "/docs", label: "Docs" },
   { href: "/contact", label: "Contact" },
 ];
@@ -32,8 +33,6 @@ export default function Header() {
   const isLandingPage = pathname === '/';
 
   const NavLink = ({ href, label }: { href: string, label: string }) => {
-    // For in-page links on the landing page, we want smooth scroll.
-    // For other pages, we do a standard navigation.
     const isExternalPageLink = href.startsWith('/');
     const finalHref = !isLandingPage && href.startsWith('/#') ? `/${href}` : href;
     
@@ -41,7 +40,7 @@ export default function Header() {
          return (
             <a 
                 href={href} 
-                className="hover:text-indigo-600 transition-colors"
+                className="hover:text-primary transition-colors"
                 onClick={(e) => {
                     e.preventDefault();
                     const targetId = href.substring(1);
@@ -57,7 +56,7 @@ export default function Header() {
     return (
         <Link 
             href={finalHref} 
-            className="hover:text-indigo-600 transition-colors"
+            className="hover:text-primary transition-colors"
             onClick={() => setMobileMenuOpen(false)}
         >
             {label}
@@ -66,38 +65,34 @@ export default function Header() {
   };
 
   return (
-    <header className="px-6 lg:px-20 py-8 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-xl z-[100] border-b border-slate-100 shadow-sm transition-all duration-500">
+    <header className="px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-lg z-[100] border-b border-border shadow-sm">
         <Link href="/" className="flex items-center gap-3 cursor-pointer">
-          <div className="w-10 h-10 bg-indigo-600 rounded-[1.2rem] flex items-center justify-center shadow-lg shadow-indigo-200">
-             <span className="text-white text-xl font-black italic">D</span>
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/10">
+             <span className="text-primary-foreground text-2xl font-black">D</span>
           </div>
-          <h1 className="text-3xl font-black italic tracking-tighter text-slate-900">DukaanMitra</h1>
+          <h1 className="text-2xl font-black tracking-tighter text-foreground">DukaanMitra</h1>
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex space-x-12 text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] items-center">
+        <nav className="hidden lg:flex space-x-10 text-sm font-semibold text-muted-foreground items-center">
           {navLinks.map(link => <NavLink key={link.href} {...link} />)}
         </nav>
 
-        <div className="flex items-center gap-4">
-            <div className="hidden lg:flex items-center gap-4">
+        <div className="flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-2">
                 {!isUserLoading && (
                     <>
                     {user ? (
                         <Button
                             onClick={() => router.push('/dashboard')}
-                            className="bg-slate-900 text-white px-8 py-3 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl hover:bg-indigo-600 transition-all active:scale-95 flex items-center gap-3"
                         >
                             <span>Dashboard</span>
-                            <span className="text-lg">➔</span>
                         </Button>
                     ) : (
                         <Button
-                            onClick={() => router.push('/dashboard')}
-                            className="bg-slate-900 text-white px-8 py-3 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl hover:bg-indigo-600 transition-all active:scale-95 flex items-center gap-3"
+                            onClick={() => router.push('/login')}
                         >
                             <span>Go to App</span>
-                            <span className="text-lg">➔</span>
                         </Button>
                     )}
                     </>
@@ -117,25 +112,26 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
-              <SheetHeader>
-                <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
-                <SheetDescription className="sr-only">Navigation links and user actions.</SheetDescription>
+              <SheetHeader className="border-b border-border pb-4">
+                <SheetTitle>
+                    <Link
+                    href="/"
+                    className="flex items-center gap-3"
+                    onClick={() => setMobileMenuOpen(false)}
+                    >
+                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
+                            <span className="text-primary-foreground text-2xl font-black">D</span>
+                        </div>
+                        <h1 className="text-2xl font-black tracking-tighter text-foreground">DukaanMitra</h1>
+                    </Link>
+                </SheetTitle>
+                <SheetDescription className="sr-only">Mobile Menu Navigation</SheetDescription>
               </SheetHeader>
               <div className="flex flex-col gap-6 pt-8">
-                <Link
-                  href="/"
-                  className="flex items-center gap-3"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                    <div className="w-10 h-10 bg-indigo-600 rounded-[1.2rem] flex items-center justify-center shadow-lg shadow-indigo-200">
-                        <span className="text-white text-xl font-black italic">D</span>
-                    </div>
-                    <h1 className="text-3xl font-black italic tracking-tighter text-slate-900">DukaanMitra</h1>
-                </Link>
-                <nav className="flex flex-col gap-4 mt-8 text-lg font-medium">
+                <nav className="flex flex-col gap-4 text-lg font-medium">
                   {navLinks.map((link) => <NavLink key={link.href} {...link} />)}
                 </nav>
-                <div className="mt-auto flex flex-col gap-4">
+                <div className="mt-auto flex flex-col gap-4 border-t border-border pt-6">
                     {!isUserLoading && (
                         <>
                         {user ? (
@@ -146,7 +142,7 @@ export default function Header() {
                         ) : (
                             <>
                                 <Button onClick={() => {router.push('/login'); setMobileMenuOpen(false);}} size="lg">Log In</Button>
-                                <Button onClick={() => {router.push('/login?register=true'); setMobileMenuOpen(false);}} variant="outline" size="lg">Sign Up</Button>
+                                <Button onClick={() => {router.push('/login?register=true'); setMobileMenuOpen(false);}} variant="secondary" size="lg">Sign Up</Button>
                             </>
                         )}
                         </>
