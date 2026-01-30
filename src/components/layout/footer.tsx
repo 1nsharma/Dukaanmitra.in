@@ -1,7 +1,15 @@
+"use client";
+
 import Link from 'next/link';
 import { Store, Twitter, Github, Linkedin } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname === '/') {
+    return null;
+  }
+
   return (
     <footer className="border-t">
       <div className="container flex flex-col items-center justify-between gap-6 py-10 md:h-24 md:flex-row md:py-0">

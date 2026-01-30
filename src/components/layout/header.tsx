@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Menu, Store } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -17,6 +17,11 @@ const navLinks = [
 ];
 
 export default function Header() {
+  const pathname = usePathname();
+  if (pathname === '/') {
+    return null;
+  }
+
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
