@@ -5,9 +5,16 @@ import Link from 'next/link';
 import { Twitter, Github, Linkedin } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function Footer() {
   const router = useRouter();
+  const [year, setYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
   return (
     <footer className="bg-card border-t border-border">
       <div className="container py-12 md:py-20">
@@ -52,7 +59,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-12 md:mt-16 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} DukaanMitra. Built with Next.js and ❤️ in India.</p>
+          <p>&copy; {year || new Date().getFullYear()} DukaanMitra. Built with Next.js and ❤️ in India.</p>
         </div>
       </div>
     </footer>
