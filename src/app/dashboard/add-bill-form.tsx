@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTransition, useEffect } from "react";
-import { collection, serverTimestamp, doc, addDoc, getDocs, getDoc, updateDoc, query, where, Timestamp } from "firebase/firestore";
+import { collection, serverTimestamp, doc, addDoc, getDocs, getDoc, updateDoc, query, where, Timestamp, writeBatch } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -65,7 +66,7 @@ export default function AddBillForm({ shopId, onFinished }: AddBillFormProps) {
   const onSubmit = (values: FormValues) => {
     if (!customers) return;
 
-    startTransition(() => {
+    startTransition(async () => {
       const customer = customers.find(c => c.id === values.customer_id);
       if (!customer) {
         toast({ title: "Error", description: "Customer not found.", variant: "destructive" });
@@ -74,6 +75,8 @@ export default function AddBillForm({ shopId, onFinished }: AddBillFormProps) {
       
       const billCollection = collection(firestore, "shops", shopId, "bills");
       const newBillRef = doc(billCollection);
+      const customerRef = doc(firestore, "shops", shopId, "customers", values.customer_id);
+      
       const billData = {
           id: newBillRef.id,
           shop_id: shopId,
@@ -85,43 +88,37 @@ export default function AddBillForm({ shopId, onFinished }: AddBillFormProps) {
           created_at: serverTimestamp(),
           source: 'app',
       };
-
-      addDoc(billCollection, billData)
-        .catch(serverError => {
-            const permissionError = new FirestorePermissionError({
-                path: billCollection.path,
-                operation: 'create',
-                requestResourceData: billData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            toast({ title: "Error", description: "Could not save bill.", variant: "destructive" });
-        });
       
-      const customerRef = doc(firestore, "shops", shopId, "customers", values.customer_id);
       const updatedCustomerData = {
         visit_count: (customer.visit_count || 0) + 1,
         total_spent: (customer.total_spent || 0) + values.amount,
         last_visit: serverTimestamp(),
         updated_at: serverTimestamp(),
       };
-      
-      updateDoc(customerRef, updatedCustomerData)
-        .catch(serverError => {
-            const permissionError = new FirestorePermissionError({
-                path: customerRef.path,
-                operation: 'update',
-                requestResourceData: updatedCustomerData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            toast({ title: "Error", description: "Could not update customer stats.", variant: "destructive" });
+
+      try {
+        const batch = writeBatch(firestore);
+        
+        batch.set(newBillRef, billData);
+        batch.update(customerRef, updatedCustomerData);
+
+        await batch.commit();
+
+        toast({
+            title: "Bill Added!",
+            description: `A new bill for ${customer.name} has been recorded.`,
         });
+        onFinished();
 
-      toast({
-        title: "Bill Added!",
-        description: `A new bill for ${customer.name} has been recorded.`,
-      });
-
-      onFinished();
+      } catch (serverError) {
+        const permissionError = new FirestorePermissionError({
+            path: `shops/${shopId}/bills (batched write)`,
+            operation: 'write',
+            requestResourceData: { bill: billData, customerUpdate: updatedCustomerData },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        toast({ title: "Error", description: "Could not save bill and update customer stats.", variant: "destructive" });
+      }
     });
   };
 

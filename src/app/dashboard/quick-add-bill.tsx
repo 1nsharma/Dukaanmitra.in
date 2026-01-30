@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
-import { collection, serverTimestamp, doc, addDoc, getDocs, updateDoc, query, where } from "firebase/firestore";
+import { collection, serverTimestamp, doc, addDoc, getDocs, updateDoc, query, where, writeBatch } from "firebase/firestore";
 import { Bot, Loader2 } from "lucide-react";
 
 import { useFirestore, useCollection, useMemoFirebase, type WithId, FirestorePermissionError, errorEmitter } from "@/firebase";
@@ -79,9 +80,11 @@ export default function QuickAddBill({ shopId, onBillAdded }: QuickAddBillProps)
             }
         }
         
-        // 3. Create the new bill
+        // 3. Create a batch for atomic write
+        const batch = writeBatch(firestore);
         const billCollection = collection(firestore, "shops", shopId, "bills");
         const newBillRef = doc(billCollection);
+        
         const billData = {
             id: newBillRef.id,
             shop_id: shopId,
@@ -95,15 +98,7 @@ export default function QuickAddBill({ shopId, onBillAdded }: QuickAddBillProps)
             source: 'app-ai',
         };
 
-        addDoc(billCollection, billData)
-          .catch(serverError => {
-            const permissionError = new FirestorePermissionError({
-                path: billCollection.path,
-                operation: 'create',
-                requestResourceData: billData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-          });
+        batch.set(newBillRef, billData);
 
         // 4. Update customer stats if a unique customer was found
         if (targetCustomer && customerId) {
@@ -114,16 +109,11 @@ export default function QuickAddBill({ shopId, onBillAdded }: QuickAddBillProps)
               last_visit: serverTimestamp(),
               updated_at: serverTimestamp(),
             };
-            updateDoc(customerRef, updatedCustomerData)
-              .catch(serverError => {
-                const permissionError = new FirestorePermissionError({
-                    path: customerRef.path,
-                    operation: 'update',
-                    requestResourceData: updatedCustomerData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-              });
+            batch.update(customerRef, updatedCustomerData);
         }
+
+        // 5. Commit the batch
+        await batch.commit();
 
         toast({
           title: "AI Bill Added!",
@@ -135,6 +125,15 @@ export default function QuickAddBill({ shopId, onBillAdded }: QuickAddBillProps)
 
       } catch (error: any) {
         console.error("Error with AI bill add: ", error);
+        // Check if it's likely a Firestore error before emitting
+        if (error.code) {
+             const permissionError = new FirestorePermissionError({
+                path: `shops/${shopId}/bills (batched AI write)`,
+                operation: 'write',
+                requestResourceData: { query: values.query }
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        }
         toast({
           title: "Error",
           description: error.message || "Failed to add bill with AI. Please try again.",
