@@ -4,7 +4,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import anime from 'animejs';
-import { Check, Bot, IndianRupee, BarChart, FileText, Smartphone } from 'lucide-react';
+import { Check, Bot, IndianRupee, BarChart, FileText, Smartphone, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -140,7 +140,7 @@ export default function LandingPage() {
             </div>
 
             <div className="relative h-[500px] hidden lg:block" ref={mockupRef}>
-                <AppWindow title="DukaanMitra AI" icon={<Smartphone size={14}/>} className="app-window absolute w-[320px] top-0 left-1/2 -translate-x-1/2 z-10 transform-gpu" headerClass="bg-primary/10">
+                <AppWindow title="WhatsApp" icon={<MessageCircle size={14}/>} className="app-window absolute w-[320px] top-0 left-1/2 -translate-x-1/2 z-10 transform-gpu" headerClass="bg-green-400/10">
                    <div className="space-y-3">
                       <div className="bg-muted p-3 rounded-lg rounded-bl-none text-sm self-start max-w-[85%] shadow-md">
                         Namaste Bhaiya! Aaj ka hisaab likhein? 🏠
