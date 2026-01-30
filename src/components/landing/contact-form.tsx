@@ -19,12 +19,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { useFirestore } from "@/firebase";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Please enter a valid email address."),
-  subject: z.string(),
+  subject: z.string().min(5, "Subject must be at least 5 characters."),
   message: z.string().min(10, "Message must be at least 10 characters.").max(500, "Message must be less than 500 characters."),
 });
 
@@ -40,40 +40,44 @@ export default function ContactForm() {
     defaultValues: {
       name: "",
       email: "",
-      subject: "Contact Form Submission",
+      subject: "",
       message: "",
     },
   });
 
   const onSubmit = (values: FormValues) => {
-    startTransition(() => {
-      const submissionsCollection = collection(firestore, "contactFormSubmissions");
-      const submissionData = {
-        ...values,
-        submittedAt: serverTimestamp(),
-      };
-      
-      addDoc(submissionsCollection, submissionData)
-        .then(() => {
-            toast({
-              title: "Message Sent!",
-              description: "Your message has been sent successfully!",
-            });
-            form.reset();
-        })
-        .catch(serverError => {
-            const permissionError = new FirestorePermissionError({
-                path: submissionsCollection.path,
-                operation: 'create',
-                requestResourceData: submissionData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            toast({
-              title: "Error",
-              description: "Failed to send message. Please try again.",
-              variant: "destructive",
-            });
+    startTransition(async () => {
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(values),
         });
+
+        if (!response.ok) {
+          throw new Error('An error occurred while sending the message.');
+        }
+
+        // Email sent successfully, now save to Firestore for records
+        const submissionsCollection = collection(firestore, "contactFormSubmissions");
+        const submissionData = { ...values, submittedAt: serverTimestamp() };
+        addDoc(submissionsCollection, submissionData).catch(error => {
+          console.error("Failed to save contact submission to Firestore:", error);
+          // Don't bother user if this part fails, email is the priority
+        });
+
+        toast({
+          title: "Message Sent!",
+          description: "We've received your message and will be in touch shortly.",
+        });
+        form.reset();
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to send your message. Please try again later.",
+          variant: "destructive",
+        });
+      }
     });
   };
 
@@ -106,6 +110,19 @@ export default function ContactForm() {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input placeholder="your.email@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="subject"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Subject</FormLabel>
+                  <FormControl>
+                    <Input placeholder="What is your message about?" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
