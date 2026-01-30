@@ -4,7 +4,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import anime from 'animejs';
-import { Check, Bot, IndianRupee, BarChart, FileText, Smartphone, MessageCircle } from 'lucide-react';
+import { Check, Bot, IndianRupee, BarChart, FileText, Smartphone, MessageCircle, ShieldCheck, TrendingUp, FileClock, Send, Store, Users, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -103,6 +103,31 @@ export default function LandingPage() {
     { title: "Smart Reports & Alerts", desc: 'Customer ko instant raseed aur aapko EOD sales report, sab WhatsApp par.', icon: <BarChart size={40} /> },
   ];
 
+  const digitalKhataBenefits = [
+      { title: "Udhaar bhoolne ka risk khatam", icon: <ShieldCheck className="text-green-400" /> },
+      { title: "Automatic WhatsApp reminders se fast payment recovery", icon: <Send className="text-blue-400" /> },
+      { title: "Galle ka hisaab easy, har din ka auto closing report", icon: <FileClock className="text-yellow-400" /> },
+      { title: "Customer ke saath relationship strong", icon: <TrendingUp className="text-purple-400" /> },
+  ];
+
+  const setupSteps = [
+      {
+        title: "WhatsApp Connect Karo",
+        description: "Apna business WhatsApp number scan karke connect karein.",
+        icon: <MessageCircle size={32} />
+      },
+      {
+        title: "Shop Details Add Karo",
+        description: "Apni dukaan ka naam aur address set karein.",
+        icon: <Store size={32} />
+      },
+      {
+        title: "Pehla Message Bhejo",
+        description: "Pehli entry karke dekhein: 'Ravi 100 udhaar'. Ho gaya shuru!",
+        icon: <Send size={32} />
+      }
+  ];
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-headline">
 
@@ -122,14 +147,17 @@ export default function LandingPage() {
               <p className="hero-text text-lg md:text-xl text-muted-foreground max-w-xl font-medium">
                 Transform your Kirana shop with India's first AI-powered WhatsApp Munim. No app downloads. Just message "Rahul 500" and you're done.
               </p>
-              <div className="hero-text flex flex-col sm:flex-row gap-4">
-                <Button
-                  onClick={() => router.push('/dashboard')}
-                  className="px-8 py-6 rounded-full font-bold text-lg shadow-[0_15px_40px_-15px_rgba(234,255,150,0.2)] hover:scale-105 transition-transform active:scale-[0.98] tracking-tight"
-                  size="lg"
-                >
-                  Start Free Trial 🚀
-                </Button>
+              <div className="hero-text flex flex-col sm:flex-row gap-4 items-center">
+                <div className="flex flex-col gap-2">
+                    <Button
+                    onClick={() => router.push('/dashboard')}
+                    className="px-8 py-6 rounded-full font-bold text-lg shadow-[0_15px_40px_-15px_rgba(234,255,150,0.2)] hover:scale-105 transition-transform active:scale-[0.98] tracking-tight"
+                    size="lg"
+                    >
+                    Start Free Trial 🚀
+                    </Button>
+                    <p className="text-xs text-center text-muted-foreground">Agar 14 din me value na mile to cancel, no questions asked.</p>
+                </div>
                 <Button 
                   variant="secondary"
                   size="lg"
@@ -205,8 +233,104 @@ export default function LandingPage() {
         </div>
       </section>
 
+       {/* Digital Khata Benefits Section */}
+      <section className="py-24 sm:py-32 px-4">
+        <div className="container mx-auto text-center">
+          <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Digital Khata Ke Fayde</h2>
+          <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">Manual hisaab ki tension chodo aur business badhao.</p>
+          <div className="mt-16 max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-8 text-left">
+            {digitalKhataBenefits.map((benefit, i) => (
+              <div key={i} className="flex items-start gap-4">
+                <div className="w-12 h-12 flex-shrink-0 rounded-lg bg-secondary flex items-center justify-center">{benefit.icon}</div>
+                <div>
+                  <h3 className="text-lg font-bold">{benefit.title}</h3>
+                </div>
+              </div>
+            ))}
+          </div>
+           <div className="mt-16">
+              <Button onClick={() => router.push('/dashboard')} size="lg" className="px-8 py-6 rounded-full font-bold text-lg">Connect Your WhatsApp</Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Dashboard Preview Section */}
+      <section className="py-24 sm:py-32 px-4 bg-card border-y border-border">
+          <div className="container mx-auto">
+              <div className="max-w-3xl mx-auto text-center mb-16">
+                  <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Live Dashboard Preview</h2>
+                  <p className="text-lg text-muted-foreground mt-4">Apni dukaan ka poora control ek hi screen par. Aisa dikhta hai aapka dashboard.</p>
+              </div>
+              <div className="bg-background/50 border-2 border-border p-4 sm:p-8 rounded-3xl shadow-2xl max-w-5xl mx-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {/* Metric Cards */}
+                      <Card className="lg:col-span-1">
+                          <CardHeader className="pb-2">
+                              <CardDescription>Today's Revenue</CardDescription>
+                              <CardTitle className="text-3xl text-primary flex items-center"><IndianRupee size={24} className="mr-1"/>12,500</CardTitle>
+                          </CardHeader>
+                      </Card>
+                      <Card className="lg:col-span-1">
+                          <CardHeader className="pb-2">
+                              <CardDescription>Total Udhaar</CardDescription>
+                              <CardTitle className="text-3xl flex items-center"><IndianRupee size={24} className="mr-1"/>84,350</CardTitle>
+                          </CardHeader>
+                      </Card>
+                      <Card className="lg:col-span-2">
+                           <CardHeader className="pb-2">
+                              <CardDescription className="flex items-center gap-2"><AlertTriangle className="text-yellow-400" /> Low Stock Alerts</CardDescription>
+                              <CardTitle className="text-2xl">Parle-G, Amul Milk (1L)</CardTitle>
+                          </CardHeader>
+                      </Card>
+
+                      {/* Customer List Card */}
+                      <Card className="md:col-span-2 lg:col-span-4">
+                          <CardHeader>
+                              <CardTitle>Top 5 Customers by Credit</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                              <ul className="space-y-3">
+                                  {["Ravi Sharma", "Sunita Devi", "Pappu General Store", "Anjali Mehra", "Vikas Kumar"].map((name, i) => (
+                                      <li key={i} className="flex justify-between items-center bg-secondary p-3 rounded-lg">
+                                          <div className="flex items-center gap-3">
+                                              <Users size={16} className="text-muted-foreground"/>
+                                              <span className="font-medium">{name}</span>
+                                          </div>
+                                          <span className="font-mono font-bold text-red-400">₹{ (12500 - i * 1800).toLocaleString('en-IN') }</span>
+                                      </li>
+                                  ))}
+                              </ul>
+                          </CardContent>
+                      </Card>
+                  </div>
+              </div>
+          </div>
+      </section>
+
+      {/* Setup Section */}
+      <section className="py-24 sm:py-32 px-4">
+        <div className="container mx-auto text-center">
+            <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Setup in 10 Minutes</h2>
+            <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">System complicated nahi, bahot simple hai. Bas 3 aasaan steps.</p>
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center max-w-5xl mx-auto">
+                {setupSteps.map((step, index) => (
+                    <div key={index} className="flex flex-col items-center p-6 bg-card border border-border rounded-2xl">
+                        <div className="w-16 h-16 bg-primary/10 text-primary flex items-center justify-center rounded-full mb-4 ring-8 ring-primary/5">
+                            {step.icon}
+                        </div>
+                        <h3 className="text-xl font-bold mb-2">{index + 1}. {step.title}</h3>
+                        <p className="text-muted-foreground">{step.description}</p>
+                    </div>
+                ))}
+            </div>
+             <div className="mt-16">
+                <Button onClick={() => router.push('/dashboard')} size="lg" className="px-8 py-6 rounded-full font-bold text-lg">Start Your 10-Minute Setup</Button>
+            </div>
+        </div>
+      </section>
+      
       {/* Insights Section */}
-      <section id="insights" className="py-24 sm:py-32 px-4">
+      <section id="insights" className="py-24 sm:py-32 px-4 bg-card border-y border-border">
         <div className="container mx-auto space-y-16">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-border pb-8">
             <div className="max-w-2xl">
@@ -230,7 +354,7 @@ export default function LandingPage() {
               { title: "Managing Winter Stocks in Northern India", tag: "Inventory", excerpt: "Strategic stock management for Tier-2 cities during the coldest months." },
               { title: "Building Trust with Digital Udhaar Reminders", tag: "Retention", excerpt: "Data shows 40% faster recovery when reminders are sent via WhatsApp." }
             ].map((b, i) => (
-              <Card key={i} className="bg-card rounded-3xl shadow-lg border border-border hover:border-primary/50 hover:scale-105 transition-transform duration-300 group flex flex-col">
+              <Card key={i} className="bg-background/50 rounded-3xl shadow-lg border border-border hover:border-primary/50 hover:scale-105 transition-transform duration-300 group flex flex-col">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors">{b.title}</CardTitle>
                   <span className="text-sm font-semibold text-muted-foreground group-hover:text-primary/80 transition-colors pt-1">{b.tag}</span>
@@ -254,7 +378,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 sm:py-32 bg-card border-t border-border">
+      <section id="pricing" className="py-24 sm:py-32">
         <div className="container">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Pricing</h2>
@@ -265,7 +389,7 @@ export default function LandingPage() {
                 <Card
                   key={plan.title}
                   className={cn(
-                    'flex flex-col rounded-3xl bg-background/50 border-2 border-border transition-all duration-300 hover:scale-[1.03] hover:border-primary', 
+                    'flex flex-col rounded-3xl bg-card border-2 border-border transition-all duration-300 hover:scale-[1.03] hover:border-primary', 
                     plan.isRecommended && 'border-primary ring-4 ring-primary/20 shadow-2xl shadow-primary/10'
                   )}
                 >
