@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getMockBlogData } from '@/lib/blog-data';
 
 export default function BlogPostPage() {
   const firestore = useFirestore();
@@ -27,6 +28,8 @@ export default function BlogPostPage() {
   const [commentName, setCommentName] = useState('');
   const [commentMessage, setCommentMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { mockPost, mockComment } = getMockBlogData();
 
   const postQuery = useMemoFirebase(() => {
     if (!slug) return null;
@@ -46,7 +49,7 @@ export default function BlogPostPage() {
     if (postData && postData.length > 0) {
       const currentPost = postData[0];
       setPost(currentPost);
-      if (!viewCounted) {
+      if (!viewCounted && !currentPost.id.startsWith('mock-')) {
         const postRef = doc(firestore, 'posts', currentPost.id);
         updateDoc(postRef, {
           views: increment(1),
@@ -54,11 +57,17 @@ export default function BlogPostPage() {
           .then(() => setViewCounted(true))
           .catch(err => console.error('Failed to increment view count', err));
       }
+    } else if (!isPostLoading && slug === mockPost.slug) {
+        setPost(mockPost);
     }
-  }, [postData, firestore, viewCounted]);
+  }, [postData, isPostLoading, firestore, viewCounted, slug, mockPost]);
 
   const handleLike = () => {
     if (!post) return;
+    if (post.id.startsWith('mock-')) {
+        toast({ title: 'Liked!', description: 'Your feedback is valuable.' });
+        return;
+    }
     const postRef = doc(firestore, 'posts', post.id);
     updateDoc(postRef, {
       likes: increment(1),
@@ -104,6 +113,15 @@ export default function BlogPostPage() {
     const d = date.toDate ? date.toDate() : new Date(date);
     return format(d, 'MMMM d, yyyy');
   };
+  
+  const allComments = useMemo(() => {
+    const realComments = comments || [];
+    if (slug === mockPost.slug && realComments.length === 0) {
+        return [mockComment];
+    }
+    return realComments;
+  }, [comments, slug, mockPost.slug, mockComment]);
+
 
   if (isPostLoading) {
     return (
@@ -161,8 +179,8 @@ export default function BlogPostPage() {
         <h2 className="font-headline text-3xl font-bold mb-8">Comments</h2>
         <div className="space-y-8 mb-12">
           {areCommentsLoading && <Loader2 className="w-6 h-6 animate-spin" />}
-          {!areCommentsLoading && comments && comments.length > 0 ? (
-            comments.map(comment => (
+          {!areCommentsLoading && allComments && allComments.length > 0 ? (
+            allComments.map(comment => (
               <div key={comment.id} className="flex items-start gap-4">
                 <div className="bg-muted rounded-full p-3">
                   <User className="w-5 h-5" />

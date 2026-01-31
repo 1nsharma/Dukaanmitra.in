@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { getMockBlogData } from '@/lib/blog-data';
 
 export default function BlogPage() {
   const firestore = useFirestore();
@@ -25,19 +26,36 @@ export default function BlogPage() {
 
   const { data: posts, isLoading, error } = useCollection<Post>(postsQuery);
 
+  const { mockPost } = getMockBlogData();
+
+  const allPosts = useMemo(() => {
+    if (posts && posts.length > 0) {
+      return posts;
+    }
+    if (!isLoading && posts?.length === 0) {
+      return [mockPost];
+    }
+    return [];
+  }, [posts, isLoading, mockPost]);
+
+
   const categories = useMemo(() => {
-    if (!posts) return [];
-    const allCategories = posts.map(p => p.category);
+    if (!allPosts) return [];
+    const allCategories = allPosts.map(p => p.category);
     return ['All', ...Array.from(new Set(allCategories))];
-  }, [posts]);
+  }, [allPosts]);
 
   const filteredPosts = useMemo(() => {
-    if (!posts) return [];
-    if (!selectedCategory || selectedCategory === 'All') return posts;
-    return posts.filter(p => p.category === selectedCategory);
-  }, [posts, selectedCategory]);
+    if (!allPosts) return [];
+    if (!selectedCategory || selectedCategory === 'All') return allPosts;
+    return allPosts.filter(p => p.category === selectedCategory);
+  }, [allPosts, selectedCategory]);
 
   const handleLike = (postId: string) => {
+    if (postId.startsWith('mock-')) {
+        toast({ title: 'Liked!', description: 'Your feedback is valuable.'});
+        return;
+    }
     const postRef = doc(firestore, 'posts', postId);
     updateDoc(postRef, {
       likes: increment(1),
@@ -91,7 +109,7 @@ export default function BlogPage() {
         </div>
       )}
 
-      {!isLoading && filteredPosts && (
+      {!isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredPosts.length === 0 ? (
             <p className="col-span-full text-center text-muted-foreground mt-12">
