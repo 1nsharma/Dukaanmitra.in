@@ -384,6 +384,37 @@
         "shop_id",
         "amount"
       ]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "Represents a blog post.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "category": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "author": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "views": { "type": "number" },
+        "likes": { "type": "number" }
+      },
+      "required": ["id", "title", "slug", "category", "excerpt", "content", "author", "createdAt"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "Represents a comment on a blog post.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "postSlug": { "type": "string" },
+        "name": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "postSlug", "name", "message", "createdAt"]
     }
   },
   "auth": {
@@ -481,9 +512,26 @@
             }
           ]
         }
+      },
+      {
+        "path": "/posts/{postId}",
+        "definition": {
+          "entityName": "Post",
+          "schema": { "$ref": "#/backend/entities/Post" },
+          "description": "Stores blog posts.",
+          "params": [{ "name": "postId", "description": "Unique ID for the post." }]
+        }
+      },
+      {
+        "path": "/comments/{commentId}",
+        "definition": {
+          "entityName": "Comment",
+          "schema": { "$ref": "#/backend/entities/Comment" },
+          "description": "Stores comments for blog posts. Queried by postSlug.",
+          "params": [{ "name": "commentId", "description": "Unique ID for the comment." }]
+        }
       }
     ],
-    "reasoning": "This Firestore structure organizes data by shop, allowing for secure, scalable multi-tenancy. Each shop's data (customers, bills) is nested under its own document. Security rules ensure that a user can only access data related to the shop they own."
+    "reasoning": "This Firestore structure organizes data by shop, allowing for secure, scalable multi-tenancy. Each shop's data (customers, bills) is nested under its own document. Security rules ensure that a user can only access data related to the shop they own. Blog posts and comments are stored in root collections for public access."
   }
 }
-    

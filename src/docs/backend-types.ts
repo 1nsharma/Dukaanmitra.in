@@ -93,3 +93,24 @@ export type Bill = {
   created_at?: any;
   created_by?: string;
 };
+
+export type Post = {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  createdAt: any;
+  views?: number;
+  likes?: number;
+};
+
+export type Comment = {
+  id: string;
+  postSlug: string;
+  name: string;
+  message: string;
+  createdAt: any;
+};
