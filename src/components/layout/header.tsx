@@ -11,9 +11,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTr
 import { useUser, useAuth } from "@/firebase";
 
 const navLinks = [
-  { href: "/#features", label: "Features" },
-  { href: "/#pricing", label: "Pricing" },
-  { href: "/insights", label: "Insights" },
+  { href: "/features", label: "Features" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/blog", label: "Blog" },
   { href: "/docs", label: "Docs" },
   { href: "/contact", label: "Contact" },
@@ -31,32 +30,10 @@ export default function Header() {
     router.push('/');
   };
 
-  const isLandingPage = pathname === '/';
-
   const NavLink = ({ href, label }: { href: string, label: string }) => {
-    const isExternalPageLink = href.startsWith('/');
-    const finalHref = !isLandingPage && href.startsWith('/#') ? `/${href}` : href;
-    
-    if (isLandingPage && href.startsWith('/#')) {
-         return (
-            <a 
-                href={href} 
-                className="hover:text-primary transition-colors"
-                onClick={(e) => {
-                    e.preventDefault();
-                    const targetId = href.substring(1);
-                    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
-                    setMobileMenuOpen(false)
-                }}
-            >
-                {label}
-            </a>
-        );
-    }
-
     return (
         <Link 
-            href={finalHref} 
+            href={href} 
             className="hover:text-primary transition-colors"
             onClick={() => setMobileMenuOpen(false)}
         >

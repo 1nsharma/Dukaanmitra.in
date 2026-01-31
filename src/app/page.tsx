@@ -10,45 +10,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-const plans = [
-  {
-    title: 'Free Trial',
-    price: '₹0',
-    period: '/ 14 days',
-    description: 'Get a feel for our platform.',
-    features: ['Basic WhatsApp Integration', '1 Admin User', 'Basic Analytics'],
-    isRecommended: false,
-    cta: 'Start Trial',
-  },
-  {
-    title: 'Basic',
-    price: '₹1999',
-    period: '/ month',
-    description: 'Perfect for small stores just getting started.',
-    features: ['Full WhatsApp Integration', 'Mobile App Access', '2 Admin Users', 'Standard Analytics'],
-    isRecommended: false,
-    cta: 'Choose Basic',
-  },
-  {
-    title: 'Pro',
-    price: '₹4999',
-    period: '/ month',
-    description: 'For growing businesses that need more power.',
-    features: ['All Basic features', 'AI-Powered Tools', '5 Admin Users', 'Advanced Analytics & Reports'],
-    isRecommended: true,
-    cta: 'Choose Pro',
-  },
-  {
-    title: 'Enterprise',
-    price: 'Custom',
-    period: '',
-    description: 'Tailored solutions for large-scale operations.',
-    features: ['All Pro features', 'Dedicated API Access', 'Unlimited Users', 'Dedicated Support'],
-    isRecommended: false,
-    cta: 'Contact Us',
-  },
-];
-
 const AppWindow = ({ title, icon, children, className, headerClass }: { title: string, icon: React.ReactNode, children: React.ReactNode, className?: string, headerClass?: string }) => (
   <div className={cn("bg-card border border-border rounded-xl shadow-2xl shadow-black/30", className)}>
     <div className={cn("px-4 py-2 border-b border-border flex items-center gap-2", headerClass)}>
@@ -97,7 +58,7 @@ export default function LandingPage() {
   }, []);
 
   const dukaanFlow = [
-    { title: "WhatsApp se Entry", desc: 'Sirf WhatsApp par message likho: "Ravi 200 ka tel". Koi app, koi form nahi.', icon: <MessageCircle size={40} /> },
+    { title: "WhatsApp Se Entry", desc: 'Sirf WhatsApp par message likho: "Ravi 200 ka tel". Koi app, koi form nahi.', icon: <MessageCircle size={40} /> },
     { title: "AI Munim Ka Jaadu", desc: 'Hamara AI turant samajh jaata hai - customer ka naam, rakam, aur samaan.', icon: <Bot size={40} /> },
     { title: "Automatic Hisaab", desc: 'Aapka digital ledger (khata) apne aap update ho jaata hai. No tension.', icon: <FileText size={40} /> },
     { title: "Smart Reports & Alerts", desc: 'Customer ko instant raseed aur aapko EOD sales report, sab WhatsApp par.', icon: <BarChart size={40} /> },
@@ -135,6 +96,12 @@ export default function LandingPage() {
     "Secure & auto-backed up data"
   ];
 
+  const pricingPreviewPlans = [
+    { title: 'Free Trial', price: '₹0', features: ['14 Days Full Access', 'Basic WhatsApp Tools', 'Daily Reports'] },
+    { title: 'Pro', price: '₹4999', features: ['Everything in Basic', 'AI-Powered Tools', 'Advanced Analytics'] },
+    { title: 'Enterprise', price: 'Custom', features: ['Dedicated API Access', 'Unlimited Users', 'Priority Support'] },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-headline">
 
@@ -152,7 +119,7 @@ export default function LandingPage() {
                 <span className="text-primary">WhatsApp</span> Chalao!
               </h1>
               <p className="hero-text text-lg md:text-xl text-muted-foreground max-w-xl font-medium">
-                Transform your Kirana shop with India's first AI-powered WhatsApp Munim. No app downloads. Just message "Rahul 500" and you're done.
+                Transform your Kirana shop with India's first AI-powered WhatsApp Munim. No app downloads. Just message "Rahul 500 udhaar chini" and you're done.
               </p>
               <div className="hero-text flex flex-col sm:flex-row gap-4 items-center">
                 <div className="flex flex-col gap-2">
@@ -385,97 +352,35 @@ export default function LandingPage() {
             </div>
         </div>
       </section>
-      
-      {/* Insights Section */}
-      <section id="insights" className="py-24 sm:py-32 px-4">
-        <div className="container mx-auto space-y-16">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-border pb-8">
-            <div className="max-w-2xl">
-               <div className="inline-flex items-center bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-bold mb-4">
-                  Retail Intelligence
-               </div>
-               <h2 className="text-5xl md:text-6xl font-black tracking-tighter uppercase">The Bharat Retail Feed</h2>
-            </div>
-            <Button 
-              onClick={() => router.push('/insights')}
-              variant="link"
-              className="text-primary font-bold text-lg uppercase tracking-tight p-0 h-auto"
-            >
-              Explore Daily Insights →
-            </Button>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              { title: "UPI Lite: The Game Changer for Small Kiranas", tag: "Tech", excerpt: "How low-latency payments are reducing queue times in Delhi's busy markets." },
-              { title: "Managing Winter Stocks in Northern India", tag: "Inventory", excerpt: "Strategic stock management for Tier-2 cities during the coldest months." },
-              { title: "Building Trust with Digital Udhaar Reminders", tag: "Retention", excerpt: "Data shows 40% faster recovery when reminders are sent via WhatsApp." }
-            ].map((b, i) => (
-              <Card key={i} className="bg-card/80 rounded-3xl shadow-lg border border-border hover:border-primary/50 hover:scale-105 transition-transform duration-300 group flex flex-col">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors">{b.title}</CardTitle>
-                  <span className="text-sm font-semibold text-muted-foreground group-hover:text-primary/80 transition-colors pt-1">{b.tag}</span>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <p className="text-muted-foreground leading-relaxed">{b.excerpt}</p>
-                </CardContent>
-                <CardFooter>
-                   <Button 
-                      onClick={() => router.push('/insights')}
-                      variant="link"
-                      className="text-sm font-bold uppercase tracking-wider text-foreground p-0 h-auto group-hover:text-primary transition-colors"
-                   >
-                     Read Analysis
-                   </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-24 sm:py-32 bg-card border-y border-border">
-        <div className="container">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Pricing</h2>
-              <p className="text-lg text-muted-foreground mt-4">Simple, transparent plans for every Kirana store.</p>
+      {/* Pricing Preview Section */}
+      <section id="pricing" className="py-24 sm:py-32">
+        <div className="container text-center">
+            <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Simple, Transparent Pricing</h2>
+            <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">Plans for every Kirana store, big or small. Get started for free.</p>
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                {pricingPreviewPlans.map((plan) => (
+                    <Card key={plan.title} className="flex flex-col text-center bg-card/50">
+                        <CardHeader>
+                            <CardTitle className="text-2xl font-bold">{plan.title}</CardTitle>
+                            <CardDescription className="text-4xl font-black tracking-tighter">{plan.price}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-1">
+                            <ul className="space-y-2 text-muted-foreground">
+                                {plan.features.map((feature, i) => (
+                                    <li key={i} className="flex items-center gap-2 justify-center">
+                                        <Check className="w-4 h-4 text-green-400" />
+                                        <span>{feature}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {plans.map((plan) => (
-                <Card
-                  key={plan.title}
-                  className={cn(
-                    'flex flex-col rounded-3xl bg-secondary/50 border-2 border-border transition-all duration-300 hover:scale-[1.03] hover:border-primary', 
-                    plan.isRecommended && 'border-primary ring-4 ring-primary/20 shadow-2xl shadow-primary/10'
-                  )}
-                >
-                  <CardHeader className="items-center text-center">
-                      <CardTitle className="text-2xl font-bold uppercase tracking-tight">{plan.title}</CardTitle>
-                      <div className="flex items-baseline">
-                      <span className="text-5xl font-black tracking-tighter">{plan.price}</span>
-                      {plan.period && <span className="text-muted-foreground font-semibold">{plan.period}</span>}
-                      </div>
-                      <CardDescription className="pt-2">{plan.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                      <ul className="space-y-4">
-                      {plan.features.map((feature) => (
-                          <li key={feature} className="flex items-start">
-                          <Check className="w-5 h-5 text-green-400 mr-3 mt-1 shrink-0" />
-                          <span className="text-muted-foreground">{feature}</span>
-                          </li>
-                      ))}
-                      </ul>
-                  </CardContent>
-                  <CardFooter>
-                      <Button asChild className={cn('w-full rounded-full font-bold text-lg py-7')} variant={plan.isRecommended ? "default" : "secondary"}>
-                      <Link href="/login?register=true">{plan.cta}</Link>
-                      </Button>
-                  </CardFooter>
-                </Card>
-            ))}
-            </div>
+            <Button asChild size="lg" className="mt-12 px-8 py-6 rounded-full font-bold text-lg">
+                <Link href="/pricing">View Full Pricing & Comparison</Link>
+            </Button>
         </div>
       </section>
 
