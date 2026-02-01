@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
     ArrowRight, MessageSquare, BookOpen, BarChart3, Bell, Users,
-    ShieldCheck, Smartphone, Zap, Bot
+    ShieldCheck, Smartphone, Zap, Bot, GitFork, CameraOff, CalendarCheck
 } from 'lucide-react';
 import React from 'react';
 import Link from 'next/link';
@@ -15,7 +15,8 @@ const features = {
       { title: "Natural Language Entry", description: 'Type "Ravi 500 udhaar" and our AI understands.', icon: <Bot /> },
       { title: "Automatic Digital Receipts", description: "Customers get instant confirmation on WhatsApp.", icon: <MessageSquare /> },
       { title: "Automated Payment Reminders", description: "Polite, timely reminders for pending payments.", icon: <Bell /> },
-      { title: "End-of-Day Summary", description: "Get a full sales and credit report every night on WhatsApp.", icon: <BarChart3 /> },
+      { title: "Intelligent Message Routing", description: "Har message ko samjhega - billing, inquiry, ya spam - aur sahi se handle karega.", icon: <GitFork /> },
+      { title: "Smart Media Handling", description: "Photos aur videos ko alag se handle karta hai, taaki aapka billing flow saaf rahe.", icon: <CameraOff /> },
     ]
   },
   "Digital Ledger & Udhaar Management": {
@@ -31,7 +32,7 @@ const features = {
     description: "Make data-driven decisions with powerful, easy-to-understand reports.",
     items: [
       { title: "Live Sales Dashboard", description: "Track your revenue, bills, and average sale value in real-time.", icon: <BarChart3 /> },
-      { title: "Daily & Monthly Closing Reports", description: "Automated financial summaries to save you time.", icon: <BarChart3 /> },
+      { title: "Automated 'Dukaan Band' Report", description: "Har raat ko daily sales, credit, aur progress ki summary direct aapke WhatsApp par.", icon: <CalendarCheck /> },
       { title: "Product & Category Analysis", description: "See which items are your best-sellers.", icon: <BarChart3 /> },
       { title: "Data Export", description: "Export your sales and customer data to CSV for offline analysis.", icon: <BarChart3 /> },
     ]
