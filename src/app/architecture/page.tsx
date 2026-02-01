@@ -1,112 +1,92 @@
+
 'use client';
 
 import React, { useState } from 'react';
-import { Cloud, Database, Zap, Brain, Server, Code } from 'lucide-react';
+import { Cloud, Database, Zap, Shield, CreditCard, LayoutDashboard } from 'lucide-react';
 
 const services = {
   overview: {
-    name: 'Architecture Overview',
+    name: 'Tech Stack Overview',
     icon: Cloud,
     color: 'primary',
     content: (
       <div className="space-y-4">
         <div className="bg-gradient-to-r from-primary/80 to-primary/60 p-6 rounded-lg">
-          <h2 className="text-2xl font-bold text-primary-foreground mb-2">100% Google Cloud Stack</h2>
-          <p className="text-primary-foreground/80">Firebase Studio + Cloud Functions + Vertex AI + Cloud Run</p>
+          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Firebase-First Architecture</h2>
+          <p className="text-primary-foreground/80">A scalable, real-time backend for a modern SaaS.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-card p-4 rounded-lg border-l-4 border-primary">
             <div className="text-primary text-sm font-semibold mb-1">Frontend</div>
-            <div className="text-foreground text-lg font-bold">Firebase Hosting</div>
-            <div className="text-muted-foreground text-xs">Next.js deployed</div>
+            <div className="text-foreground text-lg font-bold">Next.js on Firebase Hosting</div>
+            <div className="text-muted-foreground text-xs">Landing Pages & Dashboard</div>
           </div>
           <div className="bg-card p-4 rounded-lg border-l-4 border-blue-500">
-            <div className="text-blue-400 text-sm font-semibold mb-1">Backend</div>
+            <div className="text-blue-400 text-sm font-semibold mb-1">Backend Logic</div>
             <div className="text-foreground text-lg font-bold">Cloud Functions</div>
-            <div className="text-muted-foreground text-xs">Serverless Python</div>
+            <div className="text-muted-foreground text-xs">Message processing, webhooks</div>
           </div>
           <div className="bg-card p-4 rounded-lg border-l-4 border-green-500">
             <div className="text-green-400 text-sm font-semibold mb-1">Database</div>
-            <div className="text-foreground text-lg font-bold">Firestore + Cloud SQL</div>
-            <div className="text-muted-foreground text-xs">Hybrid approach</div>
+            <div className="text-foreground text-lg font-bold">Cloud Firestore</div>
+            <div className="text-muted-foreground text-xs">Primary data store</div>
           </div>
           <div className="bg-card p-4 rounded-lg border-l-4 border-purple-500">
-            <div className="text-purple-400 text-sm font-semibold mb-1">AI</div>
-            <div className="text-foreground text-lg font-bold">Vertex AI</div>
-            <div className="text-muted-foreground text-xs">Gemini + PaLM</div>
+            <div className="text-purple-400 text-sm font-semibold mb-1">Scheduled Jobs</div>
+            <div className="text-foreground text-lg font-bold">Cloud Scheduler</div>
+            <div className="text-muted-foreground text-xs">EOD reports, trial checks</div>
           </div>
         </div>
       </div>
     )
   },
   firestore: {
-    name: 'Firestore Database',
+    name: 'Firestore Data Structure',
     icon: Database,
     color: 'green',
     content: (
       <div className="space-y-4">
         <div className="bg-card p-4 rounded-lg">
-          <h3 className="font-bold text-foreground mb-3">Firestore Collections Structure</h3>
-          <pre className="text-xs text-green-400 bg-background p-3 rounded overflow-x-auto font-mono">
-{`businesses/
-{businessId}/
-  ├── profile
-  │   ├── name: "Sharma Cafe"
-  │   ├── type: "restaurant"
-  │   ├── plan: "pro"
-  │   ├── phone: "+919876543210"
-  │   └── createdAt: timestamp
-  │
-  ├── customers/ (subcollection)
-  │   ├── {customerId}/
-  │   │   ├── name: "Rohit Kumar"
-  │   │   ├── phone: "+919876543210"
-  │   │   ├── visitCount: 5
-  │   │   ├── totalSpend: 4500
-  │   │   ├── lastVisit: timestamp
-  │   │   ├── status: "vip"
-  │   │   ├── tags: ["frequent", "vip"]
-  │   │   └── preferences: {...}
-  │
-  ├── bills/ (subcollection)
-  │   ├── {billId}/
-  │   │   ├── customerId: ref
-  │   │   ├── amount: 450
-  │   │   ├── items: [{...}]
-  │   │   ├── paymentMethod: "upi"
-  │   │   └── createdAt: timestamp`}
+          <h3 className="font-bold text-foreground mb-3">Root Collection: `shops`</h3>
+          <pre className="text-xs text-green-400 bg-background p-3 rounded font-mono">
+{`shops/{shopId}
+{
+  "shopName": "...",
+  "ownerWhatsapp": "...",
+  "plan": "trial" | "basic" | "pro",
+  "trialEndsAt": "timestamp",
+  "paidTill": "timestamp",
+  "createdAt": "timestamp"
+}`}
           </pre>
         </div>
         <div className="bg-card p-4 rounded-lg">
-          <h3 className="font-bold text-foreground mb-3">Firestore Security Rules</h3>
-          <pre className="text-xs text-muted-foreground bg-background p-3 rounded overflow-x-auto">
-{`rules_version = '2';
-service cloud.firestore {
-match /databases/{database}/documents {
-  
-  function isAuthenticated() {
-    return request.auth != null;
-  }
-  
-  function isBusinessOwner(businessId) {
-    return isAuthenticated() && 
-           request.auth.uid == businessId;
-  }
-  
-  match /businesses/{businessId} {
-    allow read, write: if isBusinessOwner(businessId);
-    
-    match /customers/{customerId} {
-      allow read, create, update, delete: if isBusinessOwner(businessId);
-    }
-    
-    match /bills/{billId} {
-      allow read, create: if isBusinessOwner(businessId);
-      allow update, delete: if false;
-    }
-  }
-}
+          <h3 className="font-bold text-foreground mb-3">Subcollection: `customers`</h3>
+          <p className="text-sm text-muted-foreground mb-2">Key Insight: The customer's phone number is the document ID to prevent duplicates and allow for instant lookups.</p>
+          <pre className="text-xs text-green-400 bg-background p-3 rounded font-mono">
+{`shops/{shopId}/customers/{phone_number}
+{
+  "name": "Ravi",
+  "phone": "9876543210",
+  "totalUdhaar": 500,
+  "segment": "new | regular | vip",
+  "lastPurchaseAt": "timestamp",
+  "createdAt": "timestamp"
+}`}
+          </pre>
+        </div>
+        <div className="bg-card p-4 rounded-lg">
+          <h3 className="font-bold text-foreground mb-3">Subcollection: `ledger` (Transactions)</h3>
+          <pre className="text-xs text-green-400 bg-background p-3 rounded font-mono">
+{`shops/{shopId}/ledger/{entryId}
+{
+  "customerPhone": "9876543210",
+  "amount": 500,
+  "type": "credit | debit",
+  "item": "chini",
+  "source": "whatsapp | dashboard",
+  "timestamp": "timestamp"
 }`}
           </pre>
         </div>
@@ -114,109 +94,156 @@ match /databases/{database}/documents {
     )
   },
   functions: {
-    name: 'Cloud Functions',
+    name: 'Cloud Function Logic',
     icon: Zap,
     color: 'blue',
     content: (
       <div className="space-y-4">
         <div className="bg-card p-4 rounded-lg">
-          <h3 className="font-bold text-foreground mb-3">Cloud Functions Architecture (Gen 2)</h3>
-          <div className="space-y-3">
-            <div className="bg-secondary p-3 rounded border-l-4 border-blue-500">
-              <div className="text-blue-400 font-semibold mb-2">HTTP Functions (API Endpoints)</div>
-            </div>
-            <div className="bg-secondary p-3 rounded border-l-4 border-purple-500">
-              <div className="text-purple-400 font-semibold mb-2">Firestore Triggers</div>
-            </div>
-            <div className="bg-secondary p-3 rounded border-l-4 border-green-500">
-              <div className="text-green-400 font-semibold mb-2">Scheduled Functions</div>
-            </div>
+          <h3 className="font-bold text-foreground mb-3">WhatsApp Message Processing</h3>
+          <p className="text-sm text-muted-foreground mb-2">This function is the core of the WhatsApp Munim. It parses incoming messages and triggers all subsequent database operations.</p>
+          <div className="bg-secondary p-3 rounded border-l-4 border-blue-500">
+            <p className="text-xs text-muted-foreground">Input: <code className="text-blue-400">"Ravi 500 udhaar chini"</code></p>
           </div>
+          <pre className="text-xs text-muted-foreground bg-background p-3 rounded overflow-x-auto mt-3">
+{`// Pseudo-code for the function logic
+function onWhatsAppMessage(message) {
+  // 1. Parse message with AI/regex
+  parsed = parse(message.text);
+
+  // 2. Check if customer exists (using phone as ID)
+  customer = getCustomer(shopId, parsed.phone);
+
+  if (!customer.exists) {
+    createCustomer(shopId, parsed.phone, parsed.name);
+  } else {
+    updateCustomerTotals(shopId, parsed.phone, parsed.amount);
+  }
+
+  // 3. Create ledger entry for the transaction
+  addLedgerEntry(shopId, parsed);
+
+  // 4. Update inventory stock (if applicable)
+  updateStock(shopId, parsed.item);
+
+  // 5. Send confirmation receipt back to WhatsApp
+  sendWhatsAppReceipt(shopId, parsed);
+}`}
+          </pre>
         </div>
         <div className="bg-card p-4 rounded-lg">
-          <h3 className="font-bold text-foreground mb-3">Function Code Example</h3>
-          <pre className="text-xs text-muted-foreground bg-background p-3 rounded overflow-x-auto">
-{`# functions/main.py
-from firebase_functions import https_fn, firestore_fn
-from firebase_admin import initialize_app, firestore
-
-initialize_app()
-
-@https_fn.on_request()
-def add_customer(req: https_fn.Request) -> https_fn.Response:
-    # ... implementation
-    return https_fn.Response("Customer added")
-
-@firestore_fn.on_document_created("businesses/{bId}/customers/{cId}")
-def on_customer_created(event: firestore_fn.Event) -> None:
-    # ... implementation
-    print(f"New customer created for business {event.params['bId']}")`}
-          </pre>
+            <h3 className="font-bold text-foreground mb-3">Scheduled End-of-Day Summary</h3>
+             <p className="text-sm text-muted-foreground mb-2">A Cloud Scheduler job triggers this function every night at 11:59 PM to send a daily report to the shop owner.</p>
+             <div className="bg-secondary p-4 rounded-xl">
+                 <p className="text-sm font-bold">📊 Aaj ka Hisab</p>
+                 <p className="text-xs">Sales: ₹12,500</p>
+                 <p className="text-xs">Udhaar: ₹3,200</p>
+                 <p className="text-xs">Paid: ₹9,300</p>
+             </div>
         </div>
       </div>
     )
   },
-  vertexai: {
-    name: 'Vertex AI (Gemini)',
-    icon: Brain,
-    color: 'purple',
-    content: (
-       <div className="space-y-4">
-          <div className="bg-card p-4 rounded-lg">
-            <h3 className="font-bold text-foreground mb-3">Message Generation with Gemini</h3>
-            <pre className="text-xs text-muted-foreground bg-background p-3 rounded overflow-x-auto">
-{`# functions/ai_engine.py
-from vertexai.preview.generative_models import GenerativeModel
-
-def generate_welcome_message(customer_name, business_type):
-    model = GenerativeModel("gemini-pro")
-    prompt = f"""Generate a warm Hinglish welcome message for:
-    Name: {customer_name}
-    Business type: {business_type}"""
-    
-    response = model.generate_content(prompt)
-    return response.text.strip()`}
-            </pre>
-          </div>
-        </div>
-    )
-  },
-  cloudrun: {
-    name: 'Cloud Run APIs',
-    icon: Server,
-    color: 'cyan',
+  dashboard: {
+    name: 'Dashboard Logic',
+    icon: LayoutDashboard,
+    color: 'orange',
      content: (
         <div className="space-y-4">
           <div className="bg-card p-4 rounded-lg">
-            <h3 className="font-bold text-foreground mb-3">When to Use Cloud Run vs Cloud Functions</h3>
-             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-blue-900/30 border border-blue-500 p-3 rounded">
-                <div className="text-blue-400 font-semibold mb-2">Cloud Functions</div>
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <div>✓ Simple CRUD operations</div>
-                  <div>✓ Firestore triggers</div>
+            <h3 className="font-bold text-foreground mb-3">Single Source of Truth</h3>
+            <p className="text-sm text-muted-foreground mb-4">The dashboard is a control panel that reads from the exact same Firestore data as the WhatsApp bot. This ensures there are never any sync issues. The dashboard provides a visual interface for the data that the WhatsApp Munim manages.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-secondary p-4 rounded-lg">
+                    <p className="font-semibold text-foreground">Live Sales</p>
+                    <p className="text-xs text-muted-foreground">Reads from the `ledger` collection.</p>
                 </div>
-              </div>
-              <div className="bg-cyan-900/30 border border-cyan-500 p-3 rounded">
-                <div className="text-cyan-400 font-semibold mb-2">Cloud Run</div>
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <div>✓ Complex FastAPI app</div>
-                  <div>✓ Long-running processes</div>
+                <div className="bg-secondary p-4 rounded-lg">
+                    <p className="font-semibold text-foreground">Customer Ledger</p>
+                    <p className="text-xs text-muted-foreground">Combines `customers` and `ledger` data.</p>
                 </div>
-              </div>
+                <div className="bg-secondary p-4 rounded-lg">
+                    <p className="font-semibold text-foreground">Churn Alerts</p>
+                    <p className="text-xs text-muted-foreground">Calculated from `lastPurchaseAt` in customer docs.</p>
+                </div>
+                 <div className="bg-secondary p-4 rounded-lg">
+                    <p className="font-semibold text-foreground">Reports & Exports</p>
+                    <p className="text-xs text-muted-foreground">Runs aggregations on Firestore collections.</p>
+                </div>
             </div>
           </div>
         </div>
       )
   },
-   setup: {
-      name: 'Complete Setup Guide',
-      icon: Code,
-      color: 'orange',
+   security: {
+      name: 'Security Rules',
+      icon: Shield,
+      color: 'red',
       content: (
         <div className="space-y-4">
           <div className="bg-card p-4 rounded-lg">
-            <h3 className="font-bold text-foreground mb-3">Step-by-Step Firebase Studio Setup</h3>
+            <h3 className="font-bold text-foreground mb-3">Multi-Tenant Data Isolation</h3>
+            <p className="text-sm text-muted-foreground mb-2">The core of the SaaS security model is ensuring a shop owner can ONLY access their own data. This is enforced directly in the database with Firestore Security Rules.</p>
+            <pre className="text-xs text-muted-foreground bg-background p-3 rounded overflow-x-auto">
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Function to check if the user owns the shop
+    function isOwner(shopId) {
+      let shop = get(/databases/$(database)/documents/shops/$(shopId));
+      return request.auth != null && request.auth.uid == shop.data.owner_id;
+    }
+    
+    // Any authenticated user can create a shop, but they must be the owner
+    match /shops/{shopId} {
+      allow create: if request.auth != null && request.resource.data.owner_id == request.auth.uid;
+      allow read, update, delete: if isOwner(shopId);
+
+      // Rules for all subcollections (customers, ledger, inventory, etc.)
+      // Only the owner of the parent shop can access these documents.
+      match /{subcollection}/{docId} {
+        allow read, write: if isOwner(shopId);
+      }
+    }
+  }
+}`}
+            </pre>
+          </div>
+        </div>
+      )
+    },
+    subscription: {
+      name: 'Subscription Flow',
+      icon: CreditCard,
+      color: 'purple',
+      content: (
+        <div className="space-y-4">
+          <div className="bg-card p-4 rounded-lg">
+            <h3 className="font-bold text-foreground mb-3">Automated Trial & Payment Cycle</h3>
+            <p className="text-sm text-muted-foreground mb-4">The entire subscription lifecycle is automated, from onboarding to payment, primarily through WhatsApp.</p>
+            <ol className="relative border-l border-border space-y-8 pl-8">
+                <li className="flex flex-col">
+                    <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-secondary rounded-full ring-8 ring-background">1</span>
+                    <h4 className="font-semibold text-foreground">WhatsApp Onboarding</h4>
+                    <p className="text-sm text-muted-foreground">A new user messages "Hi", a shop document is auto-created with `plan: "trial"` and `trialEndsAt: now + 14 days`.</p>
+                </li>
+                <li className="flex flex-col">
+                    <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-secondary rounded-full ring-8 ring-background">2</span>
+                    <h4 className="font-semibold text-foreground">Expiry Check</h4>
+                    <p className="text-sm text-muted-foreground">A daily Cloud Scheduler job checks for shops whose trial has expired.</p>
+                </li>
+                <li className="flex flex-col">
+                    <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-secondary rounded-full ring-8 ring-background">3</span>
+                    <h4 className="font-semibold text-foreground">Payment Prompt</h4>
+                    <p className="text-sm text-muted-foreground">The bot sends an automated WhatsApp message with a Razorpay payment link.</p>
+                </li>
+                 <li className="flex flex-col">
+                    <span className="absolute -left-3 flex items-center justify-center w-6 h-6 bg-secondary rounded-full ring-8 ring-background">4</span>
+                    <h4 className="font-semibold text-foreground">Payment Webhook</h4>
+                    <p className="text-sm text-muted-foreground">A successful Razorpay payment triggers a webhook to a Cloud Function, which updates the shop document to `plan: "basic"` and sets the `paidTill` date.</p>
+                </li>
+            </ol>
           </div>
         </div>
       )
@@ -232,7 +259,8 @@ export default function FirebaseStudioArchitecture() {
     if (color === 'green') return 'text-green-400';
     if (color === 'blue') return 'text-blue-400';
     if (color === 'purple') return 'text-purple-400';
-    if (color === 'cyan') return 'text-cyan-400';
+    if (color === 'red') return 'text-red-400';
+    if (color === 'orange') return 'text-orange-400';
     return 'text-primary';
   }
 
@@ -244,7 +272,7 @@ export default function FirebaseStudioArchitecture() {
             DukaanMitra Technical Architecture
           </h1>
           <p className="text-lg text-muted-foreground mt-2">
-            A 100% Google Cloud Stack for a Scalable SaaS
+            A WhatsApp-Native, Firebase-Powered SaaS for India's Kiranas
           </p>
         </header>
 
