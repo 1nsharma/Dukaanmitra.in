@@ -38,13 +38,7 @@ const resetFormSchema = z.object({
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 type ResetFormValues = z.infer<typeof resetFormSchema>;
 
-// --- ONE-TIME SUPER ADMIN BOOTSTRAP ---
-// IMPORTANT: Replace this email with the user you want to promote.
-// After the user logs in and is promoted, this code and the corresponding
-// security rule MUST be removed.
-const SUPER_ADMIN_BOOTSTRAP_EMAIL = 'amitsharma99976@gmail.com';
-// -----------------------------------------
-
+const SUPER_ADMIN_BOOTSTRAP_EMAIL = "amitsharma99976@gmail.com";
 
 export default function LoginForm() {
   const { toast } = useToast();
@@ -74,22 +68,27 @@ export default function LoginForm() {
           : signInWithEmailAndPassword(auth, values.email, values.password));
         
         const user = userCredential.user;
-        const isBootstrapUser = user.email === SUPER_ADMIN_BOOTSTRAP_EMAIL;
         const userProfileRef = doc(firestore, "users", user.uid);
 
         if (isSignUp) {
           try {
-            // On sign up, if it's the bootstrap user, create them as super_admin directly
+            // On sign up, create a new user profile.
+            // Check if this is the one-time super admin bootstrap.
+            const isSuperAdminBootstrap = values.email.toLowerCase() === SUPER_ADMIN_BOOTSTRAP_EMAIL;
+            
             const profileData = {
               uid: user.uid,
               email: user.email,
               createdAt: serverTimestamp(),
-              role: isBootstrapUser ? "super_admin" : "user",
+              role: isSuperAdminBootstrap ? "super_admin" : "user", // Set role here
               status: "active",
               lastLogin: serverTimestamp(),
             };
-            // The temporary security rule will allow this one-time role elevation.
+
+            // This setDoc will be validated by Firestore rules.
+            // The temporary rule will only allow the role to be 'super_admin' if the email matches.
             await setDoc(userProfileRef, profileData, { merge: true });
+
           } catch (profileError: any) {
              const permissionError = new FirestorePermissionError({
                   path: `users/${user.uid}`,
@@ -104,18 +103,8 @@ export default function LoginForm() {
               });
           }
         } else {
-            // On login, update the lastLogin timestamp and potentially bootstrap role
-            const updates: any = { lastLogin: serverTimestamp() };
-            
-            // If this is the bootstrap user logging in, attempt to elevate their role.
-            // The temporary security rule will permit this one-time operation.
-            if (isBootstrapUser) {
-              updates.role = 'super_admin';
-            }
-            
-            updateDoc(userProfileRef, updates).catch(err => {
-                // This can fail if the user doc doesn't exist yet, which is fine.
-                // The main purpose is the login itself.
+            // On login, just update the lastLogin timestamp.
+            updateDoc(userProfileRef, { lastLogin: serverTimestamp() }).catch(err => {
                 console.warn("Could not update user document on login", err);
             });
         }

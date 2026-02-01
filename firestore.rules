@@ -24,32 +24,21 @@ service cloud.firestore {
       return !exists(userDocPath) || get(userDocPath).data.status == 'active';
     }
     
-    // --- ONE-TIME SUPER ADMIN BOOTSTRAP HELPER ---
-    // This function enables the very first super_admin to be created.
-    // It MUST be removed after the first super_admin is successfully created.
-    function isBootstrapAdmin() {
-        return request.auth.token.email == 'amitsharma99976@gmail.com';
-    }
-    // ----------------------------------------------
-
-
     /**
      * PUBLIC COLLECTIONS
      */
     match /posts/{postId} {
       allow read: if true;
-      // Allow likes and views increments only by active users.
       allow update: if isUserActive() &&
                       (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.views == resource.data.views + 1) &&
                       request.resource.data.diff(resource.data).affectedKeys().size() == 1;
-      allow create, delete: if isSuperAdmin(); // Only super admins can create/delete posts
+      allow create, delete: if isSuperAdmin();
     }
 
     match /comments/{commentId} {
         allow read: if true;
-        // Only active users can create comments.
         allow create: if isUserActive() && request.resource.data.keys().hasAll(['postSlug', 'name', 'message', 'createdAt']);
-        allow update, delete: if isSuperAdmin(); // Only super admins can moderate
+        allow update, delete: if isSuperAdmin();
     }
     
     match /contactFormSubmissions/{submissionId} {
@@ -67,21 +56,21 @@ service cloud.firestore {
       // LIST: Only super admins can list users.
       allow list: if isSuperAdmin() && isUserActive();
 
-      // CREATE: An authenticated user can create THEIR OWN profile.
-      // A temporary rule allows the bootstrap user to be created as a super_admin.
-      allow create: if isOwner(userId)
-                    && request.resource.data.status == 'active'
-                    && (
-                      (request.resource.data.role == 'user') ||
-                      (request.resource.data.role == 'super_admin' && isBootstrapAdmin())
-                    );
+      // CREATE:
+      // - An authenticated user can create THEIR OWN profile.
+      // - The role MUST be 'user' UNLESS it's the one-time super admin bootstrap.
+      allow create: if isOwner(userId) &&
+                     request.resource.data.status == 'active' &&
+                     (
+                       (request.resource.data.role == 'user') ||
+                       // ONE-TIME BOOTSTRAP RULE:
+                       (request.resource.data.role == 'super_admin' && request.resource.data.email == "amitsharma99976@gmail.com")
+                     );
 
       // UPDATE:
-      // A user can update their own profile, BUT they cannot change their role or status.
-      // A super_admin can update any field on any user profile.
-      // A temporary rule allows the bootstrap user to self-promote.
+      // - A user can update their own profile, but cannot change their role or status.
+      // - A super_admin can update any field on any user profile.
       allow update: if isSuperAdmin() ||
-                    (isOwner(userId) && isBootstrapAdmin() && request.resource.data.role == 'super_admin') ||
                     (isOwner(userId) && isUserActive() && request.resource.data.role == resource.data.role && request.resource.data.status == resource.data.status);
 
       // DELETE: Only super admins can delete user profiles.
@@ -105,12 +94,17 @@ service cloud.firestore {
       
        // All subcollections are protected by the same logic.
       match /{subcollection}/{docId=**} {
-        // Ledger entries have special immutability rules
-        if subcollection == 'ledger' {
-          allow update, delete: if false;
-          allow read, create: if (isShopOwner(shopId) && isUserActive()) || isSuperAdmin();
+        // Super admin has full access to all subcollections
+        if isSuperAdmin() {
+          allow read, write: if true;
         } else {
-          allow read, write: if (isShopOwner(shopId) && isUserActive()) || isSuperAdmin();
+          // Ledger entries have special immutability rules
+          if subcollection == 'ledger' {
+            allow update, delete: if false;
+            allow read, create: if isShopOwner(shopId) && isUserActive();
+          } else {
+            allow read, write: if isShopOwner(shopId) && isUserActive();
+          }
         }
       }
     }

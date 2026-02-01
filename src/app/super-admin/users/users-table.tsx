@@ -1,9 +1,10 @@
+
 'use client';
 
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { UserProfile } from '@/docs/backend-types';
-import { Loader2, MoreHorizontal, UserCheck, Shield, UserX, UserRoundCog } from 'lucide-react';
+import { Loader2, MoreHorizontal, UserCheck, Shield, UserX } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -100,7 +101,7 @@ export default function UsersTable() {
                         <TableHead>Display Name</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Created At</TableHead>
+                        <TableHead>Last Login</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -111,7 +112,7 @@ export default function UsersTable() {
                             <TableCell>{user.displayName || 'N/A'}</TableCell>
                             <TableCell>{renderRoleBadge(user.role)}</TableCell>
                             <TableCell>{renderStatusBadge(user.status)}</TableCell>
-                            <TableCell>{formatDate(user.createdAt)}</TableCell>
+                            <TableCell>{formatDate(user.lastLogin)}</TableCell>
                             <TableCell className="text-right">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
