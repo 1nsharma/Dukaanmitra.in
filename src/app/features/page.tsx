@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
     ArrowRight, MessageSquare, BookOpen, BarChart3, Bell, Users,
-    ShieldCheck, Smartphone, Zap, Bot, GitFork, CameraOff, CalendarCheck
+    ShieldCheck, Smartphone, Zap, Bot, CalendarCheck, FileClock, ClipboardList, FileDown, ShieldAlert,
+    Package, TrendingDown, TrendingUp, Lock, DatabaseBackup
 } from 'lucide-react';
 import React from 'react';
 import Link from 'next/link';
@@ -15,8 +16,7 @@ const features = {
       { title: "Natural Language Entry", description: 'Type "Ravi 500 udhaar" and our AI understands.', icon: <Bot /> },
       { title: "Automatic Digital Receipts", description: "Customers get instant confirmation on WhatsApp.", icon: <MessageSquare /> },
       { title: "Automated Payment Reminders", description: "Polite, timely reminders for pending payments.", icon: <Bell /> },
-      { title: "Intelligent Message Routing", description: "Har message ko samjhega - billing, inquiry, ya spam - aur sahi se handle karega.", icon: <GitFork /> },
-      { title: "Smart Media Handling", description: "Photos aur videos ko alag se handle karta hai, taaki aapka billing flow saaf rahe.", icon: <CameraOff /> },
+      { title: "End-of-Day Summary", description: "Get a full sales and credit report every night on WhatsApp.", icon: <CalendarCheck /> },
     ]
   },
   "Digital Ledger & Udhaar Management": {
@@ -32,9 +32,9 @@ const features = {
     description: "Make data-driven decisions with powerful, easy-to-understand reports.",
     items: [
       { title: "Live Sales Dashboard", description: "Track your revenue, bills, and average sale value in real-time.", icon: <BarChart3 /> },
-      { title: "Automated 'Dukaan Band' Report", description: "Har raat ko daily sales, credit, aur progress ki summary direct aapke WhatsApp par.", icon: <CalendarCheck /> },
-      { title: "Product & Category Analysis", description: "See which items are your best-sellers.", icon: <BarChart3 /> },
-      { title: "Data Export", description: "Export your sales and customer data to CSV for offline analysis.", icon: <BarChart3 /> },
+      { title: "Daily & Monthly Closing Reports", description: "Automated financial summaries to save you time.", icon: <FileClock /> },
+      { title: "Product & Category Analysis", description: "See which items are your best-sellers.", icon: <ClipboardList /> },
+      { title: "Data Export", description: "Export your sales and customer data to CSV for offline analysis.", icon: <FileDown /> },
     ]
   },
   "Customer Intelligence": {
@@ -43,23 +43,23 @@ const features = {
       { title: "Automatic Customer Database", description: "Every new number is a new customer profile.", icon: <Users /> },
       { title: "Customer Segmentation", description: "Automatically identify new, regular, and VIP customers.", icon: <Users /> },
       { title: "Purchase History", description: "See what a customer buys and how often they visit.", icon: <Users /> },
-      { title: "Churn Detection", description: "Get alerts when a regular customer might be at risk of leaving.", icon: <Users /> },
+      { title: "Churn Detection", description: "Get alerts when a regular customer might be at risk of leaving.", icon: <ShieldAlert /> },
     ]
   },
   "Inventory & Low Stock Alerts": {
     description: "Manage your stock intelligently to prevent losses.",
     items: [
-        { title: "Simple Stock Entry", description: "Add your products and their stock levels.", icon: <BarChart3 /> },
-        { title: "Automatic Stock Deduction", description: "Stock is updated automatically when you make a sale.", icon: <BarChart3 /> },
+        { title: "Simple Stock Entry", description: "Add your products and their stock levels.", icon: <Package /> },
+        { title: "Automatic Stock Deduction", description: "Stock is updated automatically when you make a sale.", icon: <TrendingDown /> },
         { title: "Low Stock Alerts", description: "Get timely WhatsApp alerts before you run out of a popular item.", icon: <Bell /> },
-        { title: "Fast-Moving Item Reports", description: "Identify which products are your top performers.", icon: <BarChart3 /> },
+        { title: "Fast-Moving Item Reports", description: "Identify which products are your top performers.", icon: <TrendingUp /> },
     ]
   },
   "Secure Cloud & Multi-Device Access": {
     description: "Your data is safe, secure, and accessible from anywhere.",
     items: [
-        { title: "Full Data Encryption", description: "All your business data is encrypted and secure.", icon: <ShieldCheck /> },
-        { title: "Automatic Cloud Backup", description: "Never worry about losing your hisaab-kitaab again.", icon: <ShieldCheck /> },
+        { title: "Full Data Encryption", description: "All your business data is encrypted and secure.", icon: <Lock /> },
+        { title: "Automatic Cloud Backup", description: "Never worry about losing your hisaab-kitaab again.", icon: <DatabaseBackup /> },
         { title: "Mobile & Desktop Dashboard", description: "Access your dashboard from your phone, tablet, or computer.", icon: <Smartphone /> },
         { title: "Multi-User & Staff Access", description: "Give access to your staff with specific permissions (Pro Plan).", icon: <Users /> },
     ]
