@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -22,6 +23,15 @@ service cloud.firestore {
       // Allow if doc doesn't exist (profile creation) or if doc exists and status is active.
       return !exists(userDocPath) || get(userDocPath).data.status == 'active';
     }
+    
+    // --- ONE-TIME SUPER ADMIN BOOTSTRAP HELPER ---
+    // This function enables the very first super_admin to be created.
+    // It MUST be removed after the first super_admin is successfully created.
+    function isBootstrapAdmin() {
+        return request.auth.token.email == 'changeme@example.com';
+    }
+    // ----------------------------------------------
+
 
     /**
      * PUBLIC COLLECTIONS
@@ -58,16 +68,22 @@ service cloud.firestore {
       allow list: if isSuperAdmin() && isUserActive();
 
       // CREATE: An authenticated user can create THEIR OWN profile.
-      // They must set their role to 'user' and status to 'active'.
+      // A temporary rule allows the bootstrap user to be created as a super_admin.
       allow create: if isOwner(userId)
-                    && request.resource.data.role == 'user'
-                    && request.resource.data.status == 'active';
+                    && request.resource.data.status == 'active'
+                    && (
+                      (request.resource.data.role == 'user') ||
+                      (request.resource.data.role == 'super_admin' && isBootstrapAdmin())
+                    );
 
       // UPDATE:
       // A user can update their own profile, BUT they cannot change their role or status.
       // A super_admin can update any field on any user profile.
-      allow update: if (isOwner(userId) && isUserActive() && request.resource.data.role == resource.data.role && request.resource.data.status == resource.data.status) || isSuperAdmin();
-    
+      // A temporary rule allows the bootstrap user to self-promote.
+      allow update: if isSuperAdmin() ||
+                    (isOwner(userId) && isBootstrapAdmin() && request.resource.data.role == 'super_admin') ||
+                    (isOwner(userId) && isUserActive() && request.resource.data.role == resource.data.role && request.resource.data.status == resource.data.status);
+
       // DELETE: Only super admins can delete user profiles.
       allow delete: if isSuperAdmin();
     }
@@ -100,4 +116,3 @@ service cloud.firestore {
     }
   }
 }
-

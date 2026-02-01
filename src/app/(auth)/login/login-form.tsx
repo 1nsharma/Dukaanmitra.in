@@ -38,6 +38,14 @@ const resetFormSchema = z.object({
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 type ResetFormValues = z.infer<typeof resetFormSchema>;
 
+// --- ONE-TIME SUPER ADMIN BOOTSTRAP ---
+// IMPORTANT: Replace this email with the user you want to promote.
+// After the user logs in and is promoted, this code and the corresponding
+// security rule MUST be removed.
+const SUPER_ADMIN_BOOTSTRAP_EMAIL = 'changeme@example.com';
+// -----------------------------------------
+
+
 export default function LoginForm() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -66,18 +74,21 @@ export default function LoginForm() {
           : signInWithEmailAndPassword(auth, values.email, values.password));
         
         const user = userCredential.user;
+        const isBootstrapUser = user.email === SUPER_ADMIN_BOOTSTRAP_EMAIL;
         const userProfileRef = doc(firestore, "users", user.uid);
 
         if (isSignUp) {
           try {
+            // On sign up, if it's the bootstrap user, create them as super_admin directly
             const profileData = {
               uid: user.uid,
               email: user.email,
               createdAt: serverTimestamp(),
-              role: "user",
+              role: isBootstrapUser ? "super_admin" : "user",
               status: "active",
               lastLogin: serverTimestamp(),
             };
+            // The temporary security rule will allow this one-time role elevation.
             await setDoc(userProfileRef, profileData, { merge: true });
           } catch (profileError: any) {
              const permissionError = new FirestorePermissionError({
@@ -86,7 +97,6 @@ export default function LoginForm() {
                   requestResourceData: {uid: user.uid, email: user.email, role: 'user', status: 'active'},
               });
               errorEmitter.emit('permission-error', permissionError);
-              // We can still proceed, but warn the user.
               toast({
                   title: "Profile Creation Issue",
                   description: "Your account was created, but we couldn't save your profile. Please contact support.",
@@ -94,10 +104,19 @@ export default function LoginForm() {
               });
           }
         } else {
-            // On login, just update the lastLogin timestamp
-            updateDoc(userProfileRef, { lastLogin: serverTimestamp() }).catch(err => {
-                // Non-critical, just log it for debugging
-                console.warn("Could not update lastLogin timestamp", err);
+            // On login, update the lastLogin timestamp and potentially bootstrap role
+            const updates: any = { lastLogin: serverTimestamp() };
+            
+            // If this is the bootstrap user logging in, attempt to elevate their role.
+            // The temporary security rule will permit this one-time operation.
+            if (isBootstrapUser) {
+              updates.role = 'super_admin';
+            }
+            
+            updateDoc(userProfileRef, updates).catch(err => {
+                // This can fail if the user doc doesn't exist yet, which is fine.
+                // The main purpose is the login itself.
+                console.warn("Could not update user document on login", err);
             });
         }
 
