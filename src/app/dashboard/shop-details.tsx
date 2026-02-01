@@ -1,10 +1,14 @@
+
 "use client";
 
+import Link from 'next/link';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTransition } from "react";
 import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { differenceInDays, isFuture } from 'date-fns';
+import { Star, Clock } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +24,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 import type { Shop } from '@/docs/backend-types';
+import { cn } from '@/lib/utils';
+
 
 const formSchema = z.object({
   name: z.string().min(2, "Shop name must be at least 2 characters."),
@@ -84,101 +90,158 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
     });
   };
 
+  const getTrialInfo = () => {
+    if (shop.status !== 'trial' || !shop.trial_ends_at) {
+        return null;
+    }
+
+    // Firestore timestamps can be objects with toDate(), or ISO strings
+    const trialEndDate = shop.trial_ends_at.toDate ? shop.trial_ends_at.toDate() : new Date(shop.trial_ends_at);
+
+    if (!isFuture(trialEndDate)) {
+        return {
+            text: "Trial Expired",
+            isExpired: true,
+        };
+    }
+    
+    const daysLeft = differenceInDays(trialEndDate, new Date());
+    return {
+        text: `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`,
+        isExpired: false,
+    };
+  };
+
+  const trialInfo = getTrialInfo();
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Your Shop Details</CardTitle>
-        <CardDescription>Manage your store's information. This is how customers will see you.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Shop Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Address</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>City</FormLabel>
-                    <FormControl>
-                        <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>State</FormLabel>
-                    <FormControl>
-                        <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
-                name="pincode"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Pincode</FormLabel>
-                    <FormControl>
-                        <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-            </div>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : "Save Changes"}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+        <Card>
+            <CardHeader className="flex-row items-start justify-between">
+                <div>
+                    <CardTitle>Subscription</CardTitle>
+                    <CardDescription>Your current plan and trial status.</CardDescription>
+                </div>
+                    <Button asChild>
+                    <Link href="/pricing">Upgrade Plan</Link>
+                    </Button>
+            </CardHeader>
+            <CardContent className="grid sm:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 rounded-lg border p-4">
+                    <Star className="text-primary w-6 h-6"/>
+                    <div>
+                        <p className="text-sm text-muted-foreground">Current Plan</p>
+                        <p className="text-lg font-bold capitalize">{shop.plan}</p>
+                    </div>
+                </div>
+                    {trialInfo && (
+                    <div className="flex items-center gap-3 rounded-lg border p-4">
+                        <Clock className={cn("w-6 h-6", trialInfo.isExpired ? "text-destructive" : "text-primary")} />
+                        <div>
+                            <p className="text-sm text-muted-foreground">Trial Status</p>
+                            <p className={cn("text-lg font-bold", trialInfo.isExpired && "text-destructive")}>{trialInfo.text}</p>
+                        </div>
+                    </div>
+                    )}
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Your Shop Details</CardTitle>
+                <CardDescription>Manage your store's information. This is how customers will see you.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Shop Name</FormLabel>
+                        <FormControl>
+                            <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Phone</FormLabel>
+                        <FormControl>
+                            <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Address</FormLabel>
+                        <FormControl>
+                            <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <FormField
+                        control={form.control}
+                        name="city"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>City</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="state"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>State</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="pincode"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Pincode</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    </div>
+                    <Button type="submit" disabled={isPending}>
+                    {isPending ? "Saving..." : "Save Changes"}
+                    </Button>
+                </form>
+                </Form>
+            </CardContent>
+        </Card>
+    </div>
   );
 }
+
