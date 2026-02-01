@@ -3,7 +3,7 @@
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { UserProfile } from '@/docs/backend-types';
-import { Loader2, MoreHorizontal, UserCheck, Shield, Trash, UserX, UserRoundCog } from 'lucide-react';
+import { Loader2, MoreHorizontal, UserCheck, Shield, UserX, UserRoundCog } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
