@@ -119,12 +119,36 @@ export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
   }, [ledgerEntries, customers]);
 
   const handleGenerateInsights = async () => {
-    // This function needs to be updated to work with LedgerEntry[]
-    // For now, we will disable it until the AI flow is also updated.
-    toast({
-        title: "Coming Soon",
-        description: "AI Insights for the new Ledger system are under development.",
-    });
+    if (!ledgerEntries || !customers) {
+        toast({
+            title: "Not enough data",
+            description: "Cannot generate insights without transaction and customer data.",
+            variant: "destructive"
+        });
+        return;
+    }
+
+    setIsLoadingInsights(true);
+    setInsightsError(null);
+    setInsights(null);
+
+    try {
+        // Consider sending only recent data to the AI to save tokens and improve performance
+        const recentLedgerEntries = ledgerEntries.slice(0, 100); // e.g., latest 100 transactions
+
+        const result = await generateRetailInsights({ 
+            ledgerEntries: recentLedgerEntries, 
+            customers 
+        });
+        
+        setInsights(result);
+
+    } catch (error: any) {
+        console.error("Failed to generate AI insights:", error);
+        setInsightsError("Sorry, we couldn't generate insights at this moment. Please try again.");
+    } finally {
+        setIsLoadingInsights(false);
+    }
   }
 
   const isLoading = isLoadingLedger || isLoadingCustomers;

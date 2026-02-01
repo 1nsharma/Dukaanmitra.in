@@ -9,14 +9,15 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-import type { Bill, Customer } from '@/docs/backend-types';
+import { z } from 'zod';
+import type { LedgerEntry, Customer } from '@/docs/backend-types';
 
-const BillSchema = z.object({
+const LedgerEntrySchema = z.object({
     amount: z.number(),
-    created_at: z.any().describe("Timestamp of the bill"),
-    customer_name: z.string().optional(),
-    items: z.array(z.object({ name: z.string(), quantity: z.number(), price: z.number() })).optional(),
+    createdAt: z.any().describe("Timestamp of the transaction"),
+    customerName: z.string().optional(),
+    item: z.string().optional(),
+    type: z.enum(['credit', 'payment']),
 });
 
 const CustomerSchema = z.object({
@@ -28,7 +29,7 @@ const CustomerSchema = z.object({
 });
 
 const RetailInsightsInputSchema = z.object({
-  bills: z.array(BillSchema).describe("List of bills from the last 30 days."),
+  ledgerEntries: z.array(LedgerEntrySchema).describe("List of transactions from the last 30 days."),
   customers: z.array(CustomerSchema).describe("List of all customers."),
 });
 export type RetailInsightsInput = z.infer<typeof RetailInsightsInputSchema>;
@@ -36,19 +37,20 @@ export type RetailInsightsInput = z.infer<typeof RetailInsightsInputSchema>;
 const RetailInsightsOutputSchema = z.object({
   keyActionItems: z.array(z.string()).describe("A list of 3 clear, actionable items for the shop owner in simple Hinglish."),
   customerInsights: z.string().describe("Insights about customer behavior (e.g., repeat vs one-time, churn signals). Simple Hinglish, no jargon."),
-  fastMovingItems: z.string().describe("Analysis of fast-moving items. Simple Hinglish, no jargon."),
-  operationalInefficiencies: z.string().describe("Analysis of operational inefficiencies. Simple Hinglish, no jargon."),
-  revenueLeakage: z.string().describe("Analysis of potential revenue leakage. Simple Hinglish, no jargon."),
+  fastMovingItems: z.string().describe("Analysis of fast-moving items from the 'item' field. Simple Hinglish, no jargon."),
+  operationalInefficiencies: z.string().describe("Analysis of operational inefficiencies based on transaction patterns. Simple Hinglish, no jargon."),
+  revenueLeakage: z.string().describe("Analysis of potential revenue leakage (e.g., high credit to new customers). Simple Hinglish, no jargon."),
 });
 export type RetailInsightsOutput = z.infer<typeof RetailInsightsOutputSchema>;
 
-export async function generateRetailInsights(input: { bills: Bill[], customers: Customer[] }): Promise<RetailInsightsOutput> {
+export async function generateRetailInsights(input: { ledgerEntries: LedgerEntry[], customers: Customer[] }): Promise<RetailInsightsOutput> {
   const flowInput: RetailInsightsInput = {
-    bills: input.bills.map(b => ({
-        amount: b.amount,
-        created_at: b.created_at,
-        customer_name: b.customer_name,
-        items: b.items,
+    ledgerEntries: input.ledgerEntries.map(l => ({
+        amount: l.amount,
+        createdAt: l.createdAt,
+        customerName: l.customerName,
+        item: l.item,
+        type: l.type,
     })),
     customers: input.customers.map(c => ({
         name: c.name,
@@ -68,18 +70,18 @@ const retailInsightsPrompt = ai.definePrompt({
   prompt: `
     You are a retail operations analyst for DukaanMitra, advising a Kirana store owner in India.
     Your analysis should be in simple Hinglish, without any corporate jargon. Be direct and action-oriented.
-    Analyze the provided shop data from the last 30 days (bills and customer lists).
+    Analyze the provided shop data from the last 30 days (transactions and customer lists).
 
     Your tasks are:
     1. Give 3 clear, top-priority action items for the owner to grow their business. These should be very specific.
     2. Analyze customer behavior, highlighting repeat vs. one-time buyers and potential churn signals.
-    3. Highlight fast-moving items and suggest how to capitalize on them.
-    4. Identify operational inefficiencies.
-    5. Detect potential revenue leakage.
+    3. Highlight fast-moving items from the 'item' field and suggest how to capitalize on them.
+    4. Identify operational inefficiencies based on transaction patterns (e.g., many small credit transactions).
+    5. Detect potential revenue leakage (e.g., high credit amounts to new customers).
 
     Here is the data:
-    Bills:
-    {{{json bills}}}
+    Transactions:
+    {{{json ledgerEntries}}}
 
     Customers:
     {{{json customers}}}
