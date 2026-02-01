@@ -26,6 +26,12 @@ service cloud.firestore {
       let shop = get(/databases/$(database)/documents/shops/$(shopId));
       return request.auth != null && shop.data.owner_id == request.auth.uid;
     }
+    
+    function isSuperAdmin() {
+      // Check if the user document exists and has the super_admin role.
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+    }
 
     /**
      * @description
@@ -40,14 +46,20 @@ service cloud.firestore {
     /**
      * @description
      * A user can manage their own profile, but with restrictions to prevent
-     * privilege escalation.
+     * privilege escalation. Super Admins can list all users.
      */
     match /users/{userId} {
       /**
        * @allow (read)
        * A user can read their own profile document.
        */
-      allow read: if request.auth.uid == userId;
+      allow read: if request.auth.uid == userId || isSuperAdmin();
+
+      /**
+       * @allow (list)
+       * A Super Admin can list all user documents.
+       */
+      allow list: if isSuperAdmin();
 
       /**
        * @allow (create)
@@ -62,10 +74,9 @@ service cloud.firestore {
        * @allow (update)
        * A user can update their own profile, but they are explicitly forbidden
        * from changing their 'role'. This prevents an existing user from escalating
-       * their privileges. Role changes must be done by an admin.
+       * their privileges. Role changes must be done by a Super Admin.
        */
-      allow update: if request.auth.uid == userId
-                    && request.resource.data.role == resource.data.role;
+      allow update: if (request.auth.uid == userId && request.resource.data.role == resource.data.role) || isSuperAdmin();
     }
 
 

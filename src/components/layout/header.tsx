@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, Menu } from "lucide-react";
+import { ChevronDown, Menu, LogOut, LayoutDashboard, UserCircle, Shield } from "lucide-react";
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -11,10 +11,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useUser, useAuth } from "@/firebase";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const navLinks = [
   { href: "/features", label: "Features" },
@@ -46,6 +49,10 @@ export default function Header() {
         </Link>
     );
   };
+  
+  const getAvatarFallback = (email?: string | null) => {
+    return email ? email.charAt(0).toUpperCase() : <UserCircle />;
+  }
 
   return (
     <header className="px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-lg z-[100] border-b border-border shadow-sm">
@@ -62,15 +69,41 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-            <div className="hidden lg:flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-4">
                 {!isUserLoading && (
                     <>
                     {user ? (
-                        <Button
-                            onClick={() => router.push('/dashboard')}
-                        >
-                            <span>Dashboard</span>
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="flex items-center gap-2">
+                              <Avatar className="w-8 h-8">
+                                <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || 'User'}/>
+                                <AvatarFallback>{getAvatarFallback(user.email)}</AvatarFallback>
+                              </Avatar>
+                              <span>{user.displayName || user.email}</span>
+                              <ChevronDown className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => router.push('/dashboard')}>
+                              <LayoutDashboard className="mr-2" />
+                              Dashboard
+                            </DropdownMenuItem>
+                            {user.role === 'super_admin' && (
+                              <DropdownMenuItem onClick={() => router.push('/super-admin/dashboard')}>
+                                <Shield className="mr-2" />
+                                Super Admin
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                              <LogOut className="mr-2" />
+                              Sign Out
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                     ) : (
                         <Button
                             onClick={() => router.push('/login')}
@@ -119,6 +152,9 @@ export default function Header() {
                         {user ? (
                             <>
                                 <Button onClick={() => {router.push('/dashboard'); setMobileMenuOpen(false);}} size="lg">Dashboard</Button>
+                                {user.role === 'super_admin' && (
+                                  <Button onClick={() => {router.push('/super-admin/dashboard'); setMobileMenuOpen(false);}} size="lg" variant="secondary">Super Admin</Button>
+                                )}
                                 <Button onClick={() => {handleSignOut(); setMobileMenuOpen(false);}} variant="outline" size="lg">Sign Out</Button>
                             </>
                         ) : (
