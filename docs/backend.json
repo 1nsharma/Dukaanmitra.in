@@ -140,6 +140,11 @@
           "type": "string",
           "format": "date-time"
         },
+        "paid_till": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp indicating when the current subscription period ends."
+        },
         "created_at": {
           "type": "string",
           "format": "date-time"
@@ -265,9 +270,6 @@
       "description": "Represents a single credit or payment transaction in a shop's ledger.",
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string"
-        },
         "shop_id": {
           "type": "string"
         },
@@ -307,7 +309,6 @@
         }
       },
       "required": [
-        "id",
         "shop_id",
         "amount",
         "type",
@@ -464,3 +465,5 @@
     "reasoning": "This Firestore structure organizes data by shop, allowing for secure, scalable multi-tenancy. Each shop's data (customers, bills) is nested under its own document. Security rules ensure that a user can only access data related to the shop they own. Blog posts and comments are stored in root collections for public access."
   }
 }
+
+    

@@ -7,8 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTransition } from "react";
 import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
-import { differenceInDays, isFuture } from 'date-fns';
-import { Star, Clock } from 'lucide-react';
+import { format, differenceInDays, isFuture, addMonths } from 'date-fns';
+import { Star, Clock, CreditCard } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +45,7 @@ interface ShopDetailsProps {
 export default function ShopDetails({ shop }: ShopDetailsProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [isActivating, startActivatingTransition] = useTransition();
   const firestore = useFirestore();
 
   const form = useForm<FormValues>({
@@ -59,7 +60,7 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
     },
   });
 
-  const onSubmit = (values: FormValues) => {
+  const onUpdateDetailsSubmit = (values: FormValues) => {
     startTransition(() => {
       const shopRef = doc(firestore, "shops", shop.id);
       const shopData = {
@@ -90,41 +91,83 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
     });
   };
 
-  const getTrialInfo = () => {
-    if (shop.status !== 'trial' || !shop.trial_ends_at) {
-        return null;
-    }
+  const handleActivateSubscription = () => {
+    startActivatingTransition(() => {
+      const shopRef = doc(firestore, "shops", shop.id);
+      const newPaidTillDate = addMonths(new Date(), 1);
 
-    // Firestore timestamps can be objects with toDate(), or ISO strings
-    const trialEndDate = shop.trial_ends_at.toDate ? shop.trial_ends_at.toDate() : new Date(shop.trial_ends_at);
+      const shopData = {
+        plan: 'basic',
+        status: 'active',
+        paid_till: newPaidTillDate,
+      };
 
-    if (!isFuture(trialEndDate)) {
-        return {
-            text: "Trial Expired",
-            isExpired: true,
-        };
-    }
-    
-    const daysLeft = differenceInDays(trialEndDate, new Date());
-    return {
-        text: `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`,
-        isExpired: false,
-    };
+      updateDoc(shopRef, shopData)
+        .then(() => {
+          toast({
+            title: "Subscription Activated!",
+            description: `You are now on the Basic plan until ${format(newPaidTillDate, "PPP")}.`,
+          });
+        })
+        .catch(serverError => {
+          const permissionError = new FirestorePermissionError({
+            path: shopRef.path,
+            operation: 'update',
+            requestResourceData: shopData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          toast({
+            title: "Activation Error",
+            description: "Could not activate your subscription. Please try again.",
+            variant: "destructive",
+          });
+        });
+    });
   };
 
-  const trialInfo = getTrialInfo();
+  const getSubscriptionInfo = () => {
+    if (shop.status === 'active' && shop.paid_till) {
+      const paidTillDate = shop.paid_till.toDate ? shop.paid_till.toDate() : new Date(shop.paid_till);
+      return {
+        text: `Active until ${format(paidTillDate, "PPP")}`,
+        isExpired: !isFuture(paidTillDate),
+        status: 'active'
+      };
+    }
+    
+    if (shop.status === 'trial' && shop.trial_ends_at) {
+      const trialEndDate = shop.trial_ends_at.toDate ? shop.trial_ends_at.toDate() : new Date(shop.trial_ends_at);
+      if (!isFuture(trialEndDate)) {
+        return { text: "Trial Expired", isExpired: true, status: 'trial' };
+      }
+      const daysLeft = differenceInDays(trialEndDate, new Date());
+      return { text: `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`, isExpired: false, status: 'trial' };
+    }
+
+    return null;
+  };
+
+  const subInfo = getSubscriptionInfo();
 
   return (
     <div className="space-y-6">
         <Card>
-            <CardHeader className="flex-row items-start justify-between">
+            <CardHeader className="flex-row items-center justify-between">
                 <div>
                     <CardTitle>Subscription</CardTitle>
-                    <CardDescription>Your current plan and trial status.</CardDescription>
+                    <CardDescription>Your current plan and status.</CardDescription>
                 </div>
-                    <Button asChild>
-                    <Link href="/pricing">Upgrade Plan</Link>
-                    </Button>
+                <div>
+                    {subInfo?.status === 'trial' ? (
+                        <Button onClick={handleActivateSubscription} disabled={isActivating}>
+                            {isActivating ? 'Activating...' : 'Activate Basic Plan'}
+                        </Button>
+                    ) : (
+                        <Button asChild>
+                            <Link href="/pricing">Manage Subscription</Link>
+                        </Button>
+                    )}
+                </div>
             </CardHeader>
             <CardContent className="grid sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 rounded-lg border p-4">
@@ -134,15 +177,15 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
                         <p className="text-lg font-bold capitalize">{shop.plan}</p>
                     </div>
                 </div>
-                    {trialInfo && (
+                {subInfo && (
                     <div className="flex items-center gap-3 rounded-lg border p-4">
-                        <Clock className={cn("w-6 h-6", trialInfo.isExpired ? "text-destructive" : "text-primary")} />
+                        <Clock className={cn("w-6 h-6", subInfo.isExpired ? "text-destructive" : "text-primary")} />
                         <div>
-                            <p className="text-sm text-muted-foreground">Trial Status</p>
-                            <p className={cn("text-lg font-bold", trialInfo.isExpired && "text-destructive")}>{trialInfo.text}</p>
+                            <p className="text-sm text-muted-foreground">Status</p>
+                            <p className={cn("text-lg font-bold", subInfo.isExpired && "text-destructive")}>{subInfo.text}</p>
                         </div>
                     </div>
-                    )}
+                )}
             </CardContent>
         </Card>
 
@@ -153,7 +196,7 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
             </CardHeader>
             <CardContent>
                 <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onUpdateDetailsSubmit)} className="space-y-4">
                     <FormField
                     control={form.control}
                     name="name"
@@ -245,3 +288,4 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
   );
 }
 
+    

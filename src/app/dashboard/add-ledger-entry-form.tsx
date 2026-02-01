@@ -77,7 +77,6 @@ export default function AddLedgerEntryForm({ shopId, onFinished }: AddLedgerEntr
       const ledgerCollection = collection(firestore, "shops", shopId, "ledger");
       const newLedgerRef = doc(ledgerCollection);
       const ledgerData = {
-          id: newLedgerRef.id,
           shop_id: shopId,
           customerPhone: values.customer_phone,
           customerName: customer.name, // Denormalized
@@ -215,3 +214,5 @@ export default function AddLedgerEntryForm({ shopId, onFinished }: AddLedgerEntr
     </Form>
   );
 }
+
+    

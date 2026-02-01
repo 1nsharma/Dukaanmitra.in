@@ -33,6 +33,7 @@ export type Shop = {
   plan?: "free" | "basic" | "pro" | "enterprise";
   status?: "active" | "trial" | "suspended" | "cancelled";
   trial_ends_at?: any;
+  paid_till?: any;
   created_at?: any;
   updated_at?: any;
   settings?: {
@@ -49,7 +50,6 @@ export type Shop = {
 };
 
 export type Customer = {
-  id: string;
   shop_id: string;
   phone: string;
   name?: string;
@@ -57,41 +57,22 @@ export type Customer = {
   last_visit?: any;
   visit_count?: number;
   total_spent?: number;
-  average_basket?: number;
+  totalUdhaar?: number;
   status?: "new" | "regular" | "vip" | "churned" | "blocked";
-  favorite_items?: string[];
-  notes?: string;
   tags?: string[];
   created_at?: any;
   updated_at?: any;
-  metadata?: {
-    whatsapp_name?: string;
-    profile_pic_url?: string; // "uri"
-    language_preference?: string;
-    payment_method?: string;
-  };
 };
 
-export type Bill = {
-  id: string;
+export type LedgerEntry = {
   shop_id: string;
+  customerPhone: string;
   amount: number;
-  customer_id?: string;
-  customer_name?: string;
-  bill_number?: string;
-  items?: {
-    name: string;
-    quantity: number;
-    price: number;
-    unit?: string;
-  }[];
-  payment_status?: "paid" | "pending" | "partial" | "failed";
-  payment_method?: "cash" | "upi" | "card" | "credit";
+  type: "credit" | "payment";
+  customerName?: string;
+  item?: string;
   source?: "whatsapp" | "app" | "manual";
-  image_url?: string; // "uri"
-  notes?: string;
-  created_at?: any;
-  created_by?: string;
+  createdAt?: any;
 };
 
 export type Post = {
@@ -114,3 +95,5 @@ export type Comment = {
   message: string;
   createdAt: any;
 };
+
+    
