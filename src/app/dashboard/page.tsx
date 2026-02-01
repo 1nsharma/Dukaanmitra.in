@@ -1,43 +1,24 @@
+
 "use client";
 
-import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useUser, useAuth } from "@/firebase";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { doc } from "firebase/firestore";
 import CreateShopForm from "./create-shop-form";
 import ShopDashboard from "./shop-dashboard";
-import type { UserProfile } from "@/docs/backend-types";
-
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
-  const firestore = useFirestore();
   const router = useRouter();
-
-  // Memoize the document reference
-  const userProfileRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(firestore, "users", user.uid);
-  }, [firestore, user]);
-
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
-
-  const [shopId, setShopId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push("/login");
     }
   }, [user, isUserLoading, router]);
-
-  useEffect(() => {
-    if (userProfile) {
-      setShopId(userProfile.shopId);
-    }
-  }, [userProfile]);
 
   const handleSignOut = async () => {
     try {
@@ -49,10 +30,12 @@ export default function DashboardPage() {
   };
 
   const onShopCreated = (newShopId: string) => {
-    setShopId(newShopId);
+    // The user object in the context will update automatically via the listener.
+    // We can force a router refresh if needed, but it's often not necessary.
+    // router.refresh(); 
   }
 
-  const isLoading = isUserLoading || isProfileLoading;
+  const isLoading = isUserLoading;
 
   if (isLoading || !user) {
     return (
@@ -70,7 +53,7 @@ export default function DashboardPage() {
             Dashboard
           </h1>
           <p className="text-muted-foreground">
-            Welcome back, {userProfile?.displayName || user.email}!
+            Welcome back, {user?.displayName || user.email}!
           </p>
         </div>
         <Button onClick={handleSignOut} variant="destructive">
@@ -78,13 +61,11 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      {shopId ? (
-        <ShopDashboard shopId={shopId} />
+      {user.shopId ? (
+        <ShopDashboard shopId={user.shopId} />
       ) : (
         <CreateShopForm onShopCreated={onShopCreated} />
       )}
     </div>
   );
 }
-
-    

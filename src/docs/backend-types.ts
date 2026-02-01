@@ -17,6 +17,8 @@ export type UserProfile = {
   photoURL?: string; // "uri"
   createdAt: any;
   shopId?: string;
+  role: "user" | "admin" | "super_admin";
+  status: "active" | "pending" | "suspended";
 };
 
 export type Shop = {
@@ -65,6 +67,7 @@ export type Customer = {
 };
 
 export type LedgerEntry = {
+  id: string;
   shop_id: string;
   customerPhone: string;
   amount: number;
@@ -95,5 +98,3 @@ export type Comment = {
   message: string;
   createdAt: any;
 };
-
-    
