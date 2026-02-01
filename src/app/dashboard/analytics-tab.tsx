@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { generateRetailInsights, type RetailInsightsOutput } from "@/ai/flows/retail-insights-flow";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useToast } from "@/hooks/use-toast";
 
 interface AnalyticsTabProps {
   shopId: string;
@@ -54,6 +55,7 @@ const InsightCard = ({ title, content, icon }: { title: string, content: string,
 
 export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
   const firestore = useFirestore();
+  const { toast } = useToast();
   const [insights, setInsights] = useState<RetailInsightsOutput | null>(null);
   const [isLoadingInsights, setIsLoadingInsights] = useState(false);
   const [insightsError, setInsightsError] = useState<string | null>(null);
