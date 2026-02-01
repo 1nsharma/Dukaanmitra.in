@@ -23,7 +23,7 @@ service cloud.firestore {
       // Allow if doc doesn't exist (profile creation) or if doc exists and status is active.
       return !exists(userDocPath) || get(userDocPath).data.status == 'active';
     }
-    
+
     /**
      * PUBLIC COLLECTIONS
      */

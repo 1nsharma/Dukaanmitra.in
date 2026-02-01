@@ -4,7 +4,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { collection, query, orderBy, doc, updateDoc, increment } from 'firebase/firestore';
-import { Loader2, ThumbsUp, Eye, Bookmark } from 'lucide-react';
+import { Loader2, ThumbsUp, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -142,9 +142,6 @@ export default function BlogPage() {
                   <div className="flex gap-2">
                     <Button variant="ghost" size="icon" onClick={() => handleLike(post.id)}>
                       <ThumbsUp className="w-5 h-5" />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <Bookmark className="w-5 h-5" />
                     </Button>
                   </div>
                 </CardFooter>

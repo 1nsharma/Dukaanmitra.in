@@ -87,7 +87,14 @@ export default function LoginForm() {
 
             // This setDoc will be validated by Firestore rules.
             // The temporary rule will only allow the role to be 'super_admin' if the email matches.
-            await setDoc(userProfileRef, profileData, { merge: true });
+            setDoc(userProfileRef, profileData, { merge: true }).catch(profileError => {
+                 const permissionError = new FirestorePermissionError({
+                      path: userProfileRef.path,
+                      operation: 'write',
+                      requestResourceData: profileData,
+                  });
+                  errorEmitter.emit('permission-error', permissionError);
+            });
 
           } catch (profileError: any) {
              const permissionError = new FirestorePermissionError({
@@ -104,8 +111,14 @@ export default function LoginForm() {
           }
         } else {
             // On login, just update the lastLogin timestamp.
-            updateDoc(userProfileRef, { lastLogin: serverTimestamp() }).catch(err => {
-                console.warn("Could not update user document on login", err);
+            const loginUpdateData = { lastLogin: serverTimestamp() };
+            updateDoc(userProfileRef, loginUpdateData).catch(err => {
+                const permissionError = new FirestorePermissionError({
+                      path: userProfileRef.path,
+                      operation: 'update',
+                      requestResourceData: loginUpdateData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
             });
         }
 
