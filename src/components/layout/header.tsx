@@ -2,21 +2,35 @@
 "use client";
 
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { ChevronDown, Menu } from "lucide-react";
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useUser, useAuth } from "@/firebase";
 
 const navLinks = [
   { href: "/features", label: "Features" },
   { href: "/pricing", label: "Pricing" },
   { href: "/blog", label: "Blog" },
-  { href: "/docs", label: "Docs" },
   { href: "/contact", label: "Contact" },
 ];
+
+const builderLinks = [
+    { href: "/guide", label: "A-Z Guide" },
+    { href: "/build", label: "Build Protocols" },
+    { href: "/assets", label: "Asset Archive" },
+    { href: "/architecture", label: "Architecture" },
+    { href: "/insights", label: "Insights" },
+];
+
 
 export default function Header() {
   const pathname = usePathname();
@@ -52,8 +66,20 @@ export default function Header() {
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex space-x-10 text-sm font-semibold text-muted-foreground items-center">
+        <nav className="hidden lg:flex space-x-8 text-sm font-semibold text-muted-foreground items-center">
           {navLinks.map(link => <NavLink key={link.href} {...link} />)}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-1 hover:text-primary transition-colors outline-none">
+              Builder Zone <ChevronDown className="w-4 h-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                {builderLinks.map(link => (
+                    <DropdownMenuItem key={link.href} asChild>
+                        <Link href={link.href}>{link.label}</Link>
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -103,11 +129,15 @@ export default function Header() {
                         <h1 className="text-2xl font-black tracking-tighter text-foreground">DukaanMitra</h1>
                     </Link>
                 </SheetTitle>
-                <SheetDescription className="sr-only">Mobile Menu Navigation</SheetDescription>
               </SheetHeader>
               <div className="flex flex-col gap-6 pt-8">
                 <nav className="flex flex-col gap-4 text-lg font-medium">
                   {navLinks.map((link) => <NavLink key={link.href} {...link} />)}
+                  
+                  <div className="pt-4 mt-4 border-t border-border">
+                    <h3 className="text-sm font-bold text-muted-foreground mb-4">Builder Zone</h3>
+                    {builderLinks.map((link) => <NavLink key={link.href} {...link} />)}
+                  </div>
                 </nav>
                 <div className="mt-auto flex flex-col gap-4 border-t border-border pt-6">
                     {!isUserLoading && (
