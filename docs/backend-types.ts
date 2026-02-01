@@ -17,6 +17,8 @@ export type UserProfile = {
   photoURL?: string; // "uri"
   createdAt: any;
   shopId?: string;
+  role: "user" | "admin" | "super_admin";
+  status: "active" | "pending" | "suspended";
 };
 
 export type Shop = {
@@ -33,6 +35,7 @@ export type Shop = {
   plan?: "free" | "basic" | "pro" | "enterprise";
   status?: "active" | "trial" | "suspended" | "cancelled";
   trial_ends_at?: any;
+  paid_till?: any;
   created_at?: any;
   updated_at?: any;
   settings?: {

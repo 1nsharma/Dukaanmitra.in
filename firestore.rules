@@ -4,8 +4,9 @@
  * Core Concepts:
  * - isOwner(shopId): A helper function to verify if the requesting user owns the shop.
  *   This is the cornerstone of the multi-tenant security.
- * - User Profiles (`/users/{userId}`): Each user has a profile document. Only the user can
- *   read or write to their own profile.
+ * - User Profiles (`/users/{userId}`): Each user has a profile document. Rules ensure
+ *   a user can only create their own profile with a 'user' role and cannot change
+ *   their role after creation, preventing privilege escalation.
  * - Shops (`/shops/{shopId}`): Any authenticated user can create a shop, but they must
  *   set themselves as the `owner_id`. Only the owner can read, update, or delete their shop.
  * - Shop Subcollections (`/shops/{shopId}/{collection}/{docId}`): All data belonging to a
@@ -38,12 +39,35 @@ service cloud.firestore {
 
     /**
      * @description
-     * A user can read and write to their own profile document. This is crucial
-     * for managing their own settings and associated shopId.
+     * A user can manage their own profile, but with restrictions to prevent
+     * privilege escalation.
      */
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      /**
+       * @allow (read)
+       * A user can read their own profile document.
+       */
+      allow read: if request.auth.uid == userId;
+
+      /**
+       * @allow (create)
+       * An authenticated user can create their own profile, but they are only
+       * allowed to assign themselves the 'user' role. This prevents a new user
+       * from creating an admin account for themselves.
+       */
+      allow create: if request.auth.uid == userId
+                    && request.resource.data.role == 'user';
+
+      /**
+       * @allow (update)
+       * A user can update their own profile, but they are explicitly forbidden
+       * from changing their 'role'. This prevents an existing user from escalating
+       * their privileges. Role changes must be done by an admin.
+       */
+      allow update: if request.auth.uid == userId
+                    && request.resource.data.role == resource.data.role;
     }
+
 
     /**
      * @description

@@ -74,13 +74,15 @@ export default function LoginForm() {
               uid: user.uid,
               email: user.email,
               createdAt: serverTimestamp(),
+              role: "user",
+              status: "active",
             };
             await setDoc(userProfileRef, profileData, { merge: true });
           } catch (profileError: any) {
              const permissionError = new FirestorePermissionError({
                   path: `users/${user.uid}`,
                   operation: 'write',
-                  requestResourceData: {uid: user.uid, email: user.email},
+                  requestResourceData: {uid: user.uid, email: user.email, role: 'user', status: 'active'},
               });
               errorEmitter.emit('permission-error', permissionError);
               // We can still proceed, but warn the user.
