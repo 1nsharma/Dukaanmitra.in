@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTransition } from "react";
-import { collection, serverTimestamp, doc, addDoc } from "firebase/firestore";
+import { collection, serverTimestamp, doc, setDoc } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,7 @@ import { useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  phone: z.string().min(10, "Please enter a valid 10-digit phone number.").max(10, "Phone number cannot be more than 10 digits."),
+  phone: z.string().regex(/^\d{10}$/, "Please enter a valid 10-digit phone number."),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -43,11 +43,9 @@ export default function AddCustomerForm({ shopId, onFinished }: AddCustomerFormP
 
   const onSubmit = (values: FormValues) => {
     startTransition(() => {
-        const customerCollection = collection(firestore, "shops", shopId, "customers");
-        const newCustomerRef = doc(customerCollection);
+        const customerRef = doc(firestore, "shops", shopId, "customers", values.phone);
         
         const customerData = {
-            id: newCustomerRef.id,
             shop_id: shopId,
             name: values.name,
             phone: values.phone,
@@ -56,9 +54,10 @@ export default function AddCustomerForm({ shopId, onFinished }: AddCustomerFormP
             status: 'new',
             visit_count: 0,
             total_spent: 0,
+            totalUdhaar: 0,
         };
 
-        addDoc(customerCollection, customerData)
+        setDoc(customerRef, customerData)
             .then(() => {
                 toast({
                     title: "Customer Added!",
@@ -68,7 +67,7 @@ export default function AddCustomerForm({ shopId, onFinished }: AddCustomerFormP
             })
             .catch(serverError => {
                 const permissionError = new FirestorePermissionError({
-                    path: customerCollection.path,
+                    path: customerRef.path,
                     operation: 'create',
                     requestResourceData: customerData,
                 });

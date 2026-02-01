@@ -9,9 +9,9 @@
  * - Shops (`/shops/{shopId}`): Any authenticated user can create a shop, but they must
  *   set themselves as the `owner_id`. Only the owner can read, update, or delete their shop.
  * - Shop Subcollections (`/shops/{shopId}/{collection}/{docId}`): All data belonging to a
- *   shop (like customers, bills, etc.) is protected by the `isOwner` function, ensuring
+ *   shop (like customers, ledger entries, etc.) is protected by the `isOwner` function, ensuring
  *   strict data isolation between shops.
- * - Bills (`/shops/{shopId}/bills/{billId}`): Bills are made immutable to protect financial records.
+ * - Ledger Entries (`/shops/{shopId}/ledger/{ledgerId}`): Ledger entries are made immutable to protect financial records.
  *   They can be created but never updated or deleted.
  * - Contact Forms (`/contactFormSubmissions`): Publicly writable to allow anyone to send
  *   a message, but unreadable to protect PII.
@@ -68,26 +68,26 @@ service cloud.firestore {
     
     /**
      * @description
-     * Generic rule for all subcollections under a shop EXCEPT bills.
+     * Generic rule for the customers subcollection.
      * Access is granted only if the user is the owner of the parent shop.
      */
-    match /shops/{shopId}/customers/{docId} {
+    match /shops/{shopId}/customers/{customerPhone} {
       allow read, write: if isOwner(shopId);
     }
 
     /**
      * @description
-     * Protects financial records by making bills immutable.
+     * Protects financial records by making ledger entries immutable.
      */
-    match /shops/{shopId}/bills/{billId} {
+    match /shops/{shopId}/ledger/{ledgerId} {
        /**
        * @allow (read, create)
-       * Only the shop owner can read their bills or create new ones.
+       * Only the shop owner can read their ledger entries or create new ones.
        */
       allow read, create: if isOwner(shopId);
        /**
        * @allow (update, delete)
-       * Bills are immutable and cannot be changed or deleted.
+       * Ledger entries are immutable and cannot be changed or deleted.
        */
       allow update, delete: if false;
     }

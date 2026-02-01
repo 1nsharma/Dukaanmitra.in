@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ShopDetails from "./shop-details";
 import CustomersTab from "./customers-tab";
-import BillsTab from "./bills-tab";
+import LedgerTab from "./ledger-tab";
 import type { Shop } from '@/docs/backend-types';
 import AnalyticsTab from "./analytics-tab";
 
@@ -51,7 +51,7 @@ export default function ShopDashboard({ shopId }: ShopDashboardProps) {
       <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
         <TabsTrigger value="details"><Store className="mr-2" /> Shop Details</TabsTrigger>
         <TabsTrigger value="customers"><Users className="mr-2" /> Customers</TabsTrigger>
-        <TabsTrigger value="bills"><Receipt className="mr-2" /> Bills</TabsTrigger>
+        <TabsTrigger value="ledger"><Receipt className="mr-2" /> Ledger</TabsTrigger>
         <TabsTrigger value="analytics"><LineChart className="mr-2" /> Analytics</TabsTrigger>
       </TabsList>
       <TabsContent value="details">
@@ -60,8 +60,8 @@ export default function ShopDashboard({ shopId }: ShopDashboardProps) {
       <TabsContent value="customers">
         <CustomersTab shopId={shopId} />
       </TabsContent>
-      <TabsContent value="bills">
-        <BillsTab shopId={shopId} />
+      <TabsContent value="ledger">
+        <LedgerTab shopId={shopId} />
       </TabsContent>
       <TabsContent value="analytics">
         <AnalyticsTab shopId={shopId} />

@@ -61,24 +61,27 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
     if (typeof date.toDate === 'function') {
       return format(date.toDate(), "PPP");
     }
-    return format(parseISO(date as string), "PPP");
+    if(typeof date === 'string') {
+        return format(parseISO(date as string), "PPP");
+    }
+    return 'Invalid Date';
   }
 
   const handleExport = () => {
     if (!customers) return;
 
     const headers = [
-      "ID", "Name", "Phone", "Status", "Last Visit", "Total Spent (₹)", "Visit Count"
+      "Phone", "Name", "Status", "Last Visit", "Total Spent (₹)", "Total Udhaar (₹)", "Visit Count"
     ];
 
     const csvRows = customers.map(customer => {
       const row = [
-        customer.id,
+        customer.phone,
         customer.name || "",
-        customer.phone || "",
         customer.status || "N/A",
         customer.last_visit ? formatDate(customer.last_visit) : "N/A",
         customer.total_spent || 0,
+        customer.totalUdhaar || 0,
         customer.visit_count || 0
       ];
       return row.map(value => {
@@ -109,7 +112,7 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Customers</CardTitle>
-          <CardDescription>Manage your shop's customers.</CardDescription>
+          <CardDescription>Manage your shop's customers. New customers are added automatically from WhatsApp.</CardDescription>
         </div>
         <div className="flex items-center gap-2">
             <Button variant="outline" onClick={handleExport} disabled={!customers || customers.length === 0}>
@@ -125,7 +128,7 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                <DialogTitle>Add a New Customer</DialogTitle>
+                <DialogTitle>Add a New Customer Manually</DialogTitle>
                 <DialogDescription>
                     Enter the details of the new customer to add them to your shop.
                 </DialogDescription>
@@ -140,7 +143,7 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
         {!isLoading && !customers?.length && (
           <div className="text-center py-12 text-muted-foreground">
             <p>No customers found.</p>
-            <p>Click "Add Customer" to get started.</p>
+            <p>Use the AI Quick Add in the Ledger tab to get started.</p>
           </div>
         )}
         {!isLoading && customers && customers.length > 0 && (
@@ -152,20 +155,20 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
                   <TableHead>Phone</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Last Visit</TableHead>
-                  <TableHead className="text-right">Total Spent</TableHead>
+                  <TableHead className="text-right">Total Udhaar</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {customers.map((customer) => (
-                  <TableRow key={customer.id}>
+                  <TableRow key={customer.phone}>
                     <TableCell className="font-medium">{customer.name}</TableCell>
                     <TableCell>{customer.phone}</TableCell>
                     <TableCell>{renderCustomerStatus(customer.status)}</TableCell>
                     <TableCell>
                       {formatDate(customer.last_visit)}
                     </TableCell>
-                    <TableCell className="text-right">
-                      {`₹${(customer.total_spent || 0).toFixed(2)}`}
+                    <TableCell className="text-right font-bold">
+                      {`₹${(customer.totalUdhaar || 0).toFixed(2)}`}
                     </TableCell>
                   </TableRow>
                 ))}

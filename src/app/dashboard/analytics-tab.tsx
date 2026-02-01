@@ -17,7 +17,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import type { Bill, Customer } from "@/docs/backend-types";
+import type { LedgerEntry, Customer } from "@/docs/backend-types";
 import { Button } from "@/components/ui/button";
 import { generateRetailInsights, type RetailInsightsOutput } from "@/ai/flows/retail-insights-flow";
 import { Badge } from "@/components/ui/badge";
@@ -58,11 +58,11 @@ export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
   const [isLoadingInsights, setIsLoadingInsights] = useState(false);
   const [insightsError, setInsightsError] = useState<string | null>(null);
 
-  const billsQuery = useMemoFirebase(() => {
+  const ledgerQuery = useMemoFirebase(() => {
     if (!shopId) return null;
     return query(
-      collection(firestore, "shops", shopId, "bills"),
-      orderBy("created_at", "desc")
+      collection(firestore, "shops", shopId, "ledger"),
+      orderBy("createdAt", "desc")
     );
   }, [firestore, shopId]);
 
@@ -71,28 +71,29 @@ export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
     return collection(firestore, "shops", shopId, "customers");
   }, [firestore, shopId]);
 
-  const { data: bills, isLoading: isLoadingBills } = useCollection<Bill>(billsQuery);
+  const { data: ledgerEntries, isLoading: isLoadingLedger } = useCollection<LedgerEntry>(ledgerQuery);
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Customer>(customersQuery);
 
   const { stats, chartData } = useMemo(() => {
-    if (!bills || !customers) return { stats: {}, chartData: [] };
+    if (!ledgerEntries || !customers) return { stats: {}, chartData: [] };
     
-    const totalRevenue = bills.reduce((acc, bill) => acc + bill.amount, 0);
-    const totalBills = bills.length;
-    const avgBillValue = totalBills > 0 ? totalRevenue / totalBills : 0;
+    const totalRevenue = ledgerEntries.reduce((acc, entry) => acc + entry.amount, 0);
+    const totalEntries = ledgerEntries.length;
+    const avgTransactionValue = totalEntries > 0 ? totalRevenue / totalEntries : 0;
+    const totalUdhaar = customers.reduce((acc, cust) => acc + (cust.totalUdhaar || 0), 0);
 
-    const revenueByDay = bills.reduce((acc, bill) => {
-        if (bill.created_at) {
-            const date = typeof bill.created_at === 'string' 
-                ? parseISO(bill.created_at)
-                : (bill.created_at as any).toDate();
+    const revenueByDay = ledgerEntries.reduce((acc, entry) => {
+        if (entry.createdAt) {
+            const date = typeof entry.createdAt === 'string' 
+                ? parseISO(entry.createdAt)
+                : (entry.createdAt as any).toDate();
             
             const dateStr = format(startOfDay(date), 'yyyy-MM-dd');
             
             if (!acc[dateStr]) {
                 acc[dateStr] = 0;
             }
-            acc[dateStr] += bill.amount;
+            acc[dateStr] += entry.amount;
         }
         return acc;
     }, {} as Record<string, number>);
@@ -108,40 +109,23 @@ export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
         stats: {
             totalRevenue,
             totalCustomers: customers.length,
-            totalBills,
-            avgBillValue,
+            totalUdhaar,
+            avgTransactionValue,
         },
         chartData: formattedChartData,
     }
-  }, [bills, customers]);
+  }, [ledgerEntries, customers]);
 
   const handleGenerateInsights = async () => {
-    if (!bills || !customers) return;
-
-    setIsLoadingInsights(true);
-    setInsights(null);
-    setInsightsError(null);
-    try {
-        const thirtyDaysAgo = subDays(new Date(), 30);
-        const recentBills = bills.filter(bill => {
-            if (!bill.created_at) return false;
-            const billDate = typeof bill.created_at === 'string' 
-                ? parseISO(bill.created_at)
-                : (bill.created_at as any).toDate();
-            return billDate > thirtyDaysAgo;
-        });
-      
-        const result = await generateRetailInsights({ bills: recentBills, customers });
-        setInsights(result);
-    } catch (error) {
-        console.error("Error generating insights:", error);
-        setInsightsError("Sorry, I couldn't generate insights right now. Please try again later.");
-    } finally {
-        setIsLoadingInsights(false);
-    }
+    // This function needs to be updated to work with LedgerEntry[]
+    // For now, we will disable it until the AI flow is also updated.
+    toast({
+        title: "Coming Soon",
+        description: "AI Insights for the new Ledger system are under development.",
+    });
   }
 
-  const isLoading = isLoadingBills || isLoadingCustomers;
+  const isLoading = isLoadingLedger || isLoadingCustomers;
 
   if (isLoading) {
     return <div className="flex justify-center items-center p-8"><Loader2 className="animate-spin" /></div>
@@ -154,7 +138,7 @@ export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
                 title="Total Revenue"
                 value={`₹${(stats.totalRevenue || 0).toLocaleString('en-IN')}`}
                 icon={<IndianRupee className="h-4 w-4 text-muted-foreground" />}
-                description="Total revenue from all bills"
+                description="Total revenue from all transactions"
             />
             <StatCard 
                 title="Total Customers"
@@ -163,14 +147,14 @@ export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
                 description="Total number of customers"
             />
             <StatCard 
-                title="Total Bills"
-                value={`${stats.totalBills || 0}`}
+                title="Outstanding Udhaar"
+                value={`₹${(stats.totalUdhaar || 0).toLocaleString('en-IN')}`}
                 icon={<Receipt className="h-4 w-4 text-muted-foreground" />}
-                description="Total number of bills recorded"
+                description="Total pending credit across all customers"
             />
             <StatCard 
-                title="Average Bill Value"
-                value={`₹${(stats.avgBillValue || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`}
+                title="Average Transaction Value"
+                value={`₹${(stats.avgTransactionValue || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`}
                 icon={<IndianRupee className="h-4 w-4 text-muted-foreground" />}
                 description="Average amount per transaction"
             />

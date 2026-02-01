@@ -202,14 +202,12 @@
       "description": "Represents a customer of a specific shop.",
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string"
-        },
         "shop_id": {
           "type": "string"
         },
         "phone": {
-          "type": "string"
+          "type": "string",
+          "description": "Customer's phone number, used as the document ID."
         },
         "name": {
           "type": "string"
@@ -228,8 +226,9 @@
         "total_spent": {
           "type": "number"
         },
-        "average_basket": {
-          "type": "number"
+        "totalUdhaar": {
+          "type": "number",
+          "description": "Total outstanding credit for the customer."
         },
         "status": {
           "type": "string",
@@ -240,15 +239,6 @@
             "churned",
             "blocked"
           ]
-        },
-        "favorite_items": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "notes": {
-          "type": "string"
         },
         "tags": {
           "type": "array",
@@ -263,35 +253,16 @@
         "updated_at": {
           "type": "string",
           "format": "date-time"
-        },
-        "metadata": {
-          "type": "object",
-          "properties": {
-            "whatsapp_name": {
-              "type": "string"
-            },
-            "profile_pic_url": {
-              "type": "string",
-              "format": "uri"
-            },
-            "language_preference": {
-              "type": "string"
-            },
-            "payment_method": {
-              "type": "string"
-            }
-          }
         }
       },
       "required": [
-        "id",
         "shop_id",
         "phone"
       ]
     },
-    "Bill": {
-      "title": "Bill",
-      "description": "Represents a bill or transaction.",
+    "LedgerEntry": {
+      "title": "Ledger Entry",
+      "description": "Represents a single credit or payment transaction in a shop's ledger.",
       "type": "object",
       "properties": {
         "id": {
@@ -300,60 +271,26 @@
         "shop_id": {
           "type": "string"
         },
-        "customer_id": {
-          "type": "string"
+        "customerPhone": {
+          "type": "string",
+          "description": "The phone number of the customer this entry belongs to."
         },
-        "customer_name": {
+        "customerName": {
           "type": "string",
           "description": "Denormalized name of the customer for display purposes."
-        },
-        "bill_number": {
-          "type": "string"
         },
         "amount": {
           "type": "number"
         },
-        "items": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "quantity": {
-                "type": "number"
-              },
-              "price": {
-                "type": "number"
-              },
-              "unit": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "quantity",
-              "price"
-            ]
-          }
+        "item": {
+          "type": "string",
+          "description": "A description of the item(s) in the transaction."
         },
-        "payment_status": {
+        "type": {
           "type": "string",
           "enum": [
-            "paid",
-            "pending",
-            "partial",
-            "failed"
-          ]
-        },
-        "payment_method": {
-          "type": "string",
-          "enum": [
-            "cash",
-            "upi",
-            "card",
-            "credit"
+            "credit",
+            "payment"
           ]
         },
         "source": {
@@ -364,25 +301,17 @@
             "manual"
           ]
         },
-        "image_url": {
-          "type": "string",
-          "format": "uri"
-        },
-        "notes": {
-          "type": "string"
-        },
-        "created_at": {
+        "createdAt": {
           "type": "string",
           "format": "date-time"
-        },
-        "created_by": {
-          "type": "string"
         }
       },
       "required": [
         "id",
         "shop_id",
-        "amount"
+        "amount",
+        "type",
+        "customerPhone"
       ]
     },
     "Post": {
@@ -474,41 +403,41 @@
         }
       },
       {
-        "path": "/shops/{shopId}/customers/{customerId}",
+        "path": "/shops/{shopId}/customers/{customerPhone}",
         "definition": {
           "entityName": "Customer",
           "schema": {
             "$ref": "#/backend/entities/Customer"
           },
-          "description": "Stores customers for a specific shop.",
+          "description": "Stores customers for a specific shop, using their phone number as the document ID.",
           "params": [
             {
               "name": "shopId",
               "description": "Parent shop ID."
             },
             {
-              "name": "customerId",
-              "description": "Unique ID for the customer."
+              "name": "customerPhone",
+              "description": "Customer's phone number, used as the unique document ID."
             }
           ]
         }
       },
       {
-        "path": "/shops/{shopId}/bills/{billId}",
+        "path": "/shops/{shopId}/ledger/{ledgerId}",
         "definition": {
-          "entityName": "Bill",
+          "entityName": "LedgerEntry",
           "schema": {
-            "$ref": "#/backend/entities/Bill"
+            "$ref": "#/backend/entities/LedgerEntry"
           },
-          "description": "Stores bills for a specific shop.",
+          "description": "Stores individual credit/payment transactions for a shop.",
           "params": [
             {
               "name": "shopId",
               "description": "Parent shop ID."
             },
             {
-              "name": "billId",
-              "description": "Unique ID for the bill."
+              "name": "ledgerId",
+              "description": "Unique ID for the ledger entry."
             }
           ]
         }
