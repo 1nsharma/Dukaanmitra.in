@@ -1,153 +1,103 @@
-/**
- * This ruleset establishes a multi-tenant security model for DukaanMitra.
- *
- * Core Concepts:
- * - isOwner(shopId): A helper function to verify if the requesting user owns the shop.
- *   This is the cornerstone of the multi-tenant security.
- * - User Profiles (`/users/{userId}`): Each user has a profile document. Rules ensure
- *   a user can only create their own profile with a 'user' role and cannot change
- *   their role after creation, preventing privilege escalation.
- * - Shops (`/shops/{shopId}`): Any authenticated user can create a shop, but they must
- *   set themselves as the `owner_id`. Only the owner can read, update, or delete their shop.
- * - Shop Subcollections (`/shops/{shopId}/{collection}/{docId}`): All data belonging to a
- *   shop (like customers, ledger entries, etc.) is protected by the `isOwner` function, ensuring
- *   strict data isolation between shops.
- * - Ledger Entries (`/shops/{shopId}/ledger/{ledgerId}`): Ledger entries are made immutable to protect financial records.
- *   They can be created but never updated or deleted.
- * - Contact Forms (`/contactFormSubmissions`): Publicly writable to allow anyone to send
- *   a message, but unreadable to protect PII.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if the current user is the owner of a given shop.
-    function isOwner(shopId) {
-      let shop = get(/databases/$(database)/documents/shops/$(shopId));
-      return request.auth != null && shop.data.owner_id == request.auth.uid;
+    // Helper Functions
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
-    
+
     function isSuperAdmin() {
       // Check if the user document exists and has the super_admin role.
       return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
     }
 
-    /**
-     * @description
-     * Allows any user to submit a contact form, but denies all read, update,
-     * and delete operations to protect PII.
-     */
-    match /contactFormSubmissions/{contactFormSubmissionId} {
-      allow get, list, update, delete: if false;
-      allow create: if true;
+    function isUserActive() {
+      // Allow if user is not authenticated (for public pages) or if their user doc doesn't exist yet (profile creation).
+      if (request.auth == null) {
+        return true;
+      }
+      let userDocPath = /databases/$(database)/documents/users/$(request.auth.uid);
+      // Allow if doc doesn't exist (profile creation) or if doc exists and status is active.
+      return !exists(userDocPath) || get(userDocPath).data.status == 'active';
     }
 
     /**
-     * @description
-     * A user can manage their own profile, but with restrictions to prevent
-     * privilege escalation. Super Admins can list all users.
-     */
-    match /users/{userId} {
-      /**
-       * @allow (read)
-       * A user can read their own profile document.
-       */
-      allow read: if request.auth.uid == userId || isSuperAdmin();
-
-      /**
-       * @allow (list)
-       * A Super Admin can list all user documents.
-       */
-      allow list: if isSuperAdmin();
-
-      /**
-       * @allow (create)
-       * An authenticated user can create their own profile, but they are only
-       * allowed to assign themselves the 'user' role. This prevents a new user
-       * from creating an admin account for themselves.
-       */
-      allow create: if request.auth.uid == userId
-                    && request.resource.data.role == 'user';
-
-      /**
-       * @allow (update)
-       * A user can update their own profile, but they are explicitly forbidden
-       * from changing their 'role'. This prevents an existing user from escalating
-       * their privileges. Role changes must be done by a Super Admin.
-       */
-      allow update: if (request.auth.uid == userId && request.resource.data.role == resource.data.role) || isSuperAdmin();
-    }
-
-
-    /**
-     * @description
-     * Manages access to shop documents.
-     */
-    match /shops/{shopId} {
-      /**
-       * @allow (create)
-       * An authenticated user can create a new shop document. The rule enforces
-       * that the `owner_id` in the new document MUST be the UID of the user
-       * creating it. This securely links a shop to its owner upon creation.
-       */
-      allow create: if request.auth != null && request.resource.data.owner_id == request.auth.uid;
-
-      /**
-       * @allow (read, update, delete)
-       * Only the user designated as the shop's owner can read, update, or delete it.
-       * This is enforced by the `isOwner` helper function.
-       */
-      allow read, update, delete: if isOwner(shopId);
-    }
-    
-    /**
-     * @description
-     * Generic rule for the customers subcollection.
-     * Access is granted only if the user is the owner of the parent shop.
-     */
-    match /shops/{shopId}/customers/{customerPhone} {
-      allow read, write: if isOwner(shopId);
-    }
-
-    /**
-     * @description
-     * Protects financial records by making ledger entries immutable.
-     */
-    match /shops/{shopId}/ledger/{ledgerId} {
-       /**
-       * @allow (read, create)
-       * Only the shop owner can read their ledger entries or create new ones.
-       */
-      allow read, create: if isOwner(shopId);
-       /**
-       * @allow (update, delete)
-       * Ledger entries are immutable and cannot be changed or deleted.
-       */
-      allow update, delete: if false;
-    }
-
-    /**
-     * @description
-     * Blog posts are publicly readable. Updates are only allowed to increment
-     * likes or views, one at a time, to prevent malicious writes.
-     * Creation/deletion is restricted.
+     * PUBLIC COLLECTIONS
      */
     match /posts/{postId} {
       allow read: if true;
-      allow update: if (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.views == resource.data.views + 1) && request.resource.data.diff(resource.data).affectedKeys().size() == 1;
-      allow create, delete: if false;
+      // Allow likes and views increments only by active users.
+      allow update: if isUserActive() &&
+                      (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.views == resource.data.views + 1) &&
+                      request.resource.data.diff(resource.data).affectedKeys().size() == 1;
+      allow create, delete: if isSuperAdmin(); // Only super admins can create/delete posts
+    }
+
+    match /comments/{commentId} {
+        allow read: if true;
+        // Only active users can create comments.
+        allow create: if isUserActive() && request.resource.data.keys().hasAll(['postSlug', 'name', 'message', 'createdAt']);
+        allow update, delete: if isSuperAdmin(); // Only super admins can moderate
+    }
+    
+    match /contactFormSubmissions/{submissionId} {
+        allow create: if true;
+        allow read, update, delete: if isSuperAdmin();
     }
 
     /**
-     * @description
-     * Comments are publicly readable and creatable by anyone, provided the
-     * required fields are present. Updates and deletes are not allowed.
+     * USER PROFILES
      */
-    match /comments/{commentId} {
-        allow read: if true;
-        allow create: if request.resource.data.keys().hasAll(['postSlug', 'name', 'message', 'createdAt']);
-        allow update, delete: if false;
+    match /users/{userId} {
+      // READ: Users can read their own profile. Super admins can read any profile.
+      allow read: if (isOwner(userId) || isSuperAdmin()) && isUserActive();
+      
+      // LIST: Only super admins can list users.
+      allow list: if isSuperAdmin() && isUserActive();
+
+      // CREATE: An authenticated user can create THEIR OWN profile.
+      // They must set their role to 'user' and status to 'active'.
+      allow create: if isOwner(userId)
+                    && request.resource.data.role == 'user'
+                    && request.resource.data.status == 'active';
+
+      // UPDATE:
+      // A user can update their own profile, BUT they cannot change their role or status.
+      // A super_admin can update any field on any user profile.
+      allow update: if (isOwner(userId) && isUserActive() && request.resource.data.role == resource.data.role && request.resource.data.status == resource.data.status) || isSuperAdmin();
+    
+      // DELETE: Only super admins can delete user profiles.
+      allow delete: if isSuperAdmin();
+    }
+
+    /**
+     * SHOPS and Subcollections
+     */
+    function isShopOwner(shopId) {
+      let shop = get(/databases/$(database)/documents/shops/$(shopId));
+      return request.auth != null && shop.data.owner_id == request.auth.uid;
+    }
+    
+    match /shops/{shopId} {
+      // Active users can create shops, and must set themselves as owner.
+      allow create: if isUserActive() && request.auth != null && request.resource.data.owner_id == request.auth.uid;
+
+      // Only the owner (who must be active) or a super admin can read/update/delete.
+      allow read, update, delete: if (isShopOwner(shopId) && isUserActive()) || isSuperAdmin();
+      
+       // All subcollections are protected by the same logic.
+      match /{subcollection}/{docId=**} {
+        // Ledger entries have special immutability rules
+        if subcollection == 'ledger' {
+          allow update, delete: if false;
+          allow read, create: if (isShopOwner(shopId) && isUserActive()) || isSuperAdmin();
+        } else {
+          allow read, write: if (isShopOwner(shopId) && isUserActive()) || isSuperAdmin();
+        }
+      }
     }
   }
 }
+

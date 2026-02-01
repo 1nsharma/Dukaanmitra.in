@@ -91,6 +91,11 @@
             "pending",
             "suspended"
           ]
+        },
+        "lastLogin": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the user's last login."
         }
       },
       "required": [
@@ -485,3 +490,4 @@
     "reasoning": "This Firestore structure organizes data by shop, allowing for secure, scalable multi-tenancy. Each shop's data (customers, bills) is nested under its own document. Security rules ensure that a user can only access data related to the shop they own. Blog posts and comments are stored in root collections for public access."
   }
 }
+

@@ -19,6 +19,7 @@ export type UserProfile = {
   shopId?: string;
   role: "user" | "admin" | "super_admin";
   status: "active" | "pending" | "suspended";
+  lastLogin?: any;
 };
 
 export type Shop = {
@@ -98,3 +99,4 @@ export type Comment = {
   message: string;
   createdAt: any;
 };
+

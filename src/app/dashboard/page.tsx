@@ -8,17 +8,29 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import CreateShopForm from "./create-shop-form";
 import ShopDashboard from "./shop-dashboard";
+import { useToast } from "@/hooks/use-toast";
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push("/login");
+    if (!isUserLoading) {
+      if (!user) {
+        router.push("/login");
+      } else if (user.status === 'suspended') {
+        auth.signOut();
+        toast({
+          title: 'Account Suspended',
+          description: 'Your account has been suspended. Please contact support.',
+          variant: 'destructive',
+        });
+        router.push('/login');
+      }
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, auth, toast]);
 
   const handleSignOut = async () => {
     try {
@@ -69,3 +81,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

@@ -11,7 +11,7 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -66,16 +66,17 @@ export default function LoginForm() {
           : signInWithEmailAndPassword(auth, values.email, values.password));
         
         const user = userCredential.user;
+        const userProfileRef = doc(firestore, "users", user.uid);
 
         if (isSignUp) {
           try {
-            const userProfileRef = doc(firestore, "users", user.uid);
             const profileData = {
               uid: user.uid,
               email: user.email,
               createdAt: serverTimestamp(),
               role: "user",
               status: "active",
+              lastLogin: serverTimestamp(),
             };
             await setDoc(userProfileRef, profileData, { merge: true });
           } catch (profileError: any) {
@@ -92,6 +93,12 @@ export default function LoginForm() {
                   variant: "destructive"
               });
           }
+        } else {
+            // On login, just update the lastLogin timestamp
+            updateDoc(userProfileRef, { lastLogin: serverTimestamp() }).catch(err => {
+                // Non-critical, just log it for debugging
+                console.warn("Could not update lastLogin timestamp", err);
+            });
         }
 
         toast({
@@ -217,3 +224,4 @@ export default function LoginForm() {
     </div>
   );
 }
+
