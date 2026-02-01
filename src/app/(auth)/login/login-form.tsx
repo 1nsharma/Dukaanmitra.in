@@ -42,7 +42,7 @@ type ResetFormValues = z.infer<typeof resetFormSchema>;
 // IMPORTANT: Replace this email with the user you want to promote.
 // After the user logs in and is promoted, this code and the corresponding
 // security rule MUST be removed.
-const SUPER_ADMIN_BOOTSTRAP_EMAIL = 'changeme@example.com';
+const SUPER_ADMIN_BOOTSTRAP_EMAIL = 'amitsharma99976@gmail.com';
 // -----------------------------------------
 
 
@@ -243,4 +243,3 @@ export default function LoginForm() {
     </div>
   );
 }
-

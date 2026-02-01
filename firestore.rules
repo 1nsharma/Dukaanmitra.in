@@ -28,7 +28,7 @@ service cloud.firestore {
     // This function enables the very first super_admin to be created.
     // It MUST be removed after the first super_admin is successfully created.
     function isBootstrapAdmin() {
-        return request.auth.token.email == 'changeme@example.com';
+        return request.auth.token.email == 'amitsharma99976@gmail.com';
     }
     // ----------------------------------------------
 
