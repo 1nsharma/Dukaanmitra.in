@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -29,9 +30,30 @@ import AddLedgerEntryForm from "./add-ledger-entry-form";
 import { Badge } from "@/components/ui/badge";
 import QuickAddLedger from "./quick-add-ledger";
 
+
 interface LedgerTabProps {
   shopId: string;
 }
+
+const renderEntryType = (type?: string) => {
+    switch (type) {
+      case 'credit': return <Badge variant="destructive">Credit</Badge>;
+      case 'payment': return <Badge className="border-transparent bg-success text-success-foreground shadow hover:bg-success/80">Payment</Badge>;
+      default: return <Badge variant="outline">{type}</Badge>;
+    }
+}
+
+const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    if (typeof date.toDate === 'function') {
+      return format(date.toDate(), "PPp");
+    }
+    if (typeof date === 'string') {
+        return format(parseISO(date), "PPp");
+    }
+    return 'Invalid Date';
+}
+
 
 export default function LedgerTab({ shopId }: LedgerTabProps) {
   const firestore = useFirestore();
@@ -46,25 +68,6 @@ export default function LedgerTab({ shopId }: LedgerTabProps) {
   }, [firestore, shopId]);
 
   const { data: ledgerEntries, isLoading } = useCollection<LedgerEntry>(ledgerQuery);
-  
-  const renderEntryType = (status?: string) => {
-    switch (status) {
-      case 'credit': return <Badge variant="destructive">Credit</Badge>;
-      case 'payment': return <Badge className="border-transparent bg-success text-success-foreground shadow hover:bg-success/80">Payment</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
-    }
-  }
-
-  const formatDate = (date: any) => {
-    if (!date) return 'N/A';
-    if (typeof date.toDate === 'function') {
-      return format(date.toDate(), "PPp");
-    }
-    if (typeof date === 'string') {
-        return format(parseISO(date), "PPp");
-    }
-    return 'Invalid Date';
-  }
 
   const handleExport = () => {
     if (!ledgerEntries) return;
@@ -104,19 +107,19 @@ export default function LedgerTab({ shopId }: LedgerTabProps) {
       <QuickAddLedger shopId={shopId} onEntryAdded={() => {}} />
 
       <Card className="mt-6">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <CardTitle>Transaction Ledger</CardTitle>
             <CardDescription>Manually manage your shop's transactions.</CardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleExport} disabled={!ledgerEntries || ledgerEntries.length === 0}>
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <Button variant="outline" onClick={handleExport} disabled={!ledgerEntries || ledgerEntries.length === 0} className="w-full md:w-auto">
                 <Download className="mr-2" />
                 Export CSV
             </Button>
             <Dialog open={isAddEntryOpen} onOpenChange={setAddEntryOpen}>
                 <DialogTrigger asChild>
-                <Button>
+                <Button className="w-full md:w-auto">
                     <PlusCircle className="mr-2" />
                     Add Manually
                 </Button>
@@ -134,42 +137,70 @@ export default function LedgerTab({ shopId }: LedgerTabProps) {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading && <Loader2 className="mx-auto my-12 h-8 w-8 animate-spin text-primary" />}
+          {isLoading && <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}
+          
           {!isLoading && !ledgerEntries?.length && (
             <div className="text-center py-12 text-muted-foreground">
               <p>No transactions found.</p>
               <p>Use the AI Quick Add or "Add Manually" to record your first transaction.</p>
             </div>
           )}
+
           {!isLoading && ledgerEntries && ledgerEntries.length > 0 && (
-            <div className="border rounded-md">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Item</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {ledgerEntries.map((entry) => (
-                    <TableRow key={entry.id}>
-                      <TableCell className="font-medium">{entry.customerName || entry.customerPhone}</TableCell>
-                      <TableCell>
-                        {formatDate(entry.createdAt)}
-                      </TableCell>
-                      <TableCell>{renderEntryType(entry.type)}</TableCell>
-                      <TableCell>{entry.item || 'N/A'}</TableCell>
-                      <TableCell className="text-right">
-                        {`₹${entry.amount.toFixed(2)}`}
-                      </TableCell>
+            <>
+              {/* Mobile View */}
+              <div className="md:hidden space-y-4">
+                {ledgerEntries.map((entry) => (
+                  <Card key={entry.id} className="w-full">
+                    <CardHeader>
+                       <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-base">{entry.customerName || entry.customerPhone}</CardTitle>
+                            <CardDescription>{formatDate(entry.createdAt)}</CardDescription>
+                          </div>
+                          {renderEntryType(entry.type)}
+                       </div>
+                    </CardHeader>
+                    <CardContent className="text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">{entry.item || 'Misc Transaction'}</span>
+                        <span className="font-bold text-base">{`₹${entry.amount.toFixed(2)}`}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop View */}
+              <div className="hidden md:block border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Item</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {ledgerEntries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell className="font-medium">{entry.customerName || entry.customerPhone}</TableCell>
+                        <TableCell>
+                          {formatDate(entry.createdAt)}
+                        </TableCell>
+                        <TableCell>{renderEntryType(entry.type)}</TableCell>
+                        <TableCell>{entry.item || 'N/A'}</TableCell>
+                        <TableCell className="text-right font-bold">
+                          {`₹${entry.amount.toFixed(2)}`}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

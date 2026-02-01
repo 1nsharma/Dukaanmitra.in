@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 const AppWindow = ({ title, icon, children, className, headerClass }: { title: string, icon: React.ReactNode, children: React.ReactNode, className?: string, headerClass?: string }) => (
-  <div className={cn("bg-card border border-border rounded-xl shadow-2xl shadow-black/30", className)}>
+  <div className={cn("bg-card border border-border rounded-xl shadow-medium", className)}>
     <div className={cn("px-4 py-2 border-b border-border flex items-center gap-2", headerClass)}>
       <div className="flex items-center gap-1.5">
         <div className="w-3 h-3 rounded-full bg-red-500/70"></div>
@@ -36,6 +36,20 @@ export default function LandingPage() {
   const mockupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const heroTexts = heroRef.current?.querySelectorAll('.hero-text');
+    const mockupWindows = mockupRef.current?.querySelectorAll('.app-window');
+
+    if (!heroTexts || !mockupWindows) return;
+
+    if (motionQuery.matches) {
+      // For users who prefer reduced motion, just make elements visible
+      heroTexts.forEach(el => ((el as HTMLElement).style.opacity = '1'));
+      mockupWindows.forEach(el => ((el as HTMLElement).style.opacity = '1'));
+      return;
+    }
+    
     // Cast anime to any to fix timeline access error
     const tl = (anime as any).timeline({
       easing: 'easeOutExpo',
@@ -43,13 +57,13 @@ export default function LandingPage() {
     });
 
     tl.add({
-      targets: '.hero-text',
+      targets: heroTexts,
       translateY: [50, 0],
       opacity: [0, 1],
       delay: anime.stagger(150)
     })
     .add({
-      targets: mockupRef.current.querySelectorAll('.app-window'),
+      targets: mockupWindows,
       translateY: [40, 0],
       scale: [0.95, 1],
       opacity: [0, 1],
@@ -103,18 +117,18 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-headline">
+    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans">
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="container px-6 lg:px-8 py-24 lg:py-32 relative z-10">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <div className="space-y-8 hero-text-container" ref={heroRef}>
+            <div className="space-y-8" ref={heroRef}>
               <div className="hero-text inline-flex items-center space-x-3 bg-secondary px-4 py-2 rounded-full border border-border">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                <span className="w-2 h-2 rounded-full bg-primary motion-safe:animate-pulse"></span>
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Aapka Digital Munim India #1</span>
               </div>
-              <h1 className="hero-text text-5xl md:text-7xl lg:text-8xl font-black leading-none tracking-tighter uppercase">
+              <h1 className="hero-text font-headline text-5xl md:text-7xl lg:text-8xl font-black leading-none tracking-tighter uppercase">
                 Register Feko, <br/>
                 <span className="text-primary">WhatsApp</span> Chalao!
               </h1>
@@ -125,7 +139,7 @@ export default function LandingPage() {
                 <div className="flex flex-col gap-2">
                     <Button
                     onClick={() => router.push('/dashboard')}
-                    className="px-8 py-6 rounded-full font-bold text-lg shadow-[0_15px_40px_-15px_rgba(234,255,150,0.2)] hover:scale-105 transition-transform active:scale-[0.98] tracking-tight"
+                    className="px-8 py-6 rounded-full font-bold text-lg shadow-medium shadow-primary/20 motion-safe:hover:scale-105 transition-transform active:scale-[0.98] tracking-tight"
                     size="lg"
                     >
                     Start Free Trial 🚀
@@ -135,7 +149,7 @@ export default function LandingPage() {
                 <Button 
                   variant="secondary"
                   size="lg"
-                  className="px-8 py-6 rounded-full font-bold text-lg hover:bg-muted transition-all shadow-xl shadow-black/20">
+                  className="px-8 py-6 rounded-full font-bold text-lg hover:bg-muted transition-all shadow-heavy">
                   Watch Demo 🎥
                 </Button>
               </div>
@@ -144,22 +158,22 @@ export default function LandingPage() {
             <div className="relative h-[500px] hidden lg:block" ref={mockupRef}>
                 <AppWindow title="WhatsApp" icon={<MessageCircle size={14}/>} className="app-window absolute w-[320px] top-0 left-1/2 -translate-x-1/2 z-10 transform-gpu" headerClass="bg-green-400/10">
                    <div className="space-y-3">
-                      <div className="bg-muted p-3 rounded-lg rounded-bl-none text-sm self-start max-w-[85%] shadow-md">
+                      <div className="bg-muted p-3 rounded-lg rounded-bl-none text-sm self-start max-w-[85%] shadow-sm">
                         Namaste Bhaiya! Aaj ka hisaab likhein? 🏠
                       </div>
                       <div className="flex justify-end">
-                        <div className="bg-primary/20 p-3 rounded-lg rounded-br-none text-sm self-end max-w-[85%] shadow-md">
+                        <div className="bg-primary/20 p-3 rounded-lg rounded-br-none text-sm self-end max-w-[85%] shadow-sm">
                           Rahul 500 udhaar chini
                         </div>
                       </div>
-                      <div className="bg-muted p-3 rounded-lg rounded-bl-none text-sm self-start max-w-[85%] shadow-md border-l-2 border-primary">
+                      <div className="bg-muted p-3 rounded-lg rounded-bl-none text-sm self-start max-w-[85%] shadow-sm border-l-2 border-primary">
                         <p className="font-bold text-primary text-xs mb-1">Entry Confirmed! ✅</p>
                         Rahul: ₹500 (Sugar)
                       </div>
                    </div>
                 </AppWindow>
 
-                <AppWindow title="Analytics" icon={<BarChart size={14}/>} className="app-window absolute w-[280px] top-1/4 -left-10 z-0 transform-gpu -rotate-[12deg]">
+                <AppWindow title="Analytics" icon={<BarChart size={14}/>} className="app-window absolute w-[280px] top-1/4 -left-10 z-0 transform-gpu motion-safe:-rotate-[12deg]">
                     <p className="text-sm text-muted-foreground mb-2">Today's Revenue</p>
                     <p className="text-3xl font-bold text-primary flex items-center">
                         <IndianRupee size={24} className="mr-1"/> 5,430
@@ -169,7 +183,7 @@ export default function LandingPage() {
                      </div>
                 </AppWindow>
                 
-                <AppWindow title="Ledger.txt" icon={<FileText size={14}/>} className="app-window absolute w-[300px] bottom-10 -right-10 z-20 transform-gpu rotate-[8deg]">
+                <AppWindow title="Ledger.txt" icon={<FileText size={14}/>} className="app-window absolute w-[300px] bottom-10 -right-10 z-20 transform-gpu motion-safe:rotate-[8deg]">
                     <div className="font-mono text-xs text-muted-foreground space-y-1.5">
                         <p><span className="text-green-400">[+]</span> Ravi Kumar - ₹250 (Paid)</p>
                         <p><span className="text-yellow-400">[~]</span> Sunita Devi - ₹120 (Credit)</p>
@@ -211,18 +225,18 @@ export default function LandingPage() {
       <section id="features" className="py-24 sm:py-32 px-4">
         <div className="container mx-auto space-y-16 text-center">
           <div className="max-w-3xl mx-auto">
-             <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">The Munim Flow</h2>
+             <h2 className="font-headline text-5xl md:text-6xl font-black uppercase tracking-tighter">The Munim Flow</h2>
              <p className="text-lg text-muted-foreground mt-4">A fully automated, end-to-end digital transformation for your shop, powered by AI.</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
              {dukaanFlow.map((step, i) => (
-               <div key={i} className="flow-step flex flex-col items-center text-center space-y-4 p-6 bg-card/50 rounded-3xl border border-border transition-all duration-300 hover:border-primary/50 hover:scale-105 hover:-translate-y-2">
+               <div key={i} className="flow-step flex flex-col items-center text-center space-y-4 p-6 bg-card/50 rounded-3xl border border-border transition-all duration-normal motion-safe:hover:border-primary/50 motion-safe:hover:scale-105 motion-safe:hover:-translate-y-2">
                   <div className="w-20 h-20 rounded-2xl bg-secondary shadow-lg flex items-center justify-center text-primary">
                     {step.icon}
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-bold uppercase tracking-tight">{step.title}</h3>
+                    <h3 className="font-headline text-xl font-bold uppercase tracking-tight">{step.title}</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">{step.desc}</p>
                   </div>
                </div>
@@ -234,7 +248,7 @@ export default function LandingPage() {
        {/* Digital Khata Benefits Section */}
       <section className="py-24 sm:py-32 px-4 bg-card border-y border-border">
         <div className="container mx-auto text-center">
-          <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Digital Khata Ke Fayde</h2>
+          <h2 className="font-headline text-5xl md:text-6xl font-black uppercase tracking-tighter">Digital Khata Ke Fayde</h2>
           <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">Manual hisaab ki tension chodo aur business badhao.</p>
           <div className="mt-16 max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-8 text-left">
             {digitalKhataBenefits.map((benefit, i) => (
@@ -259,7 +273,7 @@ export default function LandingPage() {
                 <blockquote className="text-2xl md:text-3xl font-bold italic text-foreground">
                     “Pehle 10–12 din lagte the udhaar wapas aane me, ab 4–5 din me payment aa jata hai.”
                 </blockquote>
-                <cite className="mt-6 block text-lg font-semibold text-primary not-italic">
+                <cite className="mt-6 block font-headline text-lg font-semibold text-primary not-italic">
                     – Ramesh Gupta, Kirana Owner, Delhi
                 </cite>
             </div>
@@ -275,7 +289,7 @@ export default function LandingPage() {
       <section className="pb-24 sm:pb-32 px-4">
           <div className="container mx-auto">
               <div className="max-w-3xl mx-auto text-center mb-16">
-                  <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Aapki Poori Dukaan, Ek Digital Nazar Me.</h2>
+                  <h2 className="font-headline text-5xl md:text-6xl font-black uppercase tracking-tighter">Aapki Poori Dukaan, Ek Digital Nazar Me.</h2>
                   <p className="text-lg text-muted-foreground mt-4">Apni dukaan ka poora control ek hi screen par. Aisa dikhta hai aapka dashboard.</p>
               </div>
               
@@ -284,25 +298,25 @@ export default function LandingPage() {
                       <Card className="lg:col-span-1 bg-secondary/30">
                           <CardHeader className="pb-2">
                               <CardDescription>Today's Revenue</CardDescription>
-                              <CardTitle className="text-3xl text-primary flex items-center"><IndianRupee size={24} className="mr-1"/>12,500</CardTitle>
+                              <CardTitle className="font-headline text-3xl text-primary flex items-center"><IndianRupee size={24} className="mr-1"/>12,500</CardTitle>
                           </CardHeader>
                       </Card>
                       <Card className="lg:col-span-1 bg-secondary/30">
                           <CardHeader className="pb-2">
                               <CardDescription>Total Udhaar</CardDescription>
-                              <CardTitle className="text-3xl flex items-center"><IndianRupee size={24} className="mr-1"/>84,350</CardTitle>
+                              <CardTitle className="font-headline text-3xl flex items-center"><IndianRupee size={24} className="mr-1"/>84,350</CardTitle>
                           </CardHeader>
                       </Card>
                       <Card className="lg:col-span-2 bg-secondary/30">
                            <CardHeader className="pb-2">
                               <CardDescription className="flex items-center gap-2"><AlertTriangle className="text-yellow-400" /> Low Stock Alerts</CardDescription>
-                              <CardTitle className="text-2xl">Parle-G, Amul Milk (1L)</CardTitle>
+                              <CardTitle className="font-headline text-2xl">Parle-G, Amul Milk (1L)</CardTitle>
                           </CardHeader>
                       </Card>
 
                       <Card className="md:col-span-2 lg:col-span-4 bg-secondary/30">
                           <CardHeader>
-                              <CardTitle>Top 5 Customers by Credit</CardTitle>
+                              <CardTitle className="font-headline">Top 5 Customers by Credit</CardTitle>
                           </CardHeader>
                           <CardContent>
                               <ul className="space-y-3">
@@ -333,7 +347,7 @@ export default function LandingPage() {
       {/* Setup Section */}
       <section className="py-24 sm:py-32 px-4 bg-card border-y border-border">
         <div className="container mx-auto text-center">
-            <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Setup in 10 Minutes</h2>
+            <h2 className="font-headline text-5xl md:text-6xl font-black uppercase tracking-tighter">Setup in 10 Minutes</h2>
             <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">System complicated nahi, bahot simple hai. Bas 3 aasaan steps.</p>
             <p className="mt-4 text-primary font-bold">10 minute me live hone ke liye free personal onboarding support.</p>
             <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center max-w-5xl mx-auto">
@@ -342,7 +356,7 @@ export default function LandingPage() {
                         <div className="w-16 h-16 bg-primary/10 text-primary flex items-center justify-center rounded-full mb-4 ring-8 ring-primary/5">
                             {step.icon}
                         </div>
-                        <h3 className="text-xl font-bold mb-2">{index + 1}. {step.title}</h3>
+                        <h3 className="font-headline text-xl font-bold mb-2">{index + 1}. {step.title}</h3>
                         <p className="text-muted-foreground">{step.description}</p>
                     </div>
                 ))}
@@ -356,14 +370,14 @@ export default function LandingPage() {
       {/* Pricing Preview Section */}
       <section id="pricing" className="py-24 sm:py-32">
         <div className="container text-center">
-            <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Simple, Transparent Pricing</h2>
+            <h2 className="font-headline text-5xl md:text-6xl font-black uppercase tracking-tighter">Simple, Transparent Pricing</h2>
             <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">Plans for every Kirana store, big or small. Get started for free.</p>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                 {pricingPreviewPlans.map((plan) => (
                     <Card key={plan.title} className="flex flex-col text-center bg-card/50">
                         <CardHeader>
-                            <CardTitle className="text-2xl font-bold">{plan.title}</CardTitle>
-                            <CardDescription className="text-4xl font-black tracking-tighter">{plan.price}</CardDescription>
+                            <CardTitle className="font-headline text-2xl font-bold">{plan.title}</CardTitle>
+                            <CardDescription className="font-headline text-4xl font-black tracking-tighter">{plan.price}</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-1">
                             <ul className="space-y-2 text-muted-foreground">
@@ -387,7 +401,7 @@ export default function LandingPage() {
       {/* Support Section */}
       <section className="py-24 sm:py-32 text-center">
         <div className="container">
-            <h2 className="text-3xl font-bold text-primary">Koi Bhi Dikkat?</h2>
+            <h2 className="font-headline text-3xl font-bold text-primary">Koi Bhi Dikkat?</h2>
             <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">
                 Direct WhatsApp ya call par <span className="text-foreground font-bold">real insaan</span> se madad. Hum yahaan hain aapke liye.
             </p>

@@ -49,25 +49,25 @@ export default function PricingPage() {
     <div className="bg-background">
       <div className="container py-24 sm:py-32">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">
+          <h1 className="font-headline text-5xl md:text-6xl font-black uppercase tracking-tighter">
             Simple, transparent pricing for every Kirana.
           </h1>
           <p className="text-lg text-muted-foreground mt-4">No hidden fees. No long-term contracts. Cancel anytime.</p>
         </div>
         
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 items-start">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 items-stretch">
           {plans.map((plan) => (
             <Card
               key={plan.title}
               className={cn(
-                'flex flex-col rounded-3xl bg-secondary/50 border-2 border-border transition-all duration-300 hover:scale-[1.03] hover:border-primary', 
-                plan.isRecommended && 'border-primary ring-4 ring-primary/20 shadow-2xl shadow-primary/10'
+                'flex flex-col rounded-3xl bg-card border-2 border-border transition-all duration-normal motion-safe:hover:scale-[1.03] motion-safe:hover:border-primary', 
+                plan.isRecommended && 'border-primary ring-4 ring-primary/20 shadow-heavy shadow-primary/10'
               )}
             >
               <CardHeader className="items-center text-center">
-                  <CardTitle className="text-2xl font-bold uppercase tracking-tight">{plan.title}</CardTitle>
+                  <CardTitle className="font-headline text-2xl font-bold uppercase tracking-tight">{plan.title}</CardTitle>
                   <div className="flex items-baseline">
-                  <span className="text-5xl font-black tracking-tighter">{plan.price}</span>
+                  <span className="font-headline text-5xl font-black tracking-tighter">{plan.price}</span>
                   {plan.period && <span className="text-muted-foreground font-semibold">{plan.period}</span>}
                   </div>
                   <CardDescription className="pt-2 h-12">{plan.description}</CardDescription>
@@ -76,7 +76,7 @@ export default function PricingPage() {
                   <ul className="space-y-4">
                   {plan.features.map((feature) => (
                       <li key={feature} className="flex items-start">
-                      <Check className="w-5 h-5 text-green-400 mr-3 mt-1 shrink-0" />
+                      <Check className="w-5 h-5 text-success mr-3 mt-1 shrink-0" />
                       <span className="text-muted-foreground">{feature}</span>
                       </li>
                   ))}

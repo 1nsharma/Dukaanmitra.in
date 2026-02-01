@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -5,7 +6,7 @@ import { collection, query, orderBy } from "firebase/firestore";
 import { Loader2, PlusCircle, Download } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useCollection, useFirestore, useMemoFirebase, type WithId } from "@/firebase";
 import type { Customer } from "@/docs/backend-types";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,28 @@ interface CustomersTabProps {
   shopId: string;
 }
 
+const renderCustomerStatus = (status?: string) => {
+    switch (status) {
+      case 'new': return <Badge variant="secondary">New</Badge>;
+      case 'regular': return <Badge className="bg-blue-500/10 text-blue-500">Regular</Badge>;
+      case 'vip': return <Badge className="border-transparent bg-accent text-accent-foreground shadow hover:bg-accent/80">VIP</Badge>;
+      case 'churned': return <Badge variant="destructive">Churned</Badge>;
+      default: return <Badge variant="outline">{status}</Badge>;
+    }
+}
+
+const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    if (typeof date.toDate === 'function') {
+      return format(date.toDate(), "PPP");
+    }
+    if(typeof date === 'string') {
+        return format(parseISO(date as string), "PPP");
+    }
+    return 'Invalid Date';
+}
+
+
 export default function CustomersTab({ shopId }: CustomersTabProps) {
   const firestore = useFirestore();
   const [isAddCustomerOpen, setAddCustomerOpen] = useState(false);
@@ -45,27 +68,6 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
   }, [firestore, shopId]);
 
   const { data: customers, isLoading } = useCollection<Customer>(customersQuery);
-
-  const renderCustomerStatus = (status?: string) => {
-    switch (status) {
-      case 'new': return <Badge variant="secondary">New</Badge>;
-      case 'regular': return <Badge>Regular</Badge>;
-      case 'vip': return <Badge className="border-transparent bg-accent text-accent-foreground shadow hover:bg-accent/80">VIP</Badge>;
-      case 'churned': return <Badge variant="destructive">Churned</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
-    }
-  }
-
-  const formatDate = (date: any) => {
-    if (!date) return 'N/A';
-    if (typeof date.toDate === 'function') {
-      return format(date.toDate(), "PPP");
-    }
-    if(typeof date === 'string') {
-        return format(parseISO(date as string), "PPP");
-    }
-    return 'Invalid Date';
-  }
 
   const handleExport = () => {
     if (!customers) return;
@@ -109,19 +111,19 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <CardTitle>Customers</CardTitle>
           <CardDescription>Manage your shop's customers. New customers are added automatically from WhatsApp.</CardDescription>
         </div>
-        <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleExport} disabled={!customers || customers.length === 0}>
+        <div className="flex items-center gap-2 w-full md:w-auto">
+            <Button variant="outline" onClick={handleExport} disabled={!customers || customers.length === 0} className="w-full md:w-auto">
                 <Download className="mr-2" />
                 Export CSV
             </Button>
             <Dialog open={isAddCustomerOpen} onOpenChange={setAddCustomerOpen}>
             <DialogTrigger asChild>
-                <Button>
+                <Button className="w-full md:w-auto">
                 <PlusCircle className="mr-2" />
                 Add Customer
                 </Button>
@@ -139,42 +141,74 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading && <Loader2 className="mx-auto my-12 h-8 w-8 animate-spin text-primary" />}
+        {isLoading && <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}
+        
         {!isLoading && !customers?.length && (
           <div className="text-center py-12 text-muted-foreground">
             <p>No customers found.</p>
             <p>Use the AI Quick Add in the Ledger tab to get started.</p>
           </div>
         )}
+        
         {!isLoading && customers && customers.length > 0 && (
-          <div className="border rounded-md">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Last Visit</TableHead>
-                  <TableHead className="text-right">Total Udhaar</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
                 {customers.map((customer) => (
-                  <TableRow key={customer.phone}>
-                    <TableCell className="font-medium">{customer.name}</TableCell>
-                    <TableCell>{customer.phone}</TableCell>
-                    <TableCell>{renderCustomerStatus(customer.status)}</TableCell>
-                    <TableCell>
-                      {formatDate(customer.last_visit)}
-                    </TableCell>
-                    <TableCell className="text-right font-bold">
-                      {`₹${(customer.totalUdhaar || 0).toFixed(2)}`}
-                    </TableCell>
-                  </TableRow>
+                    <Card key={customer.phone} className="w-full">
+                        <CardHeader>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle className="text-base">{customer.name}</CardTitle>
+                                    <CardDescription>{customer.phone}</CardDescription>
+                                </div>
+                                {renderCustomerStatus(customer.status)}
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-sm">
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Last Visit</span>
+                                <span>{formatDate(customer.last_visit)}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Total Udhaar</span>
+                                <span className="font-bold text-base">{`₹${(customer.totalUdhaar || 0).toFixed(2)}`}</span>
+                            </div>
+                        </CardContent>
+                    </Card>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden md:block border rounded-md">
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Last Visit</TableHead>
+                    <TableHead className="text-right">Total Udhaar</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {customers.map((customer) => (
+                    <TableRow key={customer.phone}>
+                        <TableCell className="font-medium">{customer.name}</TableCell>
+                        <TableCell>{customer.phone}</TableCell>
+                        <TableCell>{renderCustomerStatus(customer.status)}</TableCell>
+                        <TableCell>
+                        {formatDate(customer.last_visit)}
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                        {`₹${(customer.totalUdhaar || 0).toFixed(2)}`}
+                        </TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>

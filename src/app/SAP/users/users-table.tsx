@@ -1,3 +1,4 @@
+
 'use client';
 
 import { collection, query, orderBy } from 'firebase/firestore';
@@ -6,13 +7,48 @@ import type { UserProfile } from '@/docs/backend-types';
 import { Loader2, MoreHorizontal, UserCheck, Shield, UserX } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useTransition } from 'react';
 import { updateUserRole, updateUserStatus } from '@/firebase/admin-actions';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
+
+const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    const d = date.toDate ? date.toDate() : new Date(date);
+    return format(d, 'PPp');
+};
+
+const renderRoleBadge = (role: string) => {
+    switch(role) {
+        case 'super_admin': return <Badge className="bg-primary text-primary-foreground hover:bg-primary/80">Super Admin</Badge>;
+        case 'admin': return <Badge variant="secondary">Admin</Badge>;
+        default: return <Badge variant="outline">User</Badge>;
+    }
+}
+
+const renderStatusBadge = (status: string) => {
+    switch(status) {
+        case 'active': return <Badge className="bg-green-500/20 text-green-500 border-green-400">Active</Badge>;
+        case 'suspended': return <Badge variant="destructive">Suspended</Badge>;
+        case 'pending': return <Badge variant="secondary">Pending</Badge>;
+        default: return <Badge variant="outline">{status}</Badge>;
+    }
+}
 
 export default function UsersTable() {
     const firestore = useFirestore();
@@ -25,29 +61,6 @@ export default function UsersTable() {
 
     const { data: users, isLoading } = useCollection<UserProfile>(usersQuery);
     
-    const formatDate = (date: any) => {
-        if (!date) return 'N/A';
-        const d = date.toDate ? date.toDate() : new Date(date);
-        return format(d, 'PPp');
-    };
-    
-    const renderRoleBadge = (role: string) => {
-        switch(role) {
-            case 'super_admin': return <Badge className="bg-primary text-primary-foreground hover:bg-primary/80">Super Admin</Badge>;
-            case 'admin': return <Badge variant="secondary">Admin</Badge>;
-            default: return <Badge variant="outline">User</Badge>;
-        }
-    }
-    
-    const renderStatusBadge = (status: string) => {
-        switch(status) {
-            case 'active': return <Badge className="bg-green-500/20 text-green-300 border-green-400">Active</Badge>;
-            case 'suspended': return <Badge variant="destructive">Suspended</Badge>;
-            case 'pending': return <Badge variant="secondary">Pending</Badge>;
-            default: return <Badge variant="outline">{status}</Badge>;
-        }
-    }
-
     const handleUpdateRole = (uid: string, newRole: UserProfile['role']) => {
         startTransition(async () => {
             try {
@@ -92,31 +105,21 @@ export default function UsersTable() {
     }
 
     return (
-        <div className="border rounded-md">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Display Name</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Last Login</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {users?.map(user => (
-                        <TableRow key={user.uid}>
-                            <TableCell className="font-medium">{user.email}</TableCell>
-                            <TableCell>{user.displayName || 'N/A'}</TableCell>
-                            <TableCell>{renderRoleBadge(user.role)}</TableCell>
-                            <TableCell>{renderStatusBadge(user.status)}</TableCell>
-                            <TableCell>{formatDate(user.lastLogin)}</TableCell>
-                            <TableCell className="text-right">
+        <>
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+                {users?.map(user => (
+                    <Card key={user.uid} className="w-full">
+                        <CardHeader>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle className="text-base">{user.displayName || user.email}</CardTitle>
+                                    <CardDescription>{user.email}</CardDescription>
+                                </div>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" className="h-8 w-8 p-0" disabled={isPending}>
-                                            <span className="sr-only">Open menu</span>
+                                            <span className="sr-only">Open menu for {user.email}</span>
                                             <MoreHorizontal className="h-4 w-4" />
                                         </Button>
                                     </DropdownMenuTrigger>
@@ -124,33 +127,131 @@ export default function UsersTable() {
                                         <DropdownMenuLabel>User: {user.email}</DropdownMenuLabel>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                                        <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'admin')} disabled={isPending || user.role === 'admin'}>
-                                            <UserCheck className="mr-2 h-4 w-4" /> Promote to Admin
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'user')} disabled={isPending || user.role === 'user'}>
-                                            <UserX className="mr-2 h-4 w-4" /> Demote to User
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'super_admin')} disabled={isPending || user.role === 'super_admin'}>
-                                            <Shield className="mr-2 h-4 w-4" /> Make Super Admin
-                                        </DropdownMenuItem>
+                                        {user.role !== 'admin' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'admin')} disabled={isPending}><UserCheck className="mr-2 h-4 w-4" /> Promote to Admin</DropdownMenuItem>}
+                                        {user.role !== 'user' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'user')} disabled={isPending}><UserX className="mr-2 h-4 w-4" /> Demote to User</DropdownMenuItem>}
+                                        {user.role !== 'super_admin' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'super_admin')} disabled={isPending}><Shield className="mr-2 h-4 w-4" /> Make Super Admin</DropdownMenuItem>}
                                         <DropdownMenuSeparator />
                                         <DropdownMenuLabel>Change Status</DropdownMenuLabel>
                                         {user.status === 'active' ? (
-                                            <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'suspended')} disabled={isPending} className="text-destructive">
-                                                <UserX className="mr-2 h-4 w-4" /> Suspend User
-                                            </DropdownMenuItem>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                                                        <UserX className="mr-2 h-4 w-4" /> Suspend User
+                                                    </DropdownMenuItem>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>This will block the user from accessing their account.</AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleUpdateStatus(user.uid, 'suspended')} disabled={isPending}>Suspend</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         ) : (
-                                            <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'active')} disabled={isPending}>
-                                                <UserCheck className="mr-2 h-4 w-4" /> Reactivate User
-                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'active')} disabled={isPending}><UserCheck className="mr-2 h-4 w-4" /> Reactivate User</DropdownMenuItem>
                                         )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                            </TableCell>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Role</span>
+                                {renderRoleBadge(user.role)}
+                            </div>
+                             <div className="flex justify-between">
+                                <span className="text-muted-foreground">Status</span>
+                                {renderStatusBadge(user.status)}
+                            </div>
+                             <div className="flex justify-between">
+                                <span className="text-muted-foreground">Last Login</span>
+                                <span>{formatDate(user.lastLogin)}</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+            
+            {/* Desktop View */}
+            <div className="hidden md:block border rounded-md">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Display Name</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Last Login</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </div>
+                    </TableHeader>
+                    <TableBody>
+                        {users?.map(user => (
+                            <TableRow key={user.uid}>
+                                <TableCell className="font-medium">{user.email}</TableCell>
+                                <TableCell>{user.displayName || 'N/A'}</TableCell>
+                                <TableCell>{renderRoleBadge(user.role)}</TableCell>
+                                <TableCell>{renderStatusBadge(user.status)}</TableCell>
+                                <TableCell>{formatDate(user.lastLogin)}</TableCell>
+                                <TableCell className="text-right">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-0" disabled={isPending}>
+                                                <span className="sr-only">Open menu for {user.email}</span>
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>User: {user.email}</DropdownMenuLabel>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuLabel>Change Role</DropdownMenuLabel>
+                                            {user.role !== 'admin' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'admin')} disabled={isPending}><UserCheck className="mr-2 h-4 w-4" /> Promote to Admin</DropdownMenuItem>}
+                                            {user.role !== 'user' &&  <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'user')} disabled={isPending}><UserX className="mr-2 h-4 w-4" /> Demote to User</DropdownMenuItem>}
+                                            {user.role !== 'super_admin' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'super_admin')} disabled={isPending}><Shield className="mr-2 h-4 w-4" /> Make Super Admin</DropdownMenuItem>}
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                                            {user.status === 'active' ? (
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                                                            <UserX className="mr-2 h-4 w-4" /> Suspend User
+                                                        </DropdownMenuItem>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                This action will immediately block the user from accessing the application. Their account and data will be preserved, but they will not be able to log in.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                className={buttonVariants({ variant: "destructive" })}
+                                                                onClick={() => handleUpdateStatus(user.uid, 'suspended')}
+                                                                disabled={isPending}
+                                                            >
+                                                                {isPending ? 'Suspending...' : 'Yes, Suspend User'}
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            ) : (
+                                                <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'active')} disabled={isPending}>
+                                                    <UserCheck className="mr-2 h-4 w-4" /> Reactivate User
+                                                </DropdownMenuItem>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        </>
     );
 }
