@@ -92,7 +92,7 @@ export default function Header() {
                               Dashboard
                             </DropdownMenuItem>
                             {user.role === 'super_admin' && (
-                              <DropdownMenuItem onClick={() => router.push('/super-admin/dashboard')}>
+                              <DropdownMenuItem onClick={() => router.push('/SAP/dashboard')}>
                                 <Shield className="mr-2" />
                                 Super Admin
                               </DropdownMenuItem>
@@ -153,7 +153,7 @@ export default function Header() {
                             <>
                                 <Button onClick={() => {router.push('/dashboard'); setMobileMenuOpen(false);}} size="lg">Dashboard</Button>
                                 {user.role === 'super_admin' && (
-                                  <Button onClick={() => {router.push('/super-admin/dashboard'); setMobileMenuOpen(false);}} size="lg" variant="secondary">Super Admin</Button>
+                                  <Button onClick={() => {router.push('/SAP/dashboard'); setMobileMenuOpen(false);}} size="lg" variant="secondary">Super Admin</Button>
                                 )}
                                 <Button onClick={() => {handleSignOut(); setMobileMenuOpen(false);}} variant="outline" size="lg">Sign Out</Button>
                             </>

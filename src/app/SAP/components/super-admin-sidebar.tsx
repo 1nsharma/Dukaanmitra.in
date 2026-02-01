@@ -15,14 +15,14 @@ import {
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/super-admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/super-admin/users', label: 'User Management', icon: Users },
-  { href: '/super-admin/admins', label: 'Admin Control', icon: UserCheck },
-  { href: '/super-admin/data', label: 'Data Explorer', icon: Database },
-  { href: '/super-admin/logs', label: 'Logs & Activity', icon: FileClock },
-  { href: '/super-admin/system', label: 'System Health', icon: HeartPulse },
-  { href: '/super-admin/security', label: 'Security Center', icon: Shield },
-  { href: '/super-admin/settings', label: 'Global Settings', icon: Settings },
+  { href: '/SAP/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/SAP/users', label: 'User Management', icon: Users },
+  { href: '/SAP/admins', label: 'Admin Control', icon: UserCheck },
+  { href: '/SAP/data', label: 'Data Explorer', icon: Database },
+  { href: '/SAP/logs', label: 'Logs & Activity', icon: FileClock },
+  { href: '/SAP/system', label: 'System Health', icon: HeartPulse },
+  { href: '/SAP/security', label: 'Security Center', icon: Shield },
+  { href: '/SAP/settings', label: 'Global Settings', icon: Settings },
 ];
 
 export default function SuperAdminSidebar() {
