@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -25,7 +24,7 @@ const CLICK_PHRASES = [
     'Ready to digitize your dukaan? I can guide you.',
     'You can also use the main chat assistant on the right for a full demo!',
 ];
-const ROBOT_SIZE = 220;
+const ROBOT_SIZE = 120;
 
 // --- HOOKS ---
 
