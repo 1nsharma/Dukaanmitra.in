@@ -17,7 +17,14 @@ const SPEECH_MAP: Record<string, string> = {
   '#features': 'Features dekho!',
   '#pricing': 'Plans yahaan hain.',
 };
-const ROBOT_SIZE = 200; // Increased size
+const CLICK_PHRASES = [
+    'Kya haal hai?',
+    'DukaanMitra, aapka saathi.',
+    'Kuch puchna hai?',
+    'Ready to grow?',
+    'Main aapki kya madad kar sakta hu?',
+];
+const ROBOT_SIZE = 200;
 
 // --- HOOKS ---
 
@@ -176,6 +183,7 @@ export default function Mitraa() {
       setIsClient(true);
   }, []);
 
+  // Scroll-based speech effect
   useEffect(() => {
     if (isScrolling) {
       if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
@@ -190,13 +198,25 @@ export default function Mitraa() {
 
       speechTimerRef.current = setTimeout(() => {
         setSpeech(null);
-      }, 2000);
+      }, 3000);
     }
 
     return () => {
       if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
     };
   }, [activeSection, isScrolling]);
+
+  // Click handler for the robot
+  const handleRobotClick = () => {
+      if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
+      
+      const randomPhrase = CLICK_PHRASES[Math.floor(Math.random() * CLICK_PHRASES.length)];
+      setSpeech(randomPhrase);
+
+      speechTimerRef.current = setTimeout(() => {
+          setSpeech(null);
+      }, 3000);
+  };
   
   if (!isClient) {
       return null;
@@ -204,8 +224,11 @@ export default function Mitraa() {
 
   return (
     <div
-      className="fixed bottom-6 left-6 z-50 pointer-events-none"
+      className="fixed bottom-6 left-6 z-50 cursor-pointer"
       style={{ width: ROBOT_SIZE, height: ROBOT_SIZE }}
+      onClick={handleRobotClick}
+      aria-label="Chat with Mitraa Robot"
+      role="button"
     >
       <div
         className={cn(
