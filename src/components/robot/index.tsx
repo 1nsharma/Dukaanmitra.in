@@ -7,8 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 const SELECTORS = '#features, #pricing';
 
 const SPEECH_MAP: Record<string, string> = {
-  '#features': 'Yeh hain hamare top features! Aapke bade kaam aayenge.',
-  '#pricing': 'Simple plans, jo har dukaan ke liye fit ho.',
+  '#features': 'fix',
+  '#pricing': 'fix',
 };
 
 /**
@@ -65,8 +65,8 @@ const useRobotAwareness = (selectors: string) => {
 
 const RobotSvg = () => (
   <motion.svg
-    width="100"
-    height="100"
+    width="120"
+    height="120"
     viewBox="0 0 100 100"
     initial={{ y: 20, opacity: 0 }}
     animate={{ y: 0, opacity: 1 }}
@@ -113,7 +113,7 @@ const SpeechBubble = ({ text }: { text: string }) => (
     animate={{ opacity: 1, y: 0, scale: 1 }}
     exit={{ opacity: 0, y: 10, scale: 0.9 }}
     transition={{ duration: 0.3, ease: 'easeOut' }}
-    className="absolute bottom-full mb-4 w-48 rounded-lg bg-card border border-border p-3 text-sm text-foreground shadow-lg"
+    className="absolute bottom-full mb-4 w-auto whitespace-nowrap rounded-lg bg-card border border-border px-3 py-2 text-sm text-foreground shadow-lg"
   >
     {text}
     <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-border" />
@@ -121,27 +121,33 @@ const SpeechBubble = ({ text }: { text: string }) => (
 );
 
 export default function Mitraa() {
-  const { activeSection, isScrolling } = useRobotAwareness(SELECTORS);
+  const { activeSection } = useRobotAwareness(SELECTORS);
   const [speech, setSpeech] = useState<string | null>(null);
+  const speechTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (isScrolling) {
-      setSpeech(null);
-      return;
+    if (speechTimerRef.current) {
+      clearTimeout(speechTimerRef.current);
     }
 
     if (activeSection && SPEECH_MAP[activeSection]) {
-      const timeout = setTimeout(() => {
-        setSpeech(SPEECH_MAP[activeSection]);
-      }, 500); // Show speech after a brief pause
-      return () => clearTimeout(timeout);
+      setSpeech(SPEECH_MAP[activeSection]);
+      speechTimerRef.current = setTimeout(() => {
+        setSpeech(null);
+      }, 1500); // Show message for 1.5 seconds
     } else {
-       setSpeech(null);
+      setSpeech(null);
     }
-  }, [activeSection, isScrolling]);
+
+    return () => {
+      if (speechTimerRef.current) {
+        clearTimeout(speechTimerRef.current);
+      }
+    };
+  }, [activeSection]);
 
   return (
-    <div className="fixed bottom-6 left-6 z-50 w-[120px] h-[120px] pointer-events-none">
+    <div className="fixed bottom-6 left-6 z-50 w-[150px] h-[150px] pointer-events-none flex items-center justify-center">
       <div className={cn(
         'relative w-full h-full rounded-2xl p-2 transition-all duration-300',
         'bg-card/30 backdrop-blur-md border border-primary/20',
