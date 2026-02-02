@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -18,13 +19,13 @@ const SPEECH_MAP: Record<string, string> = {
   '#pricing': 'Plans yahaan hain.',
 };
 const CLICK_PHRASES = [
-    'Kya haal hai?',
-    'DukaanMitra, aapka saathi.',
-    'Kuch puchna hai?',
-    'Ready to grow?',
-    'Main aapki kya madad kar sakta hu?',
+    'Hello! I can help you demo our product. What would you like to see?',
+    'I am the DukaanMitra AI. Ask me about features, pricing, or how to get started!',
+    'Want to know how the AI Munim works? Just ask!',
+    'Ready to digitize your dukaan? I can guide you.',
+    'You can also use the main chat assistant on the right for a full demo!',
 ];
-const ROBOT_SIZE = 200;
+const ROBOT_SIZE = 220;
 
 // --- HOOKS ---
 
@@ -215,7 +216,7 @@ export default function Mitraa() {
 
       speechTimerRef.current = setTimeout(() => {
           setSpeech(null);
-      }, 3000);
+      }, 4000);
   };
   
   if (!isClient) {
