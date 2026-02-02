@@ -37,20 +37,17 @@ export default function LandingPage() {
 
   useEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-
     const heroTexts = heroRef.current?.querySelectorAll('.hero-text');
     const mockupWindows = mockupRef.current?.querySelectorAll('.app-window');
 
     if (!heroTexts || !mockupWindows) return;
 
     if (motionQuery.matches) {
-      // For users who prefer reduced motion, just make elements visible
       heroTexts.forEach(el => ((el as HTMLElement).style.opacity = '1'));
       mockupWindows.forEach(el => ((el as HTMLElement).style.opacity = '1'));
       return;
     }
     
-    // Cast anime to any to fix timeline access error
     const tl = (anime as any).timeline({
       easing: 'easeOutExpo',
       duration: 1200

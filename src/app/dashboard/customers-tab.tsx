@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { collection, query, orderBy } from "firebase/firestore";
-import { Loader2, PlusCircle, Download } from "lucide-react";
+import { Loader2, PlusCircle, Download, Users } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -144,9 +144,10 @@ export default function CustomersTab({ shopId }: CustomersTabProps) {
         {isLoading && <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}
         
         {!isLoading && !customers?.length && (
-          <div className="text-center py-12 text-muted-foreground">
-            <p>No customers found.</p>
-            <p>Use the AI Quick Add in the Ledger tab to get started.</p>
+          <div className="text-center py-12 text-muted-foreground flex flex-col items-center gap-4">
+            <Users className="w-16 h-16 text-muted-foreground/50" />
+            <h3 className="text-xl font-semibold text-foreground">No Customers Found</h3>
+            <p className="max-w-md">New customers are added automatically from WhatsApp, or you can add them manually using the button above.</p>
           </div>
         )}
         

@@ -2,7 +2,7 @@
 'use client';
 
 import { collection, query, orderBy } from 'firebase/firestore';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import type { UserProfile } from '@/docs/backend-types';
 import { Loader2, MoreHorizontal, UserCheck, Shield, UserX } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -54,6 +54,7 @@ export default function UsersTable() {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
+    const { user: currentUser } = useUser();
 
     const usersQuery = useMemoFirebase(() => {
         return query(collection(firestore, "users"), orderBy("createdAt", "desc"));
@@ -108,7 +109,9 @@ export default function UsersTable() {
         <>
             {/* Mobile View */}
             <div className="md:hidden space-y-4">
-                {users?.map(user => (
+                {users?.map(user => {
+                    const isTargetProtected = user.role === 'super_admin' || currentUser?.uid === user.uid;
+                    return (
                     <Card key={user.uid} className="w-full">
                         <CardHeader>
                             <div className="flex justify-between items-start">
@@ -127,31 +130,40 @@ export default function UsersTable() {
                                         <DropdownMenuLabel>User: {user.email}</DropdownMenuLabel>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                                        {user.role !== 'admin' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'admin')} disabled={isPending}><UserCheck className="mr-2 h-4 w-4" /> Promote to Admin</DropdownMenuItem>}
-                                        {user.role !== 'user' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'user')} disabled={isPending}><UserX className="mr-2 h-4 w-4" /> Demote to User</DropdownMenuItem>}
-                                        {user.role !== 'super_admin' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'super_admin')} disabled={isPending}><Shield className="mr-2 h-4 w-4" /> Make Super Admin</DropdownMenuItem>}
+                                        {isTargetProtected ? (
+                                            <DropdownMenuItem disabled>Role cannot be changed</DropdownMenuItem>
+                                        ) : (
+                                            <>
+                                                {user.role !== 'admin' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'admin')} disabled={isPending}><UserCheck className="mr-2 h-4 w-4" /> Promote to Admin</DropdownMenuItem>}
+                                                {user.role !== 'user' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'user')} disabled={isPending}><UserX className="mr-2 h-4 w-4" /> Demote to User</DropdownMenuItem>}
+                                            </>
+                                        )}
                                         <DropdownMenuSeparator />
                                         <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                                        {user.status === 'active' ? (
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                                                        <UserX className="mr-2 h-4 w-4" /> Suspend User
-                                                    </DropdownMenuItem>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                        <AlertDialogDescription>This will block the user from accessing their account.</AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleUpdateStatus(user.uid, 'suspended')} disabled={isPending}>Suspend</AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
+                                        {isTargetProtected ? (
+                                            <DropdownMenuItem disabled>Status cannot be changed</DropdownMenuItem>
                                         ) : (
-                                            <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'active')} disabled={isPending}><UserCheck className="mr-2 h-4 w-4" /> Reactivate User</DropdownMenuItem>
+                                            user.status === 'active' ? (
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                                                            <UserX className="mr-2 h-4 w-4" /> Suspend User
+                                                        </DropdownMenuItem>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>This will block the user from accessing their account.</AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleUpdateStatus(user.uid, 'suspended')} disabled={isPending}>Suspend</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            ) : (
+                                                <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'active')} disabled={isPending}><UserCheck className="mr-2 h-4 w-4" /> Reactivate User</DropdownMenuItem>
+                                            )
                                         )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -172,7 +184,7 @@ export default function UsersTable() {
                             </div>
                         </CardContent>
                     </Card>
-                ))}
+                )})}
             </div>
             
             {/* Desktop View */}
@@ -189,7 +201,9 @@ export default function UsersTable() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {users?.map(user => (
+                        {users?.map(user => {
+                            const isTargetProtected = user.role === 'super_admin' || currentUser?.uid === user.uid;
+                            return (
                             <TableRow key={user.uid}>
                                 <TableCell className="font-medium">{user.email}</TableCell>
                                 <TableCell>{user.displayName || 'N/A'}</TableCell>
@@ -208,47 +222,56 @@ export default function UsersTable() {
                                             <DropdownMenuLabel>User: {user.email}</DropdownMenuLabel>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                                            {user.role !== 'admin' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'admin')} disabled={isPending}><UserCheck className="mr-2 h-4 w-4" /> Promote to Admin</DropdownMenuItem>}
-                                            {user.role !== 'user' &&  <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'user')} disabled={isPending}><UserX className="mr-2 h-4 w-4" /> Demote to User</DropdownMenuItem>}
-                                            {user.role !== 'super_admin' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'super_admin')} disabled={isPending}><Shield className="mr-2 h-4 w-4" /> Make Super Admin</DropdownMenuItem>}
+                                            {isTargetProtected ? (
+                                                <DropdownMenuItem disabled>Role cannot be changed</DropdownMenuItem>
+                                            ) : (
+                                                <>
+                                                    {user.role !== 'admin' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'admin')} disabled={isPending}><UserCheck className="mr-2 h-4 w-4" /> Promote to Admin</DropdownMenuItem>}
+                                                    {user.role !== 'user' &&  <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'user')} disabled={isPending}><UserX className="mr-2 h-4 w-4" /> Demote to User</DropdownMenuItem>}
+                                                </>
+                                            )}
                                             <DropdownMenuSeparator />
                                             <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                                            {user.status === 'active' ? (
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                                                            <UserX className="mr-2 h-4 w-4" /> Suspend User
-                                                        </DropdownMenuItem>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                This action will immediately block the user from accessing the application. Their account and data will be preserved, but they will not be able to log in.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction
-                                                                className={buttonVariants({ variant: "destructive" })}
-                                                                onClick={() => handleUpdateStatus(user.uid, 'suspended')}
-                                                                disabled={isPending}
-                                                            >
-                                                                {isPending ? 'Suspending...' : 'Yes, Suspend User'}
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
+                                            {isTargetProtected ? (
+                                                 <DropdownMenuItem disabled>Status cannot be changed</DropdownMenuItem>
                                             ) : (
-                                                <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'active')} disabled={isPending}>
-                                                    <UserCheck className="mr-2 h-4 w-4" /> Reactivate User
-                                                </DropdownMenuItem>
+                                                user.status === 'active' ? (
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                                                                <UserX className="mr-2 h-4 w-4" /> Suspend User
+                                                            </DropdownMenuItem>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This action will immediately block the user from accessing the application. Their account and data will be preserved, but they will not be able to log in.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction
+                                                                    className={buttonVariants({ variant: "destructive" })}
+                                                                    onClick={() => handleUpdateStatus(user.uid, 'suspended')}
+                                                                    disabled={isPending}
+                                                                >
+                                                                    {isPending ? 'Suspending...' : 'Yes, Suspend User'}
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                ) : (
+                                                    <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'active')} disabled={isPending}>
+                                                        <UserCheck className="mr-2 h-4 w-4" /> Reactivate User
+                                                    </DropdownMenuItem>
+                                                )
                                             )}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        )})}
                     </TableBody>
                 </Table>
             </div>
