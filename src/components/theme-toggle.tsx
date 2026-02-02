@@ -23,10 +23,13 @@ export function ThemeToggle() {
         return (
           <Button
             key={item.name}
-            variant={theme === item.name ? 'background' : 'ghost'}
+            variant="ghost"
             size="icon"
             onClick={() => setTheme(item.name)}
-            className={cn("rounded-full", theme === item.name && "shadow-sm border-border border")}
+            className={cn(
+              "rounded-full",
+              theme === item.name && "bg-background text-foreground shadow-sm"
+            )}
             aria-label={`Switch to ${item.name} mode`}
           >
             <Icon className="h-[1.2rem] w-[1.2rem]" />
