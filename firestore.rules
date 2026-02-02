@@ -8,10 +8,10 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    // This is more reliable and required for list rules.
     function isSuperAdmin() {
-      // Check if the user document exists and has the super_admin role.
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+      return request.auth.token.email_verified && 
+             request.auth.token.email == "amitsharma99976@gmail.com";
     }
 
     function isUserActive() {
@@ -46,6 +46,15 @@ service cloud.firestore {
         allow read, update, delete: if isSuperAdmin();
     }
 
+    match /logs/{logId} {
+        // Logs are append-only and can only be created by super admins.
+        allow create: if isSuperAdmin();
+        // Only super admins can read logs.
+        allow read: if isSuperAdmin();
+        // Logs are immutable.
+        allow update, delete: if false;
+    }
+
     /**
      * USER PROFILES
      */
@@ -53,8 +62,8 @@ service cloud.firestore {
       // READ: Users can read their own profile. Super admins can read any profile.
       allow read: if (isOwner(userId) || isSuperAdmin()) && isUserActive();
       
-      // LIST: Only super admins can list users.
-      allow list: if isSuperAdmin() && isUserActive();
+      // LIST: Only super admins can list users. The isUserActive() check is removed as it's not compatible with list queries.
+      allow list: if isSuperAdmin();
 
       // CREATE:
       // - An authenticated user can create THEIR OWN profile.

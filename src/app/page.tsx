@@ -40,11 +40,9 @@ export default function LandingPage() {
     const heroTexts = heroRef.current?.querySelectorAll('.hero-text');
     const mockupWindows = mockupRef.current?.querySelectorAll('.app-window');
 
-    if (!heroTexts || !mockupWindows) return;
-
-    if (motionQuery.matches) {
-      heroTexts.forEach(el => ((el as HTMLElement).style.opacity = '1'));
-      mockupWindows.forEach(el => ((el as HTMLElement).style.opacity = '1'));
+    if (!heroTexts || !mockupWindows || motionQuery.matches) {
+      if(heroTexts) heroTexts.forEach(el => ((el as HTMLElement).style.opacity = '1'));
+      if(mockupWindows) mockupWindows.forEach(el => ((el as HTMLElement).style.opacity = '1'));
       return;
     }
     
