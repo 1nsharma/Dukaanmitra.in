@@ -78,6 +78,32 @@
 
     --ring: 215 20.2% 65.1%;
   }
+
+  .eco {
+    --background: 0 0% 10%;
+    --foreground: 0 0% 90%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 90%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 90%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --primary: 120 100% 35%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 90%;
+    --accent: 0 0% 25%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 0 0% 98%;
+    --warning: 48.1 97.4% 50%;
+    --warning-foreground: 30.1 95.4% 10.8%;
+    --ring: 120 100% 35%;
+  }
 }
 
 @layer base {
