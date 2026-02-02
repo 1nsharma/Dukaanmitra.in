@@ -11,9 +11,9 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
 
   const themes = [
-    { name: 'light', icon: Sun },
-    { name: 'dark', icon: Moon },
-    { name: 'eco', icon: Leaf },
+    { name: 'light', icon: Sun, label: 'Light' },
+    { name: 'dark', icon: Moon, label: 'Dark' },
+    { name: 'eco', icon: Leaf, label: 'CO2' },
   ]
 
   return (
@@ -24,16 +24,16 @@ export function ThemeToggle() {
           <Button
             key={item.name}
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={() => setTheme(item.name)}
             className={cn(
-              "rounded-full",
-              theme === item.name && "bg-card text-card-foreground shadow-sm"
+              "rounded-full px-4",
+              theme === item.name && "bg-background text-foreground shadow-sm"
             )}
             aria-label={`Switch to ${item.name} mode`}
           >
-            <Icon className="h-[1.2rem] w-[1.2rem]" />
-            <span className="sr-only">{item.name} Mode</span>
+            <Icon className="h-[1.2rem] w-[1.2rem] mr-2" />
+            <span className="capitalize">{item.label}</span>
           </Button>
         )
       })}
