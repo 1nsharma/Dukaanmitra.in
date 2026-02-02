@@ -1,9 +1,14 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+  useSpring,
+} from 'framer-motion';
 import { Bot } from 'lucide-react';
 
 // --- CONFIGURATION ---
@@ -12,9 +17,11 @@ const SPEECH_MAP: Record<string, string> = {
   '#features': 'Features dekho!',
   '#pricing': 'Plans yahaan hain.',
 };
-const ROBOT_SIZE = 180;
+const ROBOT_SIZE = 200; // Increased size
 
-// --- HOOK for Page Awareness ---
+// --- HOOKS ---
+
+// Hook for Page Awareness
 const useRobotAwareness = (selectors: string) => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [isScrolling, setIsScrolling] = useState(false);
@@ -46,7 +53,7 @@ const useRobotAwareness = (selectors: string) => {
           }
         });
       },
-      { threshold: 0.6 } // Trigger when 60% of the section is visible
+      { threshold: 0.6 }
     );
 
     elements.forEach((el) => observerRef.current?.observe(el));
@@ -61,21 +68,44 @@ const useRobotAwareness = (selectors: string) => {
   return { activeSection, isScrolling };
 };
 
-// --- SVG Component for the Robot ---
-const RobotSvg = ({ isScrolling }: { isScrolling: boolean }) => {
-  const bodyAnimation = {
-    y: [40, 42, 40],
-    transition: { duration: 4, repeat: Infinity, ease: 'easeInOut' }
-  };
+// Hook for Mouse Position
+const useMousePosition = () => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
 
-  const antennaAnimation = {
-      scale: [1, 1.5, 1],
-      transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-  };
+  useEffect(() => {
+    const updateMousePosition = (e: MouseEvent) => {
+      x.set(e.clientX);
+      y.set(e.clientY);
+    };
+    window.addEventListener('mousemove', updateMousePosition);
+    return () => window.removeEventListener('mousemove', updateMousePosition);
+  }, [x, y]);
+
+  return { x, y };
+};
+
+// --- SUB-COMPONENTS ---
+
+// Enhanced SVG Component for the Robot
+const RobotSvg = ({ isScrolling, mouseX }: { isScrolling: boolean, mouseX: any }) => {
+  const springConfig = { stiffness: 100, damping: 20 };
   
+  // Create a springy motion value for the head rotation based on mouse X position
+  const headRotate = useSpring(
+    useTransform(mouseX, [0, window.innerWidth], [-25, 25]),
+    springConfig
+  );
+  
+  // Springy motion for body tilt
+  const bodyTilt = useSpring(
+    useTransform(mouseX, [0, window.innerWidth], [-8, 8]),
+    springConfig
+  );
+
   const eyeBlinkAnimation = {
-      scaleY: [1, 0.1, 1],
-      transition: { duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2 }
+    scaleY: [1, 0.1, 1],
+    transition: { duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2 },
   };
 
   return (
@@ -88,35 +118,38 @@ const RobotSvg = ({ isScrolling }: { isScrolling: boolean }) => {
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="motion-safe:animate-none"
     >
-      {/* Body */}
-      <motion.rect
-        x="20" y="40" width="60" height="50" rx="10"
-        className="fill-secondary stroke-border" strokeWidth="2"
-        animate={bodyAnimation}
-      />
-      {/* Head */}
-      <motion.g 
-        animate={{ rotate: [0, 5, -5, 0] }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <rect x="30" y="10" width="40" height="30" rx="8" className="fill-secondary stroke-border" strokeWidth="2"/>
-        {/* Eyes */}
-        <motion.circle cx="42" cy="25" r="4" className={cn("transition-colors", isScrolling ? "fill-accent" : "fill-primary")} animate={eyeBlinkAnimation} />
-        <motion.circle cx="58" cy="25" r="4" className={cn("transition-colors", isScrolling ? "fill-accent" : "fill-primary")} animate={eyeBlinkAnimation} />
+      <defs>
+        <radialGradient id="robot-gradient" cx="50%" cy="0%" r="100%" fx="50%" fy="0%">
+          <stop offset="0%" style={{ stopColor: "hsl(var(--primary))", stopOpacity: 0.2 }} />
+          <stop offset="100%" style={{ stopColor: "hsl(var(--secondary))", stopOpacity: 0.3 }} />
+        </radialGradient>
+      </defs>
+
+      {/* Body Group with tilt */}
+      <motion.g style={{ rotate: bodyTilt, transformOrigin: '50% 90%' }}>
+        <rect x="20" y="40" width="60" height="55" rx="10" fill="url(#robot-gradient)" className="stroke-border" strokeWidth="2" />
+        <rect x="35" y="55" width="30" height="25" rx="5" className="fill-background/50" />
       </motion.g>
-      {/* Antenna */}
-      <line x1="50" y1="10" x2="50" y2="0" className="stroke-primary/50" strokeWidth="2" />
-      <motion.circle
-        cx="50" cy="-2" r="3"
-        className={cn("transition-colors", isScrolling ? "fill-accent" : "fill-primary")}
-        animate={antennaAnimation}
-      />
+
+      {/* Head Group with rotation */}
+      <motion.g style={{ rotate: headRotate, transformOrigin: '50% 40%' }}>
+        <rect x="30" y="10" width="40" height="30" rx="8" className="fill-secondary stroke-border" strokeWidth="2" />
+        {/* Eyes */}
+        <motion.circle cx="42" cy="25" r="4" className={cn('transition-colors', isScrolling ? 'fill-accent' : 'fill-primary')} animate={eyeBlinkAnimation} />
+        <motion.circle cx="58" cy="25" r="4" className={cn('transition-colors', isScrolling ? 'fill-accent' : 'fill-primary')} animate={eyeBlinkAnimation} />
+        {/* Antenna */}
+        <line x1="50" y1="10" x2="50" y2="0" className="stroke-primary/50" strokeWidth="2" />
+        <motion.circle
+          cx="50" cy="-2" r="3"
+          className={cn('transition-colors', isScrolling ? 'fill-accent' : 'fill-primary')}
+          animate={{ scale: [1, 1.5, 1], transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' } }}
+        />
+      </motion.g>
     </motion.svg>
   );
 };
 
-
-// --- Speech Bubble Component ---
+// Speech Bubble Component
 const SpeechBubble = ({ text }: { text: string }) => (
   <motion.div
     initial={{ opacity: 0, y: 10, scale: 0.9 }}
@@ -133,34 +166,41 @@ const SpeechBubble = ({ text }: { text: string }) => (
 // --- Main Robot Component ---
 export default function Mitraa() {
   const { activeSection, isScrolling } = useRobotAwareness(SELECTORS);
+  const { x: mouseX } = useMousePosition();
   const [speech, setSpeech] = useState<string | null>(null);
   const speechTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSpokenSectionRef = useRef<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Don't speak while user is actively scrolling
+      setIsClient(true);
+  }, []);
+
+  useEffect(() => {
     if (isScrolling) {
-      if(speechTimerRef.current) clearTimeout(speechTimerRef.current);
+      if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
       setSpeech(null);
       return;
     }
-    
-    // If a new section is active and we haven't spoken about it yet
+
     if (activeSection && SPEECH_MAP[activeSection] && lastSpokenSectionRef.current !== activeSection) {
       if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
-      
       setSpeech(SPEECH_MAP[activeSection]);
       lastSpokenSectionRef.current = activeSection;
 
       speechTimerRef.current = setTimeout(() => {
         setSpeech(null);
-      }, 2000); // Show message for 2 seconds
+      }, 2000);
     }
 
     return () => {
       if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
     };
   }, [activeSection, isScrolling]);
+  
+  if (!isClient) {
+      return null;
+  }
 
   return (
     <div
@@ -174,16 +214,15 @@ export default function Mitraa() {
           'shadow-heavy shadow-primary/10'
         )}
       >
-        {/* Cabin Header */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3/4 px-2 py-1 flex items-center justify-center gap-1.5 text-xs font-mono rounded-full bg-background/50 border border-border/50 text-muted-foreground">
-            <Bot size={12} className="text-primary" />
-            MITRAA
+          <Bot size={12} className="text-primary" />
+          MITRAA
         </div>
 
         <div className="w-full h-full mt-4">
-          <RobotSvg isScrolling={isScrolling} />
+          <RobotSvg isScrolling={isScrolling} mouseX={mouseX} />
         </div>
-        
+
         <AnimatePresence>
           {speech && <SpeechBubble text={speech} />}
         </AnimatePresence>
