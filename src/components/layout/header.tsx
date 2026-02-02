@@ -18,6 +18,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useUser, useAuth } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { ThemeToggle } from "../theme-toggle";
 
 const navLinks = [
   { href: "/features", label: "Features" },
@@ -114,6 +115,7 @@ export default function Header() {
                     )}
                     </>
                 )}
+                 <ThemeToggle />
             </div>
 
             {/* Mobile Navigation */}
@@ -166,6 +168,9 @@ export default function Header() {
                         )}
                         </>
                     )}
+                    <div className="flex justify-center pt-4">
+                        <ThemeToggle />
+                    </div>
                 </div>
               </div>
             </SheetContent>
