@@ -58,8 +58,8 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
 
-    --primary: 197 71% 52%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 120 100% 35%;
+    --primary-foreground: 0 0% 98%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -76,7 +76,7 @@
     --warning: 48.1 97.4% 50%;
     --warning-foreground: 30.1 95.4% 10.8%;
 
-    --ring: 197 71% 52%;
+    --ring: 120 100% 35%;
   }
 
   .eco {
