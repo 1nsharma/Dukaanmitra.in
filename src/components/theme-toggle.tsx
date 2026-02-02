@@ -28,7 +28,7 @@ export function ThemeToggle() {
             onClick={() => setTheme(item.name)}
             className={cn(
               "rounded-full",
-              theme === item.name && "bg-background text-foreground shadow-sm"
+              theme === item.name && "bg-card text-card-foreground shadow-sm"
             )}
             aria-label={`Switch to ${item.name} mode`}
           >
