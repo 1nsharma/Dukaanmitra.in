@@ -8,7 +8,7 @@ import * as z from "zod";
 import { useTransition } from "react";
 import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { format, differenceInDays, isFuture, addMonths } from 'date-fns';
-import { Star, Clock, CreditCard } from 'lucide-react';
+import { Star, Clock, CreditCard, MessageSquare, CheckCircle } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 import type { Shop } from '@/docs/backend-types';
 import { cn } from '@/lib/utils';
+import WhatsAppOnboarding from './whatsapp-onboarding';
 
 
 const formSchema = z.object({
@@ -189,6 +190,30 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
             </CardContent>
         </Card>
 
+        {/* WhatsApp Onboarding Section */}
+        {shop.whatsapp ? (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 font-headline">
+                        <MessageSquare className="text-success" />
+                        WhatsApp Munim Active
+                    </CardTitle>
+                    <CardDescription>Your Digital Munim is connected and ready to assist your customers.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <div className="flex items-center gap-3 rounded-lg border p-4 bg-secondary">
+                        <CheckCircle className="text-success w-6 h-6"/>
+                        <div>
+                            <p className="text-sm text-muted-foreground">Connected Number</p>
+                            <p className="text-lg font-bold">{shop.whatsapp}</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        ) : (
+            <WhatsAppOnboarding shopId={shop.id} />
+        )}
+
         <Card>
             <CardHeader>
                 <CardTitle>Your Shop Details</CardTitle>
@@ -287,5 +312,3 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
     </div>
   );
 }
-
-    
