@@ -1,2 +1,3 @@
-// This page has been moved to /app/insights/page.tsx to resolve a build conflict.
-// This file is now intentionally left blank.
+// This file is intentionally disabled to resolve a Next.js build conflict.
+// It previously conflicted with /app/insights/page.tsx.
+export const disabled = true;
