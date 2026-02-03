@@ -24,6 +24,11 @@ const CLICK_PHRASES = [
     'Ready to digitize your dukaan? I can guide you.',
     'You can also use the main chat assistant on the right for a full demo!',
 ];
+const IDLE_PHRASES = [
+    "Need help? Just click me!",
+    "Curious about a feature? Let me know.",
+    "The free trial is just one click away!",
+];
 const ROBOT_SIZE = 120;
 
 // --- HOOKS ---
@@ -176,6 +181,7 @@ export default function Mitraa() {
   const { x: mouseX } = useMousePosition();
   const [speech, setSpeech] = useState<string | null>(null);
   const speechTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSpokenSectionRef = useRef<string | null>(null);
   const [isClient, setIsClient] = useState(false);
 
@@ -183,39 +189,72 @@ export default function Mitraa() {
       setIsClient(true);
   }, []);
 
-  // Scroll-based speech effect
+  // Centralized function to manage speech bubble state and timers
+  const setRobotSpeech = (text: string, duration: number) => {
+    if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
+    setSpeech(text);
+    if (text) {
+      speechTimerRef.current = setTimeout(() => {
+        setSpeech(null);
+      }, duration);
+    }
+  };
+
+  // Effect for scroll-based speech
   useEffect(() => {
+    if (!isClient) return;
+    
     if (isScrolling) {
       if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
-      setSpeech(null);
+      setSpeech(null); // Clear speech immediately when scrolling starts
       return;
     }
 
     if (activeSection && SPEECH_MAP[activeSection] && lastSpokenSectionRef.current !== activeSection) {
-      if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
-      setSpeech(SPEECH_MAP[activeSection]);
+      setRobotSpeech(SPEECH_MAP[activeSection], 3000);
       lastSpokenSectionRef.current = activeSection;
-
-      speechTimerRef.current = setTimeout(() => {
-        setSpeech(null);
-      }, 3000);
     }
+  }, [activeSection, isScrolling, isClient]);
+
+  // Effect for idle-based speech (reacting to cursor inactivity)
+  useEffect(() => {
+    if (!isClient) return;
+
+    const resetIdleTimer = () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      
+      idleTimerRef.current = setTimeout(() => {
+        const randomPhrase = IDLE_PHRASES[Math.floor(Math.random() * IDLE_PHRASES.length)];
+        // Only show idle message if no other speech is currently active
+        if (!speech) {
+            setRobotSpeech(randomPhrase, 4000);
+        }
+      }, 8000); // 8-second idle timeout
+    };
+
+    const handleInteraction = () => {
+      // Any user interaction (mouse, scroll, click) resets the idle timer
+      resetIdleTimer();
+    };
+
+    window.addEventListener('mousemove', handleInteraction);
+    window.addEventListener('scroll', handleInteraction);
+    window.addEventListener('click', handleInteraction);
+
+    resetIdleTimer(); // Start the timer initially
 
     return () => {
-      if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      window.removeEventListener('mousemove', handleInteraction);
+      window.removeEventListener('scroll', handleInteraction);
+      window.removeEventListener('click', handleInteraction);
     };
-  }, [activeSection, isScrolling]);
+  }, [isClient, speech]); // Rerun this effect if `speech` changes to avoid idle timer overwriting active speech
 
   // Click handler for the robot
   const handleRobotClick = () => {
-      if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
-      
       const randomPhrase = CLICK_PHRASES[Math.floor(Math.random() * CLICK_PHRASES.length)];
-      setSpeech(randomPhrase);
-
-      speechTimerRef.current = setTimeout(() => {
-          setSpeech(null);
-      }, 4000);
+      setRobotSpeech(randomPhrase, 5000);
   };
   
   if (!isClient) {
