@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview The core AI agent for processing WhatsApp messages.
@@ -25,12 +26,15 @@ const SupportedIntentSchema = z.enum([
 ]);
 type SupportedIntent = z.infer<typeof SupportedIntentSchema>;
 
-// 2. SHOP CONTEXT (Placeholder for now)
+// 2. SHOP CONTEXT (Defines the data each shop provides)
 const ShopContextSchema = z.object({
     name: z.string(),
-    // For now, we'll keep this simple. In production, this would be populated
-    // with product lists, prices, credit rules, etc.
-    data: z.any().describe("A JSON blob of shop-specific data like products, prices, and rules."),
+    paymentModes: z.array(z.string()).describe("List of accepted payment methods, e.g., ['UPI', 'Cash']"),
+    timings: z.string().describe("Shop opening and closing times, e.g., 'Subah 9 baje se raat 10 baje tak'"),
+    // In a real system, this would be a structured product catalog.
+    // For now, it's a simple string for the AI to parse.
+    products: z.string().describe("A simple string listing available products and prices, e.g., 'Dudh ₹55/liter, Aata ₹40/kg'"),
+    creditLimit: z.number().default(5000).describe("The maximum credit amount allowed for a single transaction."),
 });
 export type ShopContext = z.infer<typeof ShopContextSchema>;
 
@@ -51,7 +55,7 @@ export const AgentOutputSchema = z.object({
 export type AgentOutput = z.infer<typeof AgentOutputSchema>;
 
 
-// 4. THE INTENT DETECTOR PROMPT
+// 4. THE INTENT DETECTOR PROMPT (LLM Fallback)
 const intentDetectorPrompt = ai.definePrompt({
     name: 'intentDetectorPrompt',
     input: { schema: z.object({ query: z.string() }) },
@@ -79,7 +83,7 @@ const intentDetectorPrompt = ai.definePrompt({
     `,
 });
 
-// 5. THE MAIN AGENT FLOW
+// 5. THE MAIN AGENT FLOW (DECISION ENGINE)
 export const whatsappAgentFlow = ai.defineFlow(
   {
     name: 'whatsappAgentFlow',
@@ -87,7 +91,36 @@ export const whatsappAgentFlow = ai.defineFlow(
     outputSchema: AgentOutputSchema,
   },
   async (input) => {
-    // Step 1: Detect Intent
+    // Step 1: High-Confidence Rule-Based Intent Detection (for ledger entries)
+    // This is faster and more reliable than the LLM for the most critical action.
+    if (input.query.match(/\d/)) { // A simple rule: if there's a number, it might be a transaction.
+        try {
+            const transactionDetails = await parseTransaction({ query: input.query });
+            if (transactionDetails.confidence_score > 0.9) {
+                 // Policy Guard: Check credit limit
+                if (transactionDetails.type === 'credit' && transactionDetails.amount > input.shopContext.creditLimit) {
+                    return {
+                        intent: 'ledger_entry',
+                        confidence: 1.0,
+                        escalate: true,
+                        response: `Is amount (₹${transactionDetails.amount}) ke liye shopkeeper confirm karenge.`
+                    };
+                }
+                // Action: The intent is clearly a ledger entry.
+                return {
+                    intent: 'ledger_entry',
+                    confidence: transactionDetails.confidence_score,
+                    escalate: false,
+                    action: { type: 'ADD_LEDGER_ENTRY', details: transactionDetails },
+                    response: `Theek hai, ${transactionDetails.customer_name} ka hisaab (₹${transactionDetails.amount}) note kar liya hai. 👍`
+                };
+            }
+        } catch (e) {
+            // Ignore if parsing fails, let the LLM handle it.
+        }
+    }
+    
+    // Step 2: LLM Fallback for Intent Detection
     const { output: intentDetection } = await intentDetectorPrompt({ query: input.query });
     if (!intentDetection) {
         return { intent: 'unknown', confidence: 0, escalate: true, response: "Iska jawab shopkeeper denge 🙂" };
@@ -95,45 +128,53 @@ export const whatsappAgentFlow = ai.defineFlow(
 
     const { intent, confidence } = intentDetection;
     
-    // Step 2: Decision Engine - Rule: If confidence is low, escalate.
+    // Step 3: Decision Engine - Rule: If confidence is low, escalate.
     if (confidence < 0.75) {
         return { intent, confidence, escalate: true, response: "Iska confirm shopkeeper karega." };
     }
-
+    
+    // Step 4: Handle each intent with its own logic and policy guards.
     switch (intent) {
-        case 'ledger_entry':
-            // Action: Use the specialized transaction parser tool.
-            const transactionDetails = await parseTransaction({ query: input.query });
-            return {
-                intent,
-                confidence,
-                escalate: false,
-                action: { type: 'ADD_LEDGER_ENTRY', details: transactionDetails },
-                response: `Theek hai, ${transactionDetails.type === 'credit' ? 'udhaar' : 'payment'} entry for ${transactionDetails.customer_name} (₹${transactionDetails.amount}) add kar diya hai.`
-            };
-        
         case 'greeting':
-            // Reply: Simple greeting using shop context.
             return {
                 intent,
                 confidence,
                 escalate: false,
                 response: `Namaste! ${input.shopContext.name} me swagat hai. Batayein kya chahiye?`
             };
-
-        case 'price_query':
-             // Escalate: AI is not allowed to hallucinate prices.
+        
+        case 'payment_query':
             return {
                 intent,
                 confidence,
-                escalate: true, // Escalate because we need to look up data that isn't available yet.
-                response: "Iske daam ke liye shopkeeper se confirm karna hoga."
+                escalate: false,
+                response: `Hum ${input.shopContext.paymentModes.join(' aur ')} accept karte hain.`
+            };
+            
+        case 'shop_timing':
+            return {
+                intent,
+                confidence,
+                escalate: false,
+                response: `Dukaan ${input.shopContext.timings} khuli rehti hai.`
+            };
+
+        // For price and availability, we ESCALATE because the AI is not allowed to hallucinate.
+        // A real implementation would involve a database lookup here.
+        case 'price_query':
+        case 'availability_query':
+        case 'order_create':
+        case 'order_cancel':
+            return {
+                intent,
+                confidence,
+                escalate: true, 
+                response: "Iske liye shopkeeper se confirm karna hoga."
             };
         
-        // ... other cases for different intents would be built out here ...
-
+        // This case is handled by the rule-based check above, but as a fallback, we escalate.
+        case 'ledger_entry':
         default:
-            // Escalate: If the intent is known but not handled, or unknown.
             return {
                 intent,
                 confidence,
