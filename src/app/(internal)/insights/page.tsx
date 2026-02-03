@@ -1,2 +1,2 @@
-// This page has been moved to /app/insights/page.tsx to make it publicly accessible.
-// This file can be removed in the future.
+// This page has been moved to /app/insights/page.tsx to resolve a build conflict.
+// This file is now intentionally left blank.
