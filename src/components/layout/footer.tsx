@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Twitter, Github, Linkedin, MessageSquare, Book, HardHat, Layers } from 'lucide-react';
+import { Twitter, Github, Linkedin, MessageSquare } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -46,22 +46,20 @@ export default function Footer() {
           </div>
           
           <div className="md:col-span-2">
-            <h4 className="font-bold text-foreground mb-4 uppercase tracking-wider">Company</h4>
+            <h4 className="font-bold text-foreground mb-4 uppercase tracking-wider">Product</h4>
             <ul className="space-y-3 text-muted-foreground">
               <li><Link href="/features" className="hover:text-primary transition-colors">Features</Link></li>
+              <li><Link href="/insights" className="hover:text-primary transition-colors">Insights</Link></li>
               <li><Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
               <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
-              <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
             </ul>
           </div>
 
           <div className="md:col-span-2">
             <h4 className="font-bold text-foreground mb-4 uppercase tracking-wider">Resources</h4>
             <ul className="space-y-3 text-muted-foreground">
-              <li><Link href="/docs" className="hover:text-primary transition-colors flex items-center gap-2"><Book size={16}/> Docs</Link></li>
-              <li><Link href="/(internal)/guide" className="hover:text-primary transition-colors flex items-center gap-2"><HardHat size={16}/> A-Z Guide</Link></li>
-              <li><Link href="/(internal)/architecture" className="hover:text-primary transition-colors flex items-center gap-2"><Layers size={16}/> Architecture</Link></li>
-               <li><Link href="/(internal)/assets" className="hover:text-primary transition-colors flex items-center gap-2"><Layers size={16}/> Assets</Link></li>
+              <li><Link href="/docs" className="hover:text-primary transition-colors">Docs</Link></li>
+              <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
             </ul>
           </div>
            
