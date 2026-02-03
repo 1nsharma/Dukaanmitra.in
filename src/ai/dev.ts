@@ -5,3 +5,4 @@ config();
 import '@/ai/flows/interactive-ai-demo.ts';
 import '@/ai/flows/retail-insights-flow.ts';
 import '@/ai/flows/transaction-parser-flow.ts';
+import '@/ai/flows/whatsapp-agent-flow.ts';
