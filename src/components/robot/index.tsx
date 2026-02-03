@@ -18,18 +18,19 @@ const SPEECH_MAP: Record<string, string> = {
   '#pricing': 'Plans yahaan hain.',
 };
 const CLICK_PHRASES = [
-    'Hello! I can help you demo our product. What would you like to see?',
-    'I am the DukaanMitra AI. Ask me about features, pricing, or how to get started!',
-    'Want to know how the AI Munim works? Just ask!',
-    'Ready to digitize your dukaan? I can guide you.',
-    'You can also use the main chat assistant on the right for a full demo!',
+    'Main DukaanMitra ka AI assistant hoon! Main aapko batata hoon ki hum aapke business ko kaise badal sakte hain.',
+    'Udhaar manage karna aasaan hai! Sirf WhatsApp par "Ravi 500 udhaar" likho, baaki main sambhal lunga.',
+    'Customers ko automatic payment reminders bhejna chahte ho? Main kar sakta hoon!',
+    'Har raat aapke WhatsApp par automatic sales report paayein. Taki aapko hamesha pata ho business kaisa chal raha hai.',
+    'Jaano kaunse customer sabse valuable hain aur kaunse products best-seller hain, sab AI-powered insights se.',
+    'Click me again for more tips, or use the main chat assistant for a full demo!'
 ];
 const IDLE_PHRASES = [
     "Need help? Just click me!",
     "Curious about a feature? Let me know.",
     "The free trial is just one click away!",
 ];
-const ROBOT_SIZE = 120;
+const ROBOT_SIZE = 140;
 
 // --- HOOKS ---
 
