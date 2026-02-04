@@ -124,8 +124,8 @@ export default function LandingPage() {
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Aapka Digital Munim India #1</span>
               </div>
               <h1 className="hero-text font-headline text-5xl md:text-7xl lg:text-8xl font-black leading-none tracking-tighter uppercase">
-                Register Feko, <br/>
-                <span className="text-primary">WhatsApp</span> Chalao!
+                BillBook FEKO, <br/>
+                <span className="text-primary">WHATSAPP</span> CHALAO
               </h1>
               <p className="hero-text text-lg md:text-xl text-muted-foreground max-w-xl font-medium">
                 Transform your Kirana shop with India's first AI-powered WhatsApp Munim. No app downloads. Just message "Rahul 500 udhaar chini" and you're done.
