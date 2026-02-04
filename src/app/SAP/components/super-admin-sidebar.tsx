@@ -11,6 +11,7 @@ import {
   HeartPulse,
   Settings,
   UserCheck,
+  GitBranch,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +23,7 @@ const navItems = [
   { href: '/SAP/logs', label: 'Logs & Activity', icon: FileClock },
   { href: '/SAP/system', label: 'System Health', icon: HeartPulse },
   { href: '/SAP/security', label: 'Security Center', icon: Shield },
+  { href: '/SAP/git-control', label: 'Git Control', icon: GitBranch },
   { href: '/SAP/settings', label: 'Global Settings', icon: Settings },
 ];
 
