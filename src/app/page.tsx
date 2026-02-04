@@ -4,7 +4,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import anime from 'animejs';
-import { Check, Bot, IndianRupee, BarChart, FileText, Smartphone, MessageCircle, ShieldCheck, TrendingUp, FileClock, Send, Store, Users, AlertTriangle } from 'lucide-react';
+import { Check, Bot, IndianRupee, BarChart, FileText, Smartphone, MessageCircle, ShieldCheck, TrendingUp, FileClock, Send, Store, Users, AlertTriangle, Clock, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -257,6 +257,50 @@ export default function LandingPage() {
           </div>
            <div className="mt-16">
               <Button onClick={() => router.push('/dashboard')} size="lg" className="px-8 py-6 rounded-full font-bold text-lg">Connect Your WhatsApp</Button>
+          </div>
+        </div>
+      </section>
+      
+      {/* 24/7 Salesman Section */}
+      <section className="py-24 sm:py-32 px-4 bg-secondary">
+        <div className="container mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <h2 className="font-headline text-5xl md:text-6xl font-black uppercase tracking-tighter">Aapka <span className="text-primary">24/7</span> WhatsApp Salesman</h2>
+              <p className="text-lg text-muted-foreground">Build stronger customer relationships with an AI agent that works around the clock. It answers questions, provides information, and ensures every customer feels valued—even when you're offline.</p>
+              <div className="space-y-4 pt-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 flex-shrink-0 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><Clock /></div>
+                  <div>
+                    <h4 className="font-bold text-lg">Instant Answers, Any Time</h4>
+                    <p className="text-muted-foreground">"Dukaan kab khulegi?" "UPI hai?" — Common questions answered instantly.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 flex-shrink-0 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><Sparkles /></div>
+                  <div>
+                    <h4 className="font-bold text-lg">Builds Customer Trust</h4>
+                    <p className="text-muted-foreground">Professional and polite responses, every single time.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-background p-4 rounded-xl shadow-lg">
+                <div className="bg-card p-6 rounded-lg border border-border">
+                   <p className="text-center text-xs text-muted-foreground pb-4">Sunday, 11:30 PM</p>
+                   <div className="space-y-4">
+                      <div className="flex justify-end">
+                        <div className="bg-secondary p-3 rounded-lg rounded-br-none text-sm self-end max-w-[85%] shadow-sm">
+                          Bhaiya, kal dukaan kab khulegi?
+                        </div>
+                      </div>
+                      <div className="bg-primary/10 p-3 rounded-lg rounded-bl-none text-sm self-start max-w-[85%] shadow-sm border-l-2 border-primary">
+                        <p className="font-bold text-primary text-xs mb-1 flex items-center gap-1.5"><Bot size={14}/> DukaanMitra Agent</p>
+                        Namaste! Kal dukaan <span className="font-bold">subah 9 baje se raat 10 baje tak</span> khuli rahegi. 🙂
+                      </div>
+                   </div>
+                </div>
+            </div>
           </div>
         </div>
       </section>
