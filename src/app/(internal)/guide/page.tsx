@@ -65,161 +65,143 @@ export default function GuidePage() {
                         <li>Retail shops</li>
                         <li>Service providers</li>
                     </ul>
-
-                    <h3>Core Value Proposition</h3>
-                    <ul>
-                        <li>Automatically capture customer data</li>
-                        <li>AI-powered follow-ups and offers</li>
-                        <li>Simple dashboard (zero tech knowledge needed)</li>
-                        <li>WhatsApp-first communication</li>
-                    </ul>
                     
                     <h3>Business Model</h3>
-                    <pre><code>{`Free:     100 customers, limited messages
-₹499/mo:  1000 customers, unlimited messages
-₹999/mo:  Unlimited + custom AI
-₹1999/mo: Multi-branch + API access`}</code></pre>
+                    <pre><code>{`Free Trial: 14 Days, Full Access
+Basic:      ₹1999/mo, Core Features
+Pro:        ₹4999/mo, Advanced AI & Analytics
+Enterprise: Custom, API Access & Priority Support`}</code></pre>
                 </Section>
                 
                 <Section title="System Architecture" id="2-system-architecture">
-                    <h3>Technology Stack</h3>
-                    <p><strong>Backend:</strong></p>
+                    <h3>Technology Stack ("Stax")</h3>
+                    <p>A "boring but reliable" stack focused on execution speed and stability.</p>
                     <ul>
-                        <li>Python 3.11+</li>
-                        <li>FastAPI (REST APIs)</li>
-                        <li>PostgreSQL (core data)</li>
-                        <li>Redis (caching)</li>
-                        <li>Firebase (auth, real-time, storage)</li>
+                        <li><strong>Frontend (Dashboard):</strong> Next.js (React) & Tailwind CSS</li>
+                        <li><strong>Backend:</strong> Node.js (Express) or Python (FastAPI) for REST APIs</li>
+                        <li><strong>Database:</strong> PostgreSQL via <strong>Supabase</strong> (for multi-tenancy & core data)</li>
+                        <li><strong>Real-time Layer:</strong> Firebase (for auth & live dashboard updates)</li>
+                        <li><strong>Automation Engine:</strong> n8n or Celery (The "Brain" connecting DB to WhatsApp)</li>
+                        <li><strong>AI Model API:</strong> OpenAI (GPT-4o) or Google Gemini</li>
                     </ul>
-                    <p><strong>Frontend:</strong></p>
-                    <ul>
-                        <li>React 18 + Next.js 14</li>
-                        <li>Tailwind CSS</li>
-                        <li>Firebase SDK</li>
-                    </ul>
-                    <h3>Architecture Diagram</h3>
-                    <pre><code>{`
-┌─────────────────────────────────────────────────────────┐
-│                    CLIENT LAYER                          │
-├─────────────────────────────────────────────────────────┤
-│  Web Dashboard (React)  │  Mobile App (Flutter-future)  │
-└────────────┬────────────┴──────────────┬────────────────┘
-             │                           │
-             │     Firebase Auth         │
-             │     (Phone OTP)           │
-             │                           │
-┌────────────▼───────────────────────────▼────────────────┐
-│                   API GATEWAY (FastAPI)                  │
-├─────────────────────────────────────────────────────────┤
-│  /auth  │  /customers  │  /bills  │  /ai  │  /messages  │
-└────┬────┴──────┬───────┴─────┬────┴───┬───┴──────┬──────┘
-     │           │             │        │          │
-┌────▼───────────▼─────────────▼────────▼──────────▼──────┐
-│                  BUSINESS LOGIC LAYER                     │
-├──────────────────────────────────────────────────────────┤
-│  Rule Engine  │  AI Engine  │  Message Service  │  Auth  │
-└────┬──────────┴─────┬───────┴─────┬─────────────┴───┬───┘
-     │                │             │                 │
-┌────▼────────┬───────▼─────┬───────▼─────┬───────────▼───┐
-│ PostgreSQL  │  Firebase   │   Redis     │   n8n/Celery  │
-│ (Core Data) │ (Realtime)  │  (Cache)    │  (Automation) │
-└─────────────┴─────────────┴─────────────┴───────────────┘
-                         │
-                         ▼
-          ┌──────────────────────────────┐
-          │    EXTERNAL SERVICES         │
-          ├──────────────────────────────┤
-          │  WhatsApp API  │  SMS API    │
-          └──────────────────────────────┘
+                    
+                    <h3>Logic Flow: From WhatsApp to Action</h3>
+                    <p>This is the end-to-end flow for processing every incoming message.</p>
+                    <pre><code className="language-js">{`// 1. ENTRY POINT: WhatsApp Webhook receives a message
+function whatsapp_webhook(message, sender_id, shop_id) {
+    // 2. CONTEXT: Load all data for the specific shop
+    const shopContext = load_shop_context(shop_id);
+
+    // 3. INTENT: Detect what the user wants (rules-first, then AI)
+    const intentResult = intent_detector(message);
+
+    // 4. POLICY: Check if the action is allowed (e.g., credit limit)
+    const policyDecision = policy_guard(intentResult, shopContext);
+    if (policyDecision === 'BLOCK') {
+        return execute_decision('ESCALATE', ...);
+    }
+
+    // 5. DECIDE: Choose whether to Reply, Act, or Escalate
+    const decision = decision_engine(intentResult, shopContext);
+
+    // 6. EXECUTE: Perform the final action
+    execute_decision(decision, sender_id, shopContext, intentResult);
+}
 `}</code></pre>
                 </Section>
 
                 <Section title="Database Design" id="3-database-design">
-                    <h3>PostgreSQL Schema</h3>
-                    <pre><code className="language-sql">{`-- ==========================================
--- USERS (Business Owners)
--- ==========================================
+                    <h3>The Hybrid Model: Supabase + Firebase</h3>
+                    <p>This architecture uses the best of both worlds:</p>
+                    <ul>
+                        <li><strong>Supabase (PostgreSQL):</strong> The "digital khata" or ledger. It's the permanent, structured source of truth for all business-critical data (shops, customers, bills). Chosen for its relational integrity and multi-tenancy capabilities.</li>
+                        <li><strong>Firebase (Firestore):</strong> The real-time layer. Used for powering the live dashboard, showing stats, and sending notifications. It's fast and perfect for UI-facing data.</li>
+                    </ul>
+
+                    <h3>PostgreSQL Schema (Multi-Tenant Ready)</h3>
+                    <p>Every table includes a `business_id` or `shop_id` to ensure a shopkeeper can ONLY access their own data. This is the core of our multi-tenant strategy.</p>
+                    <pre><code className="language-sql">{`-- USERS (The shop owners who subscribe to DukaanMitra)
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    firebase_uid VARCHAR(128) UNIQUE NOT NULL,
+    id UUID PRIMARY KEY,
+    firebase_uid VARCHAR(128) UNIQUE NOT NULL, -- Links to Firebase Auth
     phone VARCHAR(15) UNIQUE NOT NULL,
-    email VARCHAR(255),
     business_name VARCHAR(255) NOT NULL,
-    business_type VARCHAR(50), -- restaurant, salon, retail
-    plan VARCHAR(20) DEFAULT 'free', -- free, basic, pro, enterprise
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
+    plan VARCHAR(20) DEFAULT 'trial'
 );
 
--- ==========================================
--- CUSTOMERS
--- ==========================================
+-- CUSTOMERS (The shop's end-customers)
 CREATE TABLE customers (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,
     business_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(15) NOT NULL,
-    email VARCHAR(255),
     visit_count INT DEFAULT 0,
     total_spend DECIMAL(10,2) DEFAULT 0,
     last_visit TIMESTAMP,
-    first_visit TIMESTAMP DEFAULT NOW(),
-    status VARCHAR(20) DEFAULT 'new', -- new, regular, vip, inactive
-    tags TEXT[], -- ['vip', 'frequent_buyer']
-    preferences JSONB DEFAULT '{}',
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
+    -- Ensures a phone number is unique PER shop, not globally
     UNIQUE(business_id, phone)
 );
 
--- And more tables... (bills, messages, etc)
+-- BILLS (Individual transactions)
+CREATE TABLE bills (
+    id UUID PRIMARY KEY,
+    business_id UUID NOT NULL REFERENCES users(id),
+    customer_id UUID NOT NULL REFERENCES customers(id),
+    amount DECIMAL(10, 2) NOT NULL,
+    type VARCHAR(20) NOT NULL, -- 'credit' or 'payment'
+    raw_text VARCHAR(500), -- Original WhatsApp message for audit
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- MESSAGE_LOGS (Record of automated messages sent)
+CREATE TABLE message_logs (
+    id UUID PRIMARY KEY,
+    customer_id UUID NOT NULL REFERENCES customers(id),
+    type VARCHAR(50), -- e.g., 'welcome_message', 'payment_reminder'
+    status VARCHAR(20), -- 'sent', 'failed'
+    created_at TIMESTAMP DEFAULT NOW()
+);
 `}</code></pre>
-                    <h3>Firebase Structure (Firestore)</h3>
-                    <pre><code className="language-javascript">{`// /businesses/{businessId}
+                    <h3>Firebase Structure (For Real-time UI)</h3>
+                    <pre><code className="language-javascript">{`// /shops/{shopId}/realtime_stats
 {
-  name: "Sharma Cafe",
-  online: true,
-  lastActive: timestamp,
-  stats: {
-    todayCustomers: 12,
-    todayRevenue: 4500,
-    pendingMessages: 3
-  }
+  "name": "Sharma Cafe",
+  "status": "online",
+  "live_customers": 12,
+  "live_revenue": 4500,
+  "pending_messages": 3
 }
 
-// /businesses/{businessId}/realtime_customers/{customerId}
+// /shops/{shopId}/notifications/{notificationId}
 {
-  name: "Rohit Kumar",
-  phone: "+919876543210",
-  lastVisit: timestamp,
-  status: "vip",
-  totalSpend: 4500
-}
-
-// /notifications/{businessId}/items/{notificationId}
-{
-  type: "ai_suggestion",
-  title: "3 customers inactive",
-  message: "Send comeback offer?",
-  actionUrl: "/customers?filter=inactive",
-  read: false,
-  createdAt: timestamp
+  "type": "ai_suggestion",
+  "title": "3 customers inactive",
+  "message": "Send comeback offer to them?",
+  "action_required": true,
+  "read": false,
+  "createdAt": timestamp
 }`}</code></pre>
                 </Section>
                 
-                {/* Dummy sections for illustration */}
                 <Section title="Security & Auth" id="9-security--auth">
-                    <p>Details on security and authentication...</p>
+                    <p>Authentication is handled by Firebase Auth (Phone/OTP). Authorization is managed at two levels:</p>
+                    <ul>
+                        <li><strong>API Level:</strong> The backend API validates the user's token and injects the `shop_id` into every database query, ensuring data isolation.</li>
+                        <li><strong>Database Level (PostgreSQL RLS):</strong> Row-Level Security policies in Supabase provide a final, unbreakable barrier, ensuring a request for Shop A can never access data from Shop B.</li>
+                    </ul>
                 </Section>
                 <Section title="Deployment" id="10-deployment">
-                    <p>Deployment strategies and steps...</p>
+                    <ul>
+                        <li><strong>Frontend:</strong> Firebase Hosting or Vercel</li>
+                        <li><strong>Backend:</strong> Railway, Render, or any serverless platform</li>
+                        <li><strong>Database:</strong> Supabase Cloud</li>
+                    </ul>
                 </Section>
                 <Section title="Go-to-Market" id="13-go-to-market">
-                    <p>Go-to-market plan...</p>
+                    <p>A B2B2C model focusing on hyper-local marketing to shop owners, showcasing the immediate value of digitizing their customer interactions via WhatsApp.</p>
                 </Section>
                 <Section title="Scaling Strategy" id="15-scaling-strategy">
-                    <p>How to scale the application...</p>
+                    <p>The multi-tenant architecture allows for horizontal scaling from day one. The system is designed to grow from a single city to a nationwide service without a core architectural redesign.</p>
                 </Section>
 
                 <footer className="bg-card border border-border p-12 rounded-[4rem] text-center space-y-4 mt-20">
