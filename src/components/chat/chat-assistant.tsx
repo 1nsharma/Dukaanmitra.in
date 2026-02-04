@@ -8,6 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { interactiveAIDemo } from "@/ai/flows/interactive-ai-demo";
 import { cn } from "@/lib/utils";
+import { uiEmitter } from "@/lib/ui-event-emitter";
 
 type Message = {
   role: "user" | "assistant";
@@ -21,7 +22,18 @@ export default function ChatAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const toggleChat = () => setIsOpen(!isOpen);
+  const openChat = () => setIsOpen(true);
+  const closeChat = () => {
+    setIsOpen(false);
+    uiEmitter.emit('close-chat');
+  };
+
+  useEffect(() => {
+    uiEmitter.on('open-chat', openChat);
+    return () => {
+      uiEmitter.off('open-chat', openChat);
+    };
+  }, []);
 
   useEffect(() => {
     if (isOpen && scrollAreaRef.current) {
@@ -61,7 +73,7 @@ export default function ChatAssistant() {
         <Button
           size="icon"
           className="rounded-full w-14 h-14 bg-primary hover:bg-primary/90 shadow-lg"
-          onClick={toggleChat}
+          onClick={() => (isOpen ? closeChat() : openChat())}
           aria-label="Toggle chat assistant"
         >
           {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}

@@ -10,6 +10,7 @@ import {
   useSpring,
 } from 'framer-motion';
 import { Bot } from 'lucide-react';
+import { uiEmitter } from '@/lib/ui-event-emitter';
 
 // --- CONFIGURATION ---
 const SELECTORS = '#features, #pricing';
@@ -126,9 +127,6 @@ const RobotSvg = ({ isScrolling, mouseX }: { isScrolling: boolean, mouseX: any }
       width="100%"
       height="100%"
       viewBox="0 0 100 100"
-      initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
       className="motion-safe:animate-none"
     >
       <defs>
@@ -185,10 +183,22 @@ export default function Mitraa() {
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSpokenSectionRef = useRef<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
       setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
+    const showRobot = () => setIsVisible(true);
+    uiEmitter.on('close-chat', showRobot);
+
+    return () => {
+        uiEmitter.off('close-chat', showRobot);
+    }
+  }, [isClient]);
 
   // Centralized function to manage speech bubble state and timers
   const setRobotSpeech = (text: string, duration: number) => {
@@ -254,8 +264,9 @@ export default function Mitraa() {
 
   // Click handler for the robot
   const handleRobotClick = () => {
-      const randomPhrase = CLICK_PHRASES[Math.floor(Math.random() * CLICK_PHRASES.length)];
-      setRobotSpeech(randomPhrase, 5000);
+    // Hide the robot and open the main chat assistant
+    setIsVisible(false);
+    uiEmitter.emit('open-chat');
   };
   
   if (!isClient) {
@@ -263,33 +274,41 @@ export default function Mitraa() {
   }
 
   return (
-    <div
-      className="fixed bottom-6 left-6 z-50 cursor-pointer"
-      style={{ width: ROBOT_SIZE, height: ROBOT_SIZE }}
-      onClick={handleRobotClick}
-      aria-label="Chat with Mitraa Robot"
-      role="button"
-    >
-      <div
-        className={cn(
-          'relative w-full h-full rounded-2xl p-2 transition-all duration-300',
-          'bg-card/50 backdrop-blur-lg border border-border/80',
-          'shadow-heavy shadow-primary/10'
+    <AnimatePresence>
+        {isVisible && (
+            <motion.div
+                initial={{ opacity: 0, y: 50, scale: 0.5 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 50, scale: 0.5 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="fixed bottom-6 left-6 z-50 cursor-pointer"
+                style={{ width: ROBOT_SIZE, height: ROBOT_SIZE }}
+                onClick={handleRobotClick}
+                aria-label="Chat with Mitraa Robot"
+                role="button"
+            >
+              <div
+                className={cn(
+                  'relative w-full h-full rounded-2xl p-2 transition-all duration-300',
+                  'bg-card/50 backdrop-blur-lg border border-border/80',
+                  'shadow-heavy shadow-primary/10'
+                )}
+              >
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3/4 px-2 py-1 flex items-center justify-center gap-1.5 text-xs font-mono rounded-full bg-background/50 border border-border/50 text-muted-foreground">
+                  <Bot size={12} className="text-primary" />
+                  MITRAA
+                </div>
+
+                <div className="w-full h-full mt-4">
+                  <RobotSvg isScrolling={isScrolling} mouseX={mouseX} />
+                </div>
+
+                <AnimatePresence>
+                  {speech && <SpeechBubble text={speech} />}
+                </AnimatePresence>
+              </div>
+            </motion.div>
         )}
-      >
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3/4 px-2 py-1 flex items-center justify-center gap-1.5 text-xs font-mono rounded-full bg-background/50 border border-border/50 text-muted-foreground">
-          <Bot size={12} className="text-primary" />
-          MITRAA
-        </div>
-
-        <div className="w-full h-full mt-4">
-          <RobotSvg isScrolling={isScrolling} mouseX={mouseX} />
-        </div>
-
-        <AnimatePresence>
-          {speech && <SpeechBubble text={speech} />}
-        </AnimatePresence>
-      </div>
-    </div>
+    </AnimatePresence>
   );
 }
