@@ -10,11 +10,11 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { parseTransaction, type ParseTransactionOutput } from './transaction-parser-flow';
-import { getMarketTrend } from './market-trend-flow';
+import { parseTransaction, ParseTransactionOutputSchema, type ParseTransactionOutput } from './transaction-parser-flow';
+import { getMarketTrend, MarketTrendInputSchema, MarketTrendOutputSchema } from './market-trend-flow';
 
 // ==================================================
-// 1. INTENT DEFINITION & DETECTION
+// 1. INTENT & SCHEMA DEFINITIONS
 // ==================================================
 const SupportedIntentSchema = z.enum([
   'price_query',
@@ -22,7 +22,7 @@ const SupportedIntentSchema = z.enum([
   'payment_query',
   'order_create',
   'order_cancel',
-  'ledger_entry', // Handled by a specialized tool
+  'ledger_entry',
   'shop_timing',
   'trend_related_question',
   'greeting',
@@ -30,54 +30,12 @@ const SupportedIntentSchema = z.enum([
 ]);
 type SupportedIntent = z.infer<typeof SupportedIntentSchema>;
 
-const IntentDetectionOutputSchema = z.object({
-  intent: SupportedIntentSchema,
-  entities: z.object({
-    product: z.string().optional(),
-  }).optional(),
-  confidence: z.number().min(0).max(1),
-});
-
-/**
- * Anigravity Tool: detect_intent
- * Uses a hybrid approach: a rule-based parser for high-value intents (ledger)
- * and an LLM for general classification.
- */
-const detectIntentPrompt = ai.definePrompt({
-  name: 'detectIntentPrompt',
-  input: { schema: z.object({ query: z.string() }) },
-  output: { schema: IntentDetectionOutputSchema },
-  prompt: `You are an expert intent classifier for an Indian Kirana store's WhatsApp agent.
-    Analyze the user's message and classify it into ONE of the following intents. Provide a confidence score.
-    Extract the main product entity if present.
-
-    Intents:
-    - price_query: Asking for the price of an item. (e.g., "dudh ka rate kya hai?", "how much for 1kg sugar?")
-    - availability_query: Asking if an item is in stock. (e.g., "atta hai kya?", "do you have bread?")
-    - payment_query: Asking about payment methods. (e.g., "upi chalta hai?", "cash loge?")
-    - order_create: Placing a new order. (e.g., "2 bread packet bhej do", "1 maggi, 2 milk")
-    - order_cancel: Cancelling a previous order. (e.g., "mera order cancel kar do")
-    - shop_timing: Asking for shop opening or closing times. (e.g., "kab tak khuli hai?", "what time do you open?")
-    - trend_related_question: Asking about market trends or popular items. (e.g., "aaj kal kya chal raha hai?", "which product is in demand in Mumbai?")
-    - greeting: A simple greeting. (e.g., "hello", "namaste")
-    - unknown: Anything that doesn't fit.
-
-    User Message: "{{query}}"
-
-    Output only the JSON object.
-    `,
-});
-
-// ==================================================
-// 2. SHOP CONTEXT & POLICY GUARD
-// ==================================================
 const ShopContextSchema = z.object({
   shop_id: z.string(),
   name: z.string(),
-  region: z.string().default('Mumbai'), // For trend analysis
+  region: z.string().default('Mumbai'),
   paymentModes: z.array(z.string()),
   timings: z.string(),
-  // For simplicity, a string. A real system would use a structured product catalog.
   known_products_and_prices: z.string().describe("Simple string of known products and prices, e.g., 'Doodh ₹55/liter, Aata ₹40/kg'"),
   rules: z.object({
     credit_limit_per_transaction: z.number().default(5000),
@@ -86,29 +44,6 @@ const ShopContextSchema = z.object({
 });
 export type ShopContext = z.infer<typeof ShopContextSchema>;
 
-/**
- * Anigravity Tool: policy_guard
- * A synchronous function that enforces business rules before executing actions.
- */
-function policyGuard(
-  intent: SupportedIntent,
-  transactionDetails: ParseTransactionOutput | null,
-  shopContext: ShopContext
-): { allowed: boolean; reason: string } {
-  if (intent === 'ledger_entry' && transactionDetails?.type === 'credit') {
-    if (!shopContext.rules.allow_credit) {
-      return { allowed: false, reason: "Sorry, this shop does not offer credit." };
-    }
-    if (transactionDetails.amount > shopContext.rules.credit_limit_per_transaction) {
-      return { allowed: false, reason: `Credit amount ₹${transactionDetails.amount} is over the shop's limit of ₹${shopContext.rules.credit_limit_per_transaction}.` };
-    }
-  }
-  return { allowed: true, reason: "" };
-}
-
-// ==================================================
-// 3. AGENT INPUT / OUTPUT (EXTERNAL INTERFACE)
-// ==================================================
 export const AgentInputSchema = z.object({
   query: z.string().describe('The raw WhatsApp message from the customer.'),
   shopContext: ShopContextSchema.describe('The context of the specific shop receiving the message.'),
@@ -127,8 +62,108 @@ export type AgentOutput = z.infer<typeof AgentOutputSchema>;
 
 
 // ==================================================
-// 4. THE CORE ANIGRAVITY AGENT FLOW
+// 2. AGENT TOOLS
 // ==================================================
+
+/**
+ * A tool that the AI agent can use to parse natural language into a structured transaction.
+ */
+const ledgerEntryTool = ai.defineTool(
+  {
+    name: 'createLedgerEntry',
+    description: 'Use this to parse a credit (udhaar) or payment (jama) transaction. This is for financial entries only.',
+    inputSchema: z.object({ 
+        naturalLanguageQuery: z.string().describe('The user\'s message containing transaction details, like "Ravi 500 udhaar" or "Sunita paid 200".')
+    }),
+    outputSchema: ParseTransactionOutputSchema,
+  },
+  async ({ naturalLanguageQuery }) => {
+    // We call the existing, robust flow for parsing.
+    return parseTransaction({ query: naturalLanguageQuery });
+  }
+);
+
+/**
+ * A tool that the AI agent can use to get market trend data.
+ */
+const marketTrendTool = ai.defineTool(
+    {
+        name: 'getMarketTrend',
+        description: 'Use this to get market trend data for a specific product in a region.',
+        inputSchema: MarketTrendInputSchema,
+        outputSchema: MarketTrendOutputSchema,
+    },
+    async (input) => {
+        return getMarketTrend(input);
+    }
+);
+
+
+// ==================================================
+// 3. POLICY GUARD
+// ==================================================
+
+/**
+ * Anigravity Tool: policy_guard
+ * A synchronous function that enforces business rules before executing actions.
+ */
+function policyGuard(
+  intent: SupportedIntent,
+  transactionDetails: ParseTransactionOutput | null,
+  shopContext: ShopContext
+): { allowed: boolean; reason: string } {
+  if (intent === 'ledger_entry' && transactionDetails?.type === 'credit') {
+    if (!shopContext.rules.allow_credit) {
+      return { allowed: false, reason: "Maaf kijiye, yeh dukaan udhaar nahi deti." };
+    }
+    if (transactionDetails.amount > shopContext.rules.credit_limit_per_transaction) {
+      return { allowed: false, reason: `Udhaar ki rakam (₹${transactionDetails.amount}) dukaan ki limit (₹${shopContext.rules.credit_limit_per_transaction}) se zyada hai.` };
+    }
+  }
+  return { allowed: true, reason: "" };
+}
+
+// ==================================================
+// 4. THE CORE ANIGRAVITY AGENT
+// ==================================================
+
+const anigravityAgentPrompt = ai.definePrompt({
+    name: 'anigravityAgentPrompt',
+    tools: [ledgerEntryTool, marketTrendTool],
+    input: { schema: AgentInputSchema },
+    output: { schema: AgentOutputSchema },
+    system: `You are DukaanMitra, an AI assistant for an Indian Kirana store owner, communicating via WhatsApp.
+    Your persona: Helpful, polite, concise, and professional. You use simple Hinglish.
+    Your goal: Understand the customer's message, use tools if necessary, and decide on the best action and response.
+
+    SHOP CONTEXT:
+    - Name: {{shopContext.name}}
+    - Timings: {{shopContext.timings}}
+    - Payment Modes: {{json shopContext.paymentModes}}
+    - Known Products/Prices: {{shopContext.known_products_and_prices}}
+    
+    RESPONSE RULES:
+    1.  Greeting: If the user says "hello" or "namaste", greet them back and ask how you can help.
+    2.  Shop Info: Answer questions about shop timings or payment methods using the context above.
+    3.  Product Info: Answer price or availability questions using the "Known Products/Prices" context. If a product is not in the list, say you need to check with the shopkeeper.
+    4.  Ledger Entry: If the message is a transaction (e.g., "Ravi 500 udhaar", "Sunita paid 200"), you MUST use the 'createLedgerEntry' tool. Do NOT try to parse it yourself.
+    5.  Market Trends: If the user asks about product trends (e.g., "what's popular in Mumbai?"), you MUST use the 'getMarketTrend' tool.
+    6.  Unsupported Queries: For anything else (like placing a complex order or cancelling one), politely say you need to confirm with the shopkeeper.
+    
+    SAFETY & ESCALATION:
+    - Your primary goal is safety. If you are less than 80% confident, it is better to escalate to a human.
+    - Set 'escalate' to true if you are unsure or the query is unsupported. Your response should be "Iske liye shopkeeper se confirm karna hoga."
+    
+    OUTPUT INSTRUCTIONS:
+    - You must respond with a valid JSON object matching the AgentOutputSchema.
+    - 'intent' should be your classification of the user's primary goal.
+    - 'response' should be a friendly, short Hinglish message for the customer.
+    - If you used the 'createLedgerEntry' tool, use its output to construct the 'action' field in your final JSON output. The action object must look like this: { "type": "ADD_LEDGER_ENTRY", "payload": { ... } }. The 'payload' should contain 'shopId', 'customer' details, and 'transaction' details from the tool's output. The shopId is in the input context.
+    - If you used the 'getMarketTrend' tool, simply formulate a human-friendly 'response' using the tool's output. Do not populate the 'action' field.
+    `,
+});
+
+
 export const anigravityAgent = ai.defineFlow(
   {
     name: 'anigravityAgent',
@@ -137,198 +172,46 @@ export const anigravityAgent = ai.defineFlow(
   },
   async (input) => {
 
-    // --------------------------------------------------
-    // FLOW STEP 1: DETECT INTENT (Rule-first, LLM fallback)
-    // --------------------------------------------------
-    let intentResult: z.infer<typeof IntentDetectionOutputSchema>;
-    let transactionDetails: ParseTransactionOutput | null = null;
-    
-    // Rule-based check for high-value `ledger_entry` intent.
-    if (input.query.match(/\d/)) { // Simple rule: if there's a number, it *might* be a transaction.
-      try {
-        const parsedTransaction = await parseTransaction({ query: input.query });
-        if (parsedTransaction.confidence_score > 0.85) {
-          intentResult = { intent: 'ledger_entry', confidence: parsedTransaction.confidence_score, entities: { product: parsedTransaction.items } };
-          transactionDetails = parsedTransaction;
-        } else {
-          // Confidence is low, fall back to general LLM classifier.
-          const { output } = await detectIntentPrompt({ query: input.query });
-          if (!output) throw new Error("Intent detection failed.");
-          intentResult = output;
-        }
-      } catch (e) {
-        // Parsing failed, fall back to general LLM classifier.
-        const { output } = await detectIntentPrompt({ query: input.query });
-        if (!output) throw new Error("Intent detection failed.");
-        intentResult = output;
-      }
-    } else {
-      // No numbers, unlikely to be a ledger entry, use general LLM classifier.
-      const { output } = await detectIntentPrompt({ query: input.query });
-      if (!output) throw new Error("Intent detection failed.");
-      intentResult = output;
+    // 1. Execute the main agent prompt. Genkit handles the tool-calling loop automatically.
+    const llmResponse = await anigravityAgentPrompt(input);
+    const agentDecision = llmResponse.output();
+
+    if (!agentDecision) {
+      return {
+        intent: 'unknown',
+        confidence: 0,
+        escalate: true,
+        escalation_reason: 'LLM failed to generate a valid decision.',
+        response: 'Sorry, I am having trouble understanding. Please try again.',
+      };
     }
     
-    const { intent, confidence, entities } = intentResult;
-
-    // --------------------------------------------------
-    // FLOW STEP 2: LOAD SHOP CONTEXT (Passed as input)
-    // --------------------------------------------------
-    const shopContext = input.shopContext;
-
-    // --------------------------------------------------
-    // FLOW STEP 3: POLICY GUARD
-    // --------------------------------------------------
-    const policyCheck = policyGuard(intent, transactionDetails, shopContext);
+    // 2. Extract transaction details if an action was decided.
+    let transactionDetails: ParseTransactionOutput | null = null;
+    if (agentDecision.action && agentDecision.action.type === 'ADD_LEDGER_ENTRY') {
+        // The LLM now structures the full payload, so we extract the transaction part for the policy guard.
+        transactionDetails = agentDecision.action.payload.transaction as ParseTransactionOutput;
+    }
+    
+    // 3. POLICY GUARD: Run the AI's decision through our business rule safety guard.
+    const policyCheck = policyGuard(agentDecision.intent, transactionDetails, input.shopContext);
     if (!policyCheck.allowed) {
+      // If a policy is violated, we override the AI's decision.
       return {
-        intent,
-        confidence: 1.0,
-        escalate: true, // Escalate because a policy was violated.
+        intent: agentDecision.intent,
+        confidence: 1.0, // It's a definite policy violation
+        escalate: true,
         escalation_reason: `Policy Violation: ${policyCheck.reason}`,
         response: policyCheck.reason, // Inform the user of the specific reason.
+        action: undefined, // CRITICAL: Clear any action that violates policy.
       };
     }
 
-    // --------------------------------------------------
-    // FLOW STEP 4: GET MARKET TREND (Conditional)
-    // --------------------------------------------------
-    let trendInfo: any = null;
-    if (intent === 'trend_related_question' && entities?.product) {
-        try {
-            trendInfo = await getMarketTrend({ product: entities.product, region: shopContext.region });
-        } catch (e) {
-            console.warn("Market trend tool failed, proceeding without trend data.");
-            // Failsafe: Continue safely without trend data.
-        }
-    }
-
-    // --------------------------------------------------
-    // FLOW STEP 5 & 6: DECISION ROUTER + EXECUTE/REPLY
-    // --------------------------------------------------
-
-    // FAILSAFE: Low confidence check
-    if (confidence < 0.75 && intent !== 'ledger_entry') { // Ledger entry has its own confidence check
-      return {
-        intent,
-        confidence,
-        escalate: true,
-        escalation_reason: `Low confidence score: ${confidence.toFixed(2)}`,
-        response: "Iske liye shopkeeper se confirm karna hoga.",
-      };
-    }
-
-    switch (intent) {
-      case 'ledger_entry':
-        if (!transactionDetails) {
-            return { intent, confidence, escalate: true, escalation_reason: "Ledger entry intent detected but transaction details are missing.", response: "Kuch samajh nahi aaya. Please try again." };
-        }
-        // This intent passed the policy guard. It's an executable action.
-        
-        // Structure the payload for the Action Engine
-        const actionPayload = {
-          shopId: shopContext.shop_id,
-          customer: {
-            name: transactionDetails.customer_name,
-            phone: transactionDetails.phone,
-          },
-          transaction: {
-            amount: transactionDetails.amount,
-            items: transactionDetails.items,
-            type: transactionDetails.type,
-          },
-        };
-
-        return {
-          intent,
-          confidence,
-          escalate: false,
-          action: { type: 'ADD_LEDGER_ENTRY', payload: actionPayload },
-          response: `Theek hai, ${transactionDetails.customer_name} ka hisaab (₹${transactionDetails.amount}) note kar liya hai. 👍`,
-        };
-
-      case 'greeting':
-        return {
-          intent, confidence, escalate: false,
-          response: `Namaste! ${shopContext.name} me swagat hai. Batayein kya chahiye?`,
-        };
-
-      case 'payment_query':
-        return {
-          intent, confidence, escalate: false,
-          response: `Hum ${shopContext.paymentModes.join(' aur ')} accept karte hain.`,
-        };
-
-      case 'shop_timing':
-        return {
-          intent, confidence, escalate: false,
-          response: `Dukaan ${shopContext.timings} khuli rehti hai.`,
-        };
-      
-      case 'trend_related_question':
-        let trendResponse = "Iske baare me abhi jaankari nahi hai.";
-        if (trendInfo) {
-            trendResponse = `Abhi ${entities?.product} ka trend '${trendInfo.trend_direction}' hai aur demand score ${trendInfo.demand_score}/100 hai.`;
-        }
-        return {
-            intent, confidence, escalate: false,
-            response: trendResponse
-        };
-
-      case 'price_query':
-        if (entities?.product) {
-          const product = entities.product.toLowerCase();
-          const prices = shopContext.known_products_and_prices.toLowerCase();
-          
-          const productIndex = prices.indexOf(product);
-          if (productIndex !== -1) {
-            const searchString = prices.substring(productIndex);
-            const priceMatch = searchString.match(/₹\s*(\d+(\.\d+)?)/);
-            if (priceMatch) {
-              return {
-                intent, confidence, escalate: false,
-                response: `${entities.product} ka rate ${priceMatch[0]} hai.`,
-              };
-            }
-          }
-        }
-        return {
-          intent, confidence, escalate: true,
-          escalation_reason: `Price for '${entities?.product}' not found in catalog.`,
-          response: `Iske liye shopkeeper se confirm karna padega ki ${entities?.product || 'is item'} ka rate kya hai.`,
-        };
-        
-      case 'availability_query':
-        if (entities?.product) {
-          const product = entities.product.toLowerCase();
-          const catalog = shopContext.known_products_and_prices.toLowerCase();
-          if (catalog.includes(product)) {
-            return {
-              intent, confidence, escalate: false,
-              response: `Ji haan, ${entities.product} abhi available hai.`,
-            };
-          }
-        }
-        return {
-          intent, confidence, escalate: true,
-          escalation_reason: `Availability of '${entities?.product}' not found in catalog.`,
-          response: `Iske liye shopkeeper se confirm karna padega ki ${entities?.product || 'yeh item'} stock me hai ya nahi.`,
-        };
-
-      case 'order_create':
-      case 'order_cancel':
-      case 'unknown':
-      default:
-        return {
-          intent,
-          confidence,
-          escalate: true,
-          escalation_reason: `Unsupported or unsafe intent: ${intent}`,
-          response: "Iske liye shopkeeper se confirm karna hoga.",
-        };
-    }
+    // 4. Return the agent's final, policy-checked decision.
+    return agentDecision;
   }
 );
+
 
 /**
  * A simple wrapper function to easily call the agent flow.
