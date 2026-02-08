@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState } from "react";
@@ -253,7 +254,7 @@ export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
                             <h3 className="text-lg font-semibold mb-3">Top Action Items</h3>
                             <ul className="space-y-2">
                                 {insights.keyActionItems.map((item, index) => (
-                                    <li key={index} className="flex items-center gap-3 p-3 bg-accent/10 border border-accent/20 rounded-lg">
+                                    <li key={index} className="flex items-center gap-3 p-3 bg-accent/20 border border-accent/30 rounded-lg">
                                         <Badge className="bg-accent text-accent-foreground">{index + 1}</Badge>
                                         <p className="text-sm font-medium">{item}</p>
                                     </li>
@@ -263,7 +264,7 @@ export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
                         
                         <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="item-1">
-                                <AccordionTrigger className="bg-muted/50 hover:bg-muted/80 px-4 rounded-md">Detailed Analysis</AccordionTrigger>
+                                <AccordionTrigger className="bg-secondary/50 hover:bg-secondary/80 px-4 rounded-md font-semibold">Detailed Analysis</AccordionTrigger>
                                 <AccordionContent className="pt-4 space-y-6">
                                      <InsightCard 
                                         title="Customer Insights"
@@ -300,3 +301,5 @@ export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
     </div>
   );
 }
+
+    

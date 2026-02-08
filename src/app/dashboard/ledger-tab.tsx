@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { collection, query, orderBy } from "firebase/firestore";
-import { Loader2, PlusCircle, Download } from "lucide-react";
+import { Loader2, PlusCircle, Download, Bot, MessageSquare } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +43,15 @@ const renderEntryType = (type?: string) => {
     }
 }
 
+const renderSourceBadge = (source?: string) => {
+    switch (source) {
+      case 'whatsapp': return <Badge variant="outline" className="border-green-500 text-green-500"><MessageSquare className="mr-1 h-3 w-3" /> WhatsApp</Badge>;
+      case 'app-ai': return <Badge variant="outline" className="border-primary text-primary"><Bot className="mr-1 h-3 w-3" /> AI Quick Add</Badge>;
+      case 'app': return <Badge variant="secondary">Manual</Badge>;
+      default: return <Badge variant="outline">Unknown</Badge>;
+    }
+}
+
 const formatDate = (date: any) => {
     if (!date) return 'N/A';
     if (typeof date.toDate === 'function') {
@@ -71,7 +80,7 @@ export default function LedgerTab({ shopId }: LedgerTabProps) {
 
   const handleExport = () => {
     if (!ledgerEntries) return;
-    const headers = ["ID", "Customer Name", "Customer Phone", "Item", "Amount (₹)", "Type", "Date"];
+    const headers = ["ID", "Customer Name", "Customer Phone", "Item", "Amount (₹)", "Type", "Source", "Date"];
     const csvRows = ledgerEntries.map(entry => {
       const row = [
         entry.id,
@@ -80,6 +89,7 @@ export default function LedgerTab({ shopId }: LedgerTabProps) {
         entry.item || 'N/A',
         entry.amount.toFixed(2),
         entry.type,
+        entry.source || 'manual',
         formatDate(entry.createdAt)
       ];
       return row.map(value => {
@@ -161,11 +171,15 @@ export default function LedgerTab({ shopId }: LedgerTabProps) {
                           {renderEntryType(entry.type)}
                        </div>
                     </CardHeader>
-                    <CardContent className="text-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">{entry.item || 'Misc Transaction'}</span>
-                        <span className="font-bold text-base">{`₹${entry.amount.toFixed(2)}`}</span>
-                      </div>
+                    <CardContent className="space-y-3">
+                       <div className="flex justify-between items-center text-sm">
+                         <span className="text-muted-foreground">{entry.item || 'Misc Transaction'}</span>
+                         <span className="font-bold text-base">{`₹${entry.amount.toFixed(2)}`}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-xs border-t pt-2 mt-2">
+                          <span className="text-muted-foreground">Source</span>
+                          {renderSourceBadge(entry.source)}
+                       </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -180,6 +194,7 @@ export default function LedgerTab({ shopId }: LedgerTabProps) {
                       <TableHead>Date</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Item</TableHead>
+                      <TableHead>Source</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -192,6 +207,7 @@ export default function LedgerTab({ shopId }: LedgerTabProps) {
                         </TableCell>
                         <TableCell>{renderEntryType(entry.type)}</TableCell>
                         <TableCell>{entry.item || 'N/A'}</TableCell>
+                        <TableCell>{renderSourceBadge(entry.source)}</TableCell>
                         <TableCell className="text-right font-bold">
                           {`₹${entry.amount.toFixed(2)}`}
                         </TableCell>
@@ -207,3 +223,5 @@ export default function LedgerTab({ shopId }: LedgerTabProps) {
     </div>
   );
 }
+
+    
