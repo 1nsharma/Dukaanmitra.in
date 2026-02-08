@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, UserCheck, Shield, Database, HeartPulse, AlertTriangle, FileClock, GitBranch } from 'lucide-react';
+import { Users, UserCheck, Shield, Database, HeartPulse, AlertTriangle, FileClock } from 'lucide-react';
 
 const statCards = [
     { title: "Total Users", value: "1,254", icon: <Users /> },
@@ -8,7 +8,6 @@ const statCards = [
     { title: "Active (24h)", value: "348", icon: <HeartPulse className="text-green-400" /> },
     { title: "Disabled Users", value: "5", icon: <Users className="text-destructive"/> },
     { title: "Firestore Collections", value: "7", icon: <Database /> },
-    { title: "Cloud Functions", value: "Active", icon: <GitBranch className="text-green-400" /> },
     { title: "Errors (24h)", value: "0", icon: <AlertTriangle className="text-green-400" /> },
     { title: "Rule Violations", value: "0", icon: <Shield className="text-green-400" /> },
 ]
