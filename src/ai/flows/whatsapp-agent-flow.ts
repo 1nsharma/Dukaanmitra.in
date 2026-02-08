@@ -21,6 +21,7 @@ const SupportedIntentSchema = z.enum([
   'order_cancel',
   'ledger_entry',
   'shop_timing',
+  'trend_related_question',
   'greeting',
   'unknown',
 ]);
@@ -74,6 +75,7 @@ const intentDetectorPrompt = ai.definePrompt({
     - order_cancel: Cancelling a previous order. (e.g., "mera order cancel kar do")
     - ledger_entry: A credit (udhaar) or payment (jama) transaction. (e.g., "Ravi 500 udhaar", "Pappu ne 200 diye")
     - shop_timing: Asking for shop opening or closing times. (e.g., "kab tak khuli hai?", "what time do you open?")
+    - trend_related_question: Asking about market trends or popular items. (e.g., "aaj kal kya chal raha hai?")
     - greeting: A simple greeting. (e.g., "hello", "namaste")
     - unknown: Anything that doesn't fit the above categories.
 
@@ -165,6 +167,7 @@ export const whatsappAgentFlow = ai.defineFlow(
         case 'availability_query':
         case 'order_create':
         case 'order_cancel':
+        case 'trend_related_question':
             return {
                 intent,
                 confidence,
