@@ -1,0 +1,146 @@
+
+'use client';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ShieldCheck } from "lucide-react";
+
+// Content of firestore.rules
+const rulesContent = `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper Functions
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // This is more reliable and required for list rules.
+    function isSuperAdmin() {
+      return request.auth.token.email_verified && 
+             request.auth.token.email == "amitsharma99976@gmail.com";
+    }
+
+    function isUserActive() {
+      // Allow if user is not authenticated (for public pages) or if their user doc doesn't exist yet (profile creation).
+      if (request.auth == null) {
+        return true;
+      }
+      let userDocPath = /databases/$(database)/documents/users/$(request.auth.uid);
+      // Allow if doc doesn't exist (profile creation) or if doc exists and status is active.
+      return !exists(userDocPath) || get(userDocPath).data.status == 'active';
+    }
+
+    /**
+     * PUBLIC COLLECTIONS
+     */
+    match /posts/{postId} {
+      allow read: if true;
+      allow update: if isUserActive() &&
+                      (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.views == resource.data.views + 1) &&
+                      request.resource.data.diff(resource.data).affectedKeys().size() == 1;
+      allow create, delete: if isSuperAdmin();
+    }
+
+    match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isUserActive() && request.resource.data.keys().hasAll(['postSlug', 'name', 'message', 'createdAt']);
+        allow update, delete: if isSuperAdmin();
+    }
+    
+    match /contactFormSubmissions/{submissionId} {
+        allow create: if true;
+        allow read, update, delete: if isSuperAdmin();
+    }
+
+    match /logs/{logId} {
+        // Logs are append-only and can only be created by super admins.
+        allow create: if isSuperAdmin();
+        // Only super admins can read logs.
+        allow read: if isSuperAdmin();
+        // Logs are immutable.
+        allow update, delete: if false;
+    }
+
+    /**
+     * USER PROFILES
+     */
+    match /users/{userId} {
+      // READ: Users can read their own profile. Super admins can read any profile.
+      allow read: if (isOwner(userId) || isSuperAdmin()) && isUserActive();
+      
+      // LIST: Only super admins can list users. The isUserActive() check is removed as it's not compatible with list queries.
+      allow list: if isSuperAdmin();
+
+      // CREATE:
+      // - An authenticated user can create THEIR OWN profile.
+      // - The role MUST be 'user' UNLESS it's the one-time super admin bootstrap.
+      allow create: if isOwner(userId) &&
+                     request.resource.data.status == 'active' &&
+                     (
+                       (request.resource.data.role == 'user') ||
+                       // ONE-TIME BOOTSTRAP RULE:
+                       (request.resource.data.role == 'super_admin' && request.resource.data.email == "amitsharma99976@gmail.com")
+                     );
+
+      // UPDATE:
+      // - A user can update their own profile, but cannot change their role or status.
+      // - A super_admin can update any field on any user profile.
+      allow update: if isSuperAdmin() ||
+                    (isOwner(userId) && isUserActive() && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])));
+
+      // DELETE: Only super admins can delete user profiles.
+      allow delete: if isSuperAdmin();
+    }
+
+    /**
+     * SHOPS and Subcollections
+     */
+    function isShopOwner(shopId) {
+      let shop = get(/databases/$(database)/documents/shops/$(shopId));
+      return request.auth != null && shop.data.owner_id == request.auth.uid;
+    }
+    
+    match /shops/{shopId} {
+      // Active users can create shops, and must set themselves as owner.
+      allow create: if isUserActive() && request.auth != null && request.resource.data.owner_id == request.auth.uid;
+
+      // Only the owner (who must be active) or a super admin can read/update/delete.
+      allow read, update, delete: if (isShopOwner(shopId) && isUserActive()) || isSuperAdmin();
+      
+       // All subcollections are protected by the same logic.
+      match /{subcollection}/{docId=**} {
+        // Super admin has full access to all subcollections
+        if isSuperAdmin() {
+          allow read, write: if true;
+        } else {
+          // Ledger entries have special immutability rules
+          if (subcollection == 'ledger') {
+            allow update, delete: if false;
+            allow read, create: if isShopOwner(shopId) && isUserActive();
+          } else {
+            allow read, write: if isShopOwner(shopId) && isUserActive();
+          }
+        }
+      }
+    }
+  }
+}`;
+
+export default function RulesViewer() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><ShieldCheck /> Firestore Security Rules</CardTitle>
+                <CardDescription>A read-only view of your currently deployed Firestore security rules.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ScrollArea className="h-[60vh] w-full bg-muted/50 rounded-md border p-4 font-mono">
+                    <pre className="text-xs">
+                        <code>{rulesContent}</code>
+                    </pre>
+                </ScrollArea>
+            </CardContent>
+        </Card>
+    );
+}
