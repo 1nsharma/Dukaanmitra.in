@@ -18,7 +18,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isUserLoading && user) {
-      router.push('/dashboard');
+      if (user.role === 'super_admin') {
+        router.push('/SAP/dashboard');
+      } else {
+        router.push('/dashboard');
+      }
     }
   }, [user, isUserLoading, router]);
 

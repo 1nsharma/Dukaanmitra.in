@@ -20,6 +20,8 @@ export default function DashboardPage() {
     if (!isUserLoading) {
       if (!user) {
         router.push("/login");
+      } else if (user.role === 'super_admin') {
+        router.push('/SAP/dashboard');
       } else if (user.status === 'suspended') {
         auth.signOut();
         toast({
@@ -47,9 +49,9 @@ export default function DashboardPage() {
     // router.refresh(); 
   }
 
-  const isLoading = isUserLoading;
+  const isLoading = isUserLoading || !user || user.role === 'super_admin';
 
-  if (isLoading || !user) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[calc(100vh-theme(spacing.14))] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
