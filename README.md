@@ -1,4 +1,3 @@
-
 # DukaanMitra - AI-Powered WhatsApp Munim
 
 Welcome to DukaanMitra, a production-grade, multi-tenant SaaS platform designed to digitize India's Kirana stores. It leverages a "WhatsApp-first" approach, allowing shop owners to manage their business using natural language commands, powered by a sophisticated AI agent built with Google's Genkit.
