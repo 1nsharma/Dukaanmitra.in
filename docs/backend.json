@@ -196,8 +196,13 @@
             "timezone": {
               "type": "string"
             },
-            "auto_reply": {
-              "type": "boolean"
+            "allow_credit": {
+              "type": "boolean",
+              "description": "Whether the shop allows giving credit (udhaar)."
+            },
+            "credit_limit_per_transaction": {
+              "type": "number",
+              "description": "The maximum amount allowed for a single credit transaction."
             },
             "working_hours": {
               "type": "object",

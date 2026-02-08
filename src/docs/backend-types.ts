@@ -43,7 +43,8 @@ export type Shop = {
     language?: "hi" | "en" | "hinglish";
     currency?: string;
     timezone?: string;
-    auto_reply?: boolean;
+    allow_credit?: boolean;
+    credit_limit_per_transaction?: number;
     working_hours?: {
       start?: string; // "time"
       end?: string; // "time"

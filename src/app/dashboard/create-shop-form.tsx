@@ -73,6 +73,13 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
             plan: 'free',
             status: 'trial',
             trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+            settings: {
+                language: "hinglish",
+                currency: "INR",
+                timezone: "Asia/Kolkata",
+                allow_credit: true,
+                credit_limit_per_transaction: 5000,
+            },
         };
         batch.set(newShopRef, shopData);
 

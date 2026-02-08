@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -26,6 +27,7 @@ import { useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase
 import type { Shop } from '@/docs/backend-types';
 import { cn } from '@/lib/utils';
 import WhatsAppOnboarding from './whatsapp-onboarding';
+import { Switch } from '@/components/ui/switch';
 
 
 const formSchema = z.object({
@@ -35,6 +37,8 @@ const formSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   pincode: z.string().optional(),
+  settings_allow_credit: z.boolean().default(true),
+  settings_credit_limit_per_transaction: z.coerce.number().positive().default(5000),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -58,14 +62,19 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
       city: shop.city || "",
       state: shop.state || "",
       pincode: shop.pincode || "",
+      settings_allow_credit: shop.settings?.allow_credit ?? true,
+      settings_credit_limit_per_transaction: shop.settings?.credit_limit_per_transaction ?? 5000,
     },
   });
 
   const onUpdateDetailsSubmit = (values: FormValues) => {
     startTransition(() => {
       const shopRef = doc(firestore, "shops", shop.id);
+      const { settings_allow_credit, settings_credit_limit_per_transaction, ...shopDetails } = values;
       const shopData = {
-        ...values,
+        ...shopDetails,
+        "settings.allow_credit": settings_allow_credit,
+        "settings.credit_limit_per_transaction": settings_credit_limit_per_transaction,
         updated_at: serverTimestamp(),
       };
       
@@ -248,6 +257,44 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
                         </FormItem>
                     )}
                     />
+
+                    <div className="space-y-4 rounded-lg border bg-secondary/30 p-4 my-4">
+                        <h4 className="font-semibold">Business Rules</h4>
+                        <FormField
+                            control={form.control}
+                            name="settings_allow_credit"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background p-3 shadow-sm">
+                                    <div className="space-y-0.5">
+                                        <FormLabel>Allow Credit (Udhaar)</FormLabel>
+                                        <FormDescription>
+                                            Permit the AI to record credit transactions.
+                                        </FormDescription>
+                                    </div>
+                                    <FormControl>
+                                        <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="settings_credit_limit_per_transaction"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Credit Limit per Transaction (₹)</FormLabel>
+                                    <FormControl>
+                                        <Input type="number" placeholder="5000" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
                     <FormField
                     control={form.control}
                     name="address"

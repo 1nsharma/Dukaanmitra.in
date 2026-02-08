@@ -53,8 +53,8 @@ export async function loadShopContextByWhatsappNumber(whatsappBusinessNumber: st
       timings: 'Subah 9 baje se raat 10 baje tak', // TODO: Make this configurable
       known_products_and_prices: productCatalog,
       rules: {
-        credit_limit_per_transaction: 5000, // TODO: Make this configurable
-        allow_credit: shopData.settings?.auto_reply ?? true, // Example rule from shop settings
+        credit_limit_per_transaction: shopData.settings?.credit_limit_per_transaction ?? 5000,
+        allow_credit: shopData.settings?.allow_credit ?? true,
       },
     };
     
