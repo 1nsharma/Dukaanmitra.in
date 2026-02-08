@@ -1,25 +1,27 @@
-
 'use server';
 /**
- * @fileOverview The core AI agent for processing WhatsApp messages.
- * This agent detects intent, loads shop context, and decides whether to reply, act, or escalate.
+ * @fileOverview The core DukaanMitra AI Agent, built on the Anigravity architecture.
+ * This system processes incoming WhatsApp messages through a rule-driven, multi-tool
+ * pipeline to ensure safe, accurate, and context-aware actions and replies.
+ * 
+ * Golden Rule: Accuracy > Automation. If unsure, escalate to a human.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'zod';
-import {
-  parseTransaction,
-  ParseTransactionOutput,
-} from './transaction-parser-flow';
+import { ai } from '@/ai/genkit';
+import { z } from 'zod';
+import { parseTransaction } from './transaction-parser-flow';
+import { getMarketTrend } from './market-trend-flow';
 
-// 1. INTENT DEFINITION
+// ==================================================
+// 1. INTENT DEFINITION & DETECTION
+// ==================================================
 const SupportedIntentSchema = z.enum([
   'price_query',
   'availability_query',
   'payment_query',
   'order_create',
   'order_cancel',
-  'ledger_entry',
+  'ledger_entry', // Handled by a specialized tool
   'shop_timing',
   'trend_related_question',
   'greeting',
@@ -27,19 +29,85 @@ const SupportedIntentSchema = z.enum([
 ]);
 type SupportedIntent = z.infer<typeof SupportedIntentSchema>;
 
-// 2. SHOP CONTEXT (Defines the data each shop provides)
+const IntentDetectionOutputSchema = z.object({
+  intent: SupportedIntentSchema,
+  entities: z.object({
+    product: z.string().optional(),
+  }).optional(),
+  confidence: z.number().min(0).max(1),
+});
+
+/**
+ * Anigravity Tool: detect_intent
+ * Uses a hybrid approach: a rule-based parser for high-value intents (ledger)
+ * and an LLM for general classification.
+ */
+const detectIntentPrompt = ai.definePrompt({
+  name: 'detectIntentPrompt',
+  input: { schema: z.object({ query: z.string() }) },
+  output: { schema: IntentDetectionOutputSchema },
+  prompt: `You are an expert intent classifier for an Indian Kirana store's WhatsApp agent.
+    Analyze the user's message and classify it into ONE of the following intents. Provide a confidence score.
+    Extract the main product entity if present.
+
+    Intents:
+    - price_query: Asking for the price of an item. (e.g., "dudh ka rate kya hai?", "how much for 1kg sugar?")
+    - availability_query: Asking if an item is in stock. (e.g., "atta hai kya?", "do you have bread?")
+    - payment_query: Asking about payment methods. (e.g., "upi chalta hai?", "cash loge?")
+    - order_create: Placing a new order. (e.g., "2 bread packet bhej do", "1 maggi, 2 milk")
+    - order_cancel: Cancelling a previous order. (e.g., "mera order cancel kar do")
+    - shop_timing: Asking for shop opening or closing times. (e.g., "kab tak khuli hai?", "what time do you open?")
+    - trend_related_question: Asking about market trends or popular items. (e.g., "aaj kal kya chal raha hai?", "which product is in demand in Mumbai?")
+    - greeting: A simple greeting. (e.g., "hello", "namaste")
+    - unknown: Anything that doesn't fit.
+
+    User Message: "{{query}}"
+
+    Output only the JSON object.
+    `,
+});
+
+// ==================================================
+// 2. SHOP CONTEXT & POLICY GUARD
+// ==================================================
 const ShopContextSchema = z.object({
-    name: z.string(),
-    paymentModes: z.array(z.string()).describe("List of accepted payment methods, e.g., ['UPI', 'Cash']"),
-    timings: z.string().describe("Shop opening and closing times, e.g., 'Subah 9 baje se raat 10 baje tak'"),
-    // In a real system, this would be a structured product catalog.
-    // For now, it's a simple string for the AI to parse.
-    products: z.string().describe("A simple string listing available products and prices, e.g., 'Dudh ₹55/liter, Aata ₹40/kg'"),
-    creditLimit: z.number().default(5000).describe("The maximum credit amount allowed for a single transaction."),
+  shop_id: z.string(),
+  name: z.string(),
+  region: z.string().default('Mumbai'), // For trend analysis
+  paymentModes: z.array(z.string()),
+  timings: z.string(),
+  // For simplicity, a string. A real system would use a structured product catalog.
+  known_products_and_prices: z.string().describe("Simple string of known products and prices, e.g., 'Doodh ₹55/liter, Aata ₹40/kg'"),
+  rules: z.object({
+    credit_limit_per_transaction: z.number().default(5000),
+    allow_credit: z.boolean().default(true),
+  }),
 });
 export type ShopContext = z.infer<typeof ShopContextSchema>;
 
-// 3. INPUT / OUTPUT DEFINITIONS
+/**
+ * Anigravity Tool: policy_guard
+ * A synchronous function that enforces business rules before executing actions.
+ */
+function policyGuard(
+  intent: SupportedIntent,
+  transactionDetails: any | null,
+  shopContext: ShopContext
+): { allowed: boolean; reason: string } {
+  if (intent === 'ledger_entry' && transactionDetails?.type === 'credit') {
+    if (!shopContext.rules.allow_credit) {
+      return { allowed: false, reason: "Sorry, this shop does not offer credit." };
+    }
+    if (transactionDetails.amount > shopContext.rules.credit_limit_per_transaction) {
+      return { allowed: false, reason: `Credit amount ₹${transactionDetails.amount} is over the shop's limit of ₹${shopContext.rules.credit_limit_per_transaction}.` };
+    }
+  }
+  return { allowed: true, reason: "" };
+}
+
+// ==================================================
+// 3. AGENT INPUT / OUTPUT (EXTERNAL INTERFACE)
+// ==================================================
 export const AgentInputSchema = z.object({
   query: z.string().describe('The raw WhatsApp message from the customer.'),
   shopContext: ShopContextSchema.describe('The context of the specific shop receiving the message.'),
@@ -50,149 +118,167 @@ export const AgentOutputSchema = z.object({
   intent: SupportedIntentSchema,
   confidence: z.number().min(0).max(1),
   response: z.string().optional().describe("The generated Hinglish response for the customer."),
-  action: z.any().optional().describe("A structured object for backend systems to execute, e.g., a ledger entry."),
+  action: z.any().optional().describe("A structured object for backend systems to execute."),
   escalate: z.boolean().describe("If true, the agent is unsure and is escalating to a human."),
+  escalation_reason: z.string().optional(),
 });
 export type AgentOutput = z.infer<typeof AgentOutputSchema>;
 
 
-// 4. THE INTENT DETECTOR PROMPT (LLM Fallback)
-const intentDetectorPrompt = ai.definePrompt({
-    name: 'intentDetectorPrompt',
-    input: { schema: z.object({ query: z.string() }) },
-    output: { schema: z.object({
-        intent: SupportedIntentSchema,
-        confidence: z.number().min(0).max(1),
-    }) },
-    prompt: `You are an expert intent classifier for an Indian Kirana store's WhatsApp agent.
-    Analyze the user's message and classify it into ONE of the following intents. Provide a confidence score.
-
-    Intents:
-    - price_query: Asking for the price of an item. (e.g., "dudh ka rate kya hai?", "how much for 1kg sugar?")
-    - availability_query: Asking if an item is in stock. (e.g., "atta hai kya?", "do you have bread?")
-    - payment_query: Asking about payment methods. (e.g., "upi chalta hai?", "cash loge?")
-    - order_create: Placing a new order. (e.g., "2 bread packet bhej do", "1 maggi, 2 milk")
-    - order_cancel: Cancelling a previous order. (e.g., "mera order cancel kar do")
-    - ledger_entry: A credit (udhaar) or payment (jama) transaction. (e.g., "Ravi 500 udhaar", "Pappu ne 200 diye")
-    - shop_timing: Asking for shop opening or closing times. (e.g., "kab tak khuli hai?", "what time do you open?")
-    - trend_related_question: Asking about market trends or popular items. (e.g., "aaj kal kya chal raha hai?")
-    - greeting: A simple greeting. (e.g., "hello", "namaste")
-    - unknown: Anything that doesn't fit the above categories.
-
-    User Message: "{{query}}"
-
-    Output only the JSON object.
-    `,
-});
-
-// 5. THE MAIN AGENT FLOW (DECISION ENGINE)
-export const whatsappAgentFlow = ai.defineFlow(
+// ==================================================
+// 4. THE CORE ANIGRAVITY AGENT FLOW
+// ==================================================
+export const anigravityAgent = ai.defineFlow(
   {
-    name: 'whatsappAgentFlow',
+    name: 'anigravityAgent',
     inputSchema: AgentInputSchema,
     outputSchema: AgentOutputSchema,
   },
   async (input) => {
-    // Step 1: High-Confidence Rule-Based Intent Detection (for ledger entries)
-    // This is faster and more reliable than the LLM for the most critical action.
-    if (input.query.match(/\d/)) { // A simple rule: if there's a number, it might be a transaction.
+
+    // --------------------------------------------------
+    // FLOW STEP 1: DETECT INTENT (Rule-first, LLM fallback)
+    // --------------------------------------------------
+    let intentResult: z.infer<typeof IntentDetectionOutputSchema>;
+    let transactionDetails: any = null;
+    
+    // Rule-based check for high-value `ledger_entry` intent.
+    if (input.query.match(/\d/)) { // Simple rule: if there's a number, it *might* be a transaction.
+      try {
+        const parsedTransaction = await parseTransaction({ query: input.query });
+        if (parsedTransaction.confidence_score > 0.85) {
+          intentResult = { intent: 'ledger_entry', confidence: parsedTransaction.confidence_score, entities: { product: parsedTransaction.items } };
+          transactionDetails = parsedTransaction;
+        } else {
+          // Confidence is low, fall back to general LLM classifier.
+          const { output } = await detectIntentPrompt({ query: input.query });
+          if (!output) throw new Error("Intent detection failed.");
+          intentResult = output;
+        }
+      } catch (e) {
+        // Parsing failed, fall back to general LLM classifier.
+        const { output } = await detectIntentPrompt({ query: input.query });
+        if (!output) throw new Error("Intent detection failed.");
+        intentResult = output;
+      }
+    } else {
+      // No numbers, unlikely to be a ledger entry, use general LLM classifier.
+      const { output } = await detectIntentPrompt({ query: input.query });
+      if (!output) throw new Error("Intent detection failed.");
+      intentResult = output;
+    }
+    
+    const { intent, confidence, entities } = intentResult;
+
+    // --------------------------------------------------
+    // FLOW STEP 2: LOAD SHOP CONTEXT (Passed as input)
+    // --------------------------------------------------
+    const shopContext = input.shopContext;
+
+    // --------------------------------------------------
+    // FLOW STEP 3: POLICY GUARD
+    // --------------------------------------------------
+    const policyCheck = policyGuard(intent, transactionDetails, shopContext);
+    if (!policyCheck.allowed) {
+      return {
+        intent,
+        confidence: 1.0,
+        escalate: true, // Escalate because a policy was violated.
+        escalation_reason: `Policy Violation: ${policyCheck.reason}`,
+        response: policyCheck.reason, // Inform the user of the specific reason.
+      };
+    }
+
+    // --------------------------------------------------
+    // FLOW STEP 4: GET MARKET TREND (Conditional)
+    // --------------------------------------------------
+    let trendInfo: any = null;
+    if (intent === 'trend_related_question' && entities?.product) {
         try {
-            const transactionDetails = await parseTransaction({ query: input.query });
-            if (transactionDetails.confidence_score > 0.9) {
-                 // Policy Guard: Check credit limit
-                if (transactionDetails.type === 'credit' && transactionDetails.amount > input.shopContext.creditLimit) {
-                    return {
-                        intent: 'ledger_entry',
-                        confidence: 1.0,
-                        escalate: true,
-                        response: `Is amount (₹${transactionDetails.amount}) ke liye shopkeeper confirm karenge.`
-                    };
-                }
-                // Action: The intent is clearly a ledger entry.
-                return {
-                    intent: 'ledger_entry',
-                    confidence: transactionDetails.confidence_score,
-                    escalate: false,
-                    action: { type: 'ADD_LEDGER_ENTRY', details: transactionDetails },
-                    response: `Theek hai, ${transactionDetails.customer_name} ka hisaab (₹${transactionDetails.amount}) note kar liya hai. 👍`
-                };
-            }
+            trendInfo = await getMarketTrend({ product: entities.product, region: shopContext.region });
         } catch (e) {
-            // Ignore if parsing fails, let the LLM handle it.
+            console.warn("Market trend tool failed, proceeding without trend data.");
+            // Failsafe: Continue safely without trend data.
         }
     }
-    
-    // Step 2: LLM Fallback for Intent Detection
-    const { output: intentDetection } = await intentDetectorPrompt({ query: input.query });
-    if (!intentDetection) {
-        return { intent: 'unknown', confidence: 0, escalate: true, response: "Iska jawab shopkeeper denge 🙂" };
+
+    // --------------------------------------------------
+    // FLOW STEP 5 & 6: DECISION ROUTER + EXECUTE/REPLY
+    // --------------------------------------------------
+
+    // FAILSAFE: Low confidence check
+    if (confidence < 0.75 && intent !== 'ledger_entry') { // Ledger entry has its own confidence check
+      return {
+        intent,
+        confidence,
+        escalate: true,
+        escalation_reason: `Low confidence score: ${confidence.toFixed(2)}`,
+        response: "Iske liye shopkeeper se confirm karna hoga.",
+      };
     }
 
-    const { intent, confidence } = intentDetection;
-    
-    // Step 3: Decision Engine - Rule: If confidence is low, escalate.
-    if (confidence < 0.75) {
-        return { intent, confidence, escalate: true, response: "Iska confirm shopkeeper karega." };
-    }
-    
-    // Step 4: Handle each intent with its own logic and policy guards.
     switch (intent) {
-        case 'greeting':
-            return {
-                intent,
-                confidence,
-                escalate: false,
-                response: `Namaste! ${input.shopContext.name} me swagat hai. Batayein kya chahiye?`
-            };
-        
-        case 'payment_query':
-            return {
-                intent,
-                confidence,
-                escalate: false,
-                response: `Hum ${input.shopContext.paymentModes.join(' aur ')} accept karte hain.`
-            };
-            
-        case 'shop_timing':
-            return {
-                intent,
-                confidence,
-                escalate: false,
-                response: `Dukaan ${input.shopContext.timings} khuli rehti hai.`
-            };
+      case 'ledger_entry':
+        // This intent passed the policy guard. It's an executable action.
+        return {
+          intent,
+          confidence,
+          escalate: false,
+          action: { type: 'ADD_LEDGER_ENTRY', payload: transactionDetails },
+          response: `Theek hai, ${transactionDetails.customer_name} ka hisaab (₹${transactionDetails.amount}) note kar liya hai. 👍`,
+        };
 
-        // For price and availability, we ESCALATE because the AI is not allowed to hallucinate.
-        // A real implementation would involve a database lookup here.
-        case 'price_query':
-        case 'availability_query':
-        case 'order_create':
-        case 'order_cancel':
-        case 'trend_related_question':
-            return {
-                intent,
-                confidence,
-                escalate: true, 
-                response: "Iske liye shopkeeper se confirm karna hoga."
-            };
-        
-        // This case is handled by the rule-based check above, but as a fallback, we escalate.
-        case 'ledger_entry':
-        default:
-            return {
-                intent,
-                confidence,
-                escalate: true,
-                response: "Iska jawab shopkeeper denge 🙂"
-            };
+      case 'greeting':
+        return {
+          intent, confidence, escalate: false,
+          response: `Namaste! ${shopContext.name} me swagat hai. Batayein kya chahiye?`,
+        };
+
+      case 'payment_query':
+        return {
+          intent, confidence, escalate: false,
+          response: `Hum ${shopContext.paymentModes.join(' aur ')} accept karte hain.`,
+        };
+
+      case 'shop_timing':
+        return {
+          intent, confidence, escalate: false,
+          response: `Dukaan ${shopContext.timings} khuli rehti hai.`,
+        };
+      
+      case 'trend_related_question':
+        let trendResponse = "Iske baare me abhi jaankari nahi hai.";
+        if (trendInfo) {
+            trendResponse = `Abhi ${entities?.product} ka trend '${trendInfo.trend_direction}' hai aur demand score ${trendInfo.demand_score}/100 hai.`;
+        }
+        return {
+            intent, confidence, escalate: false,
+            response: trendResponse
+        };
+
+      // For these intents, the agent is not allowed to hallucinate.
+      // It must escalate to a human for confirmation.
+      case 'price_query':
+      case 'availability_query':
+      case 'order_create':
+      case 'order_cancel':
+      case 'unknown':
+      default:
+        return {
+          intent,
+          confidence,
+          escalate: true,
+          escalation_reason: `Unsupported or unsafe intent: ${intent}`,
+          response: "Iske liye shopkeeper se confirm karna hoga.",
+        };
     }
   }
 );
 
 /**
- * A wrapper function to easily call the agent flow from other parts of the application.
- * @param input The raw query and shop context.
- * @returns A decision object from the AI agent.
+ * A simple wrapper function to easily call the agent flow.
+ * This would be triggered by the WhatsApp webhook infrastructure.
  */
 export async function runWhatsappAgent(input: AgentInput): Promise<AgentOutput> {
-  return whatsappAgentFlow(input);
+  return anigravityAgent(input);
 }
