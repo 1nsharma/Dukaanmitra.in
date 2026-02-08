@@ -1,0 +1,68 @@
+
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
+import type { Shop } from '@/docs/backend-types';
+import type { ShopContext } from '@/ai/flows/whatsapp-agent-flow';
+
+// Initialize Firestore outside of functions to be reused across calls.
+let firestore = getFirestore(initializeFirebase().firebaseApp);
+
+interface LoadContextResult {
+  success: boolean;
+  shopContext?: ShopContext;
+  message?: string;
+}
+
+/**
+ * Loads the full context for a specific shop based on its WhatsApp Business number.
+ * This is a critical service that isolates data per shop.
+ * @param whatsappBusinessNumber - The WhatsApp number associated with the shop.
+ * @returns An object containing the shop context or an error message.
+ */
+export async function loadShopContextByWhatsappNumber(whatsappBusinessNumber: string): Promise<LoadContextResult> {
+  console.log(`[ContextLoader] Loading context for WhatsApp number: ${whatsappBusinessNumber}`);
+  
+  if (!whatsappBusinessNumber) {
+    return { success: false, message: 'WhatsApp business number is missing.' };
+  }
+
+  try {
+    const shopsRef = collection(firestore, 'shops');
+    const q = query(shopsRef, where('whatsapp', '==', whatsappBusinessNumber), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      console.warn(`[ContextLoader] No shop found with WhatsApp number: ${whatsappBusinessNumber}`);
+      return { success: false, message: 'Shop not found for this number.' };
+    }
+
+    const shopDoc = querySnapshot.docs[0];
+    const shopData = shopDoc.data() as Shop;
+
+    // TODO: In a real system, product catalogs would be loaded from a separate collection.
+    // For now, we simulate a simple catalog.
+    const productCatalog = "Doodh ₹55/liter, Aata ₹40/kg, Chawal ₹50/kg, Cheeni ₹42/kg";
+
+    // Build the ShopContext object required by the AI agent
+    const shopContext: ShopContext = {
+      shop_id: shopDoc.id,
+      name: shopData.name,
+      region: shopData.city || 'Mumbai', // Default region for trend analysis
+      paymentModes: ['UPI', 'Cash'], // TODO: Make this configurable in shop settings
+      timings: 'Subah 9 baje se raat 10 baje tak', // TODO: Make this configurable
+      known_products_and_prices: productCatalog,
+      rules: {
+        credit_limit_per_transaction: 5000, // TODO: Make this configurable
+        allow_credit: shopData.settings?.auto_reply ?? true, // Example rule from shop settings
+      },
+    };
+    
+    console.log(`[ContextLoader] Successfully loaded context for shop: ${shopData.name} (${shopDoc.id})`);
+    return { success: true, shopContext };
+
+  } catch (error) {
+    console.error('[ContextLoader] Error fetching shop from Firestore:', error);
+    return { success: false, message: 'Database query failed.' };
+  }
+}

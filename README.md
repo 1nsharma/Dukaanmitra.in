@@ -31,19 +31,29 @@ The system is designed to be multi-tenant, secure, and scalable from day one.
 The system is built on a modern, serverless architecture centered around Next.js and Google Firebase.
 
 ```
-+------------------------+
-|   Next.js Frontend     |
-| (UI, Dashboard, Pages) |
-+------------------------+
-           |
-           v
-+------------------------+
-|   Genkit AI Agent      |
-| (Runs inside Next.js)  |
-| - Intent Detection     |
-| - Tool Orchestration   |
-| - Safety Guards        |
-+------------------------+
++------------------------+      +--------------------------+
+|   WhatsApp Business    |----->|   Next.js API Route      |
+|   (via Meta Cloud API) |      |   (Webhook Endpoint)     |
++------------------------+      +--------------------------+
+                                           |
+                                           v
++--------------------------------------------------------------------+
+|   Anigravity AI Agent (Genkit Flow running in Next.js)             |
+|                                                                    |
+|   1. Intent Detection (Rule-based + LLM)                           |
+|   2. Context Loading (Shop data from Firestore)                    |
+|   3. Policy Guard (Enforces shop-specific rules)                   |
+|   4. Decision Routing (Decides to Reply, Act, or Escalate)         |
+|                                                                    |
+|   + Executes Actions (via Action Engine Service)                   |
+|   + Generates Replies (via WhatsApp Client)                        |
++--------------------------------------------------------------------+
+           |                      |
+           v                      v
++------------------------+      +---------------------------------+
+|   Action Engine        |      |    WhatsApp Client              |
+| (Writes to Firestore)  |      |    (Sends reply to Meta API)    |
++------------------------+      +---------------------------------+
            |
            v
 +------------------------+
@@ -55,7 +65,7 @@ The system is built on a modern, serverless architecture centered around Next.js
 ```
 
 - **Frontend**: A Next.js application serves the public website, user dashboard, and super admin panel.
-- **AI Backend**: Google Genkit flows are integrated directly into the Next.js server environment, acting as the "brain" of the AI agent.
+- **AI Backend**: Google Genkit flows are integrated directly into the Next.js server environment, acting as the "brain" of the AI agent. A dedicated API route (`/api/whatsapp`) serves as the secure webhook for the WhatsApp Business API.
 - **Database & Auth**: Google Firebase provides the user authentication and the scalable, secure Firestore database that powers the entire application. Data access is controlled by robust `firestore.rules`.
 
 ## Tech Stack
@@ -96,6 +106,12 @@ npm run dev
 ```
 The application will be available at `http://localhost:3000`.
 
+To receive webhooks from WhatsApp locally, you will need to use a tunneling service like `ngrok`.
+```bash
+ngrok http 3000
+```
+Use the HTTPS URL provided by ngrok (e.g., `https://<random-string>.ngrok-free.app`) and set it as your webhook URL in the Meta for Developers dashboard, appending `/api/whatsapp`.
+
 ## Environment Variables
 
 You need to set the following environment variables in your `.env` file for the application to function correctly.
@@ -111,6 +127,16 @@ MAILGUN_API_KEY="YOUR_MAILGUN_API_KEY"
 MAILGUN_DOMAIN="YOUR_MAILGUN_DOMAIN"
 CONTACT_EMAIL_RECIPIENT="your-support-email@example.com"
 MAILGUN_FROM_EMAIL="DukaanMitra <no-reply@yourdomain.com>"
+
+# --- For WhatsApp Business API Integration ---
+# A random, secure string you create. Used to verify webhook GET requests.
+WHATSAPP_VERIFY_TOKEN="YOUR_RANDOM_VERIFY_TOKEN"
+# The App Secret from your Meta for Developers app dashboard. Used to verify webhook POST requests.
+WHATSAPP_WEBHOOK_SECRET="YOUR_META_APP_SECRET"
+# The temporary or permanent access token for your WhatsApp Business account.
+WHATSAPP_API_TOKEN="YOUR_WHATSAPP_BUSINESS_API_TOKEN"
+# The Phone Number ID for the business number you are using. Found in the Meta dashboard.
+WHATSAPP_PHONE_NUMBER_ID="YOUR_WHATSAPP_PHONE_NUMBER_ID"
 ```
 **Note**: The Firebase configuration is hard-coded in `src/firebase/config.ts` as it contains public, non-sensitive keys.
 
