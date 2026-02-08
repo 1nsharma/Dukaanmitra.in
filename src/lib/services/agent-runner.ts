@@ -49,27 +49,29 @@ export async function runAgentForMessage(message: NormalizedMessage) {
 
 
         // 4. Handle Agent Output (Action, Reply, Escalate)
-        if (agentOutput.action) {
+        if (agentOutput.action && agentOutput.action.type === 'ADD_LEDGER_ENTRY') {
             // The agent decided to take a database action.
+            const { shopId, customer } = agentOutput.action.payload;
 
-            // The agent's `parseTransaction` tool returns a partial customer object. We need to check if the customer is new.
-            const customerRef = doc(firestore, 'shops', contextResult.shopContext.shop_id, 'customers', agentOutput.action.payload.customer_phone);
+            if (!customer.phone) {
+                // This is a safeguard. The agent should ideally not create an action without a phone number.
+                console.warn('[AgentRunner] Ledger entry action received without a customer phone number.');
+                await sendWhatsAppMessage(message.from, "Customer ka 10-digit phone number samajh nahi aaya. Please try again.");
+                return;
+            }
+
+            // The runner's job is to enrich the payload with RUNTIME info, like whether the customer is new.
+            const customerRef = doc(firestore, 'shops', shopId, 'customers', customer.phone);
             const customerDoc = await getDoc(customerRef);
 
-            // Enhance payload with isNew status for the Action Engine
-            const fullActionPayload = {
-                ...agentOutput.action.payload,
-                customer: {
-                    ...agentOutput.action.payload.customer,
-                    isNew: !customerDoc.exists(),
-                    phone: agentOutput.action.payload.customer_phone,
-                },
-                shopId: contextResult.shopContext.shop_id,
-            };
-
-            const actionWithIsNew = { ...agentOutput.action, payload: fullActionPayload };
+            // Add `isNew` status to the customer object in the payload.
+            agentOutput.action.payload.customer.isNew = !customerDoc.exists();
             
-            await executeAction(actionWithIsNew);
+            await executeAction(agentOutput.action);
+
+        } else if (agentOutput.action) {
+            // Handle other future actions that might not need enrichment
+            await executeAction(agentOutput.action);
         }
 
         if (agentOutput.response) {

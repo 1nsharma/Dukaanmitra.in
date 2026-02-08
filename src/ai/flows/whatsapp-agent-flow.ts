@@ -10,7 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { parseTransaction } from './transaction-parser-flow';
+import { parseTransaction, type ParseTransactionOutput } from './transaction-parser-flow';
 import { getMarketTrend } from './market-trend-flow';
 
 // ==================================================
@@ -92,7 +92,7 @@ export type ShopContext = z.infer<typeof ShopContextSchema>;
  */
 function policyGuard(
   intent: SupportedIntent,
-  transactionDetails: any | null,
+  transactionDetails: ParseTransactionOutput | null,
   shopContext: ShopContext
 ): { allowed: boolean; reason: string } {
   if (intent === 'ledger_entry' && transactionDetails?.type === 'credit') {
@@ -141,7 +141,7 @@ export const anigravityAgent = ai.defineFlow(
     // FLOW STEP 1: DETECT INTENT (Rule-first, LLM fallback)
     // --------------------------------------------------
     let intentResult: z.infer<typeof IntentDetectionOutputSchema>;
-    let transactionDetails: any = null;
+    let transactionDetails: ParseTransactionOutput | null = null;
     
     // Rule-based check for high-value `ledger_entry` intent.
     if (input.query.match(/\d/)) { // Simple rule: if there's a number, it *might* be a transaction.
@@ -220,12 +220,30 @@ export const anigravityAgent = ai.defineFlow(
 
     switch (intent) {
       case 'ledger_entry':
+        if (!transactionDetails) {
+            return { intent, confidence, escalate: true, escalation_reason: "Ledger entry intent detected but transaction details are missing.", response: "Kuch samajh nahi aaya. Please try again." };
+        }
         // This intent passed the policy guard. It's an executable action.
+        
+        // Structure the payload for the Action Engine
+        const actionPayload = {
+          shopId: shopContext.shop_id,
+          customer: {
+            name: transactionDetails.customer_name,
+            phone: transactionDetails.phone,
+          },
+          transaction: {
+            amount: transactionDetails.amount,
+            items: transactionDetails.items,
+            type: transactionDetails.type,
+          },
+        };
+
         return {
           intent,
           confidence,
           escalate: false,
-          action: { type: 'ADD_LEDGER_ENTRY', payload: transactionDetails },
+          action: { type: 'ADD_LEDGER_ENTRY', payload: actionPayload },
           response: `Theek hai, ${transactionDetails.customer_name} ka hisaab (₹${transactionDetails.amount}) note kar liya hai. 👍`,
         };
 
