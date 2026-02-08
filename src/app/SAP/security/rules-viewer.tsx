@@ -17,8 +17,7 @@ service cloud.firestore {
 
     // This is more reliable and required for list rules.
     function isSuperAdmin() {
-      return request.auth.token.email_verified && 
-             request.auth.token.email == "amitsharma99976@gmail.com";
+      return request.auth.token.email == "amitsharma99976@gmail.com";
     }
 
     function isUserActive() {
@@ -87,7 +86,7 @@ service cloud.firestore {
       // - A user can update their own profile, but cannot change their role or status.
       // - A super_admin can update any field on any user profile.
       allow update: if isSuperAdmin() ||
-                    (isOwner(userId) && isUserActive() && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])));
+                    (isOwner(userId) && resource.data.status == 'active' && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])));
 
       // DELETE: Only super admins can delete user profiles.
       allow delete: if isSuperAdmin();
