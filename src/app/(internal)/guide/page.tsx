@@ -21,10 +21,10 @@ export default function GuidePage() {
       <div className="container py-16 md:py-24">
         <header className="text-center space-y-4 mb-20">
             <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-none italic uppercase">
-                DukaanMitra AI - A to Z Build Guide
+                DukaanMitra AI - Production Build Guide
             </h1>
             <p className="text-lg md:text-xl text-primary max-w-3xl mx-auto leading-relaxed font-bold tracking-widest">
-                Firebase + PostgreSQL Hybrid • Full-Stack SaaS • Production-Ready
+                Firebase-First • Genkit AI • Multi-Tenant SaaS
             </p>
         </header>
 
@@ -36,11 +36,9 @@ export default function GuidePage() {
                         {[
                             {id: "1-project-overview", title: "1. Project Overview"},
                             {id: "2-system-architecture", title: "2. System Architecture"},
-                            {id: "3-database-design", title: "3. Database Design"},
-                            {id: "9-security--auth", title: "4. Security & Auth"},
-                            {id: "10-deployment", title: "5. Deployment"},
-                            {id: "13-go-to-market", title: "6. Go-to-Market"},
-                            {id: "15-scaling-strategy", title: "7. Scaling Strategy"},
+                            {id: "3-database-design", title: "3. Data Model (Firestore)"},
+                            {id: "4-security--auth", title: "4. Security & Auth"},
+                            {id: "5-deployment", title: "5. Deployment"},
                         ].map(item => (
                             <li key={item.id}>
                                 <a href={`#${item.id}`} className="hover:text-primary transition-colors block border-l-2 border-border pl-4 hover:border-primary">
@@ -55,159 +53,94 @@ export default function GuidePage() {
             <main className="lg:col-span-9 space-y-16">
                 <Section title="Project Overview" id="1-project-overview">
                     <h3>Vision</h3>
-                    <p><strong>DukaanMitra AI</strong> - "Local business ka digital dimaag"</p>
-                    <p>Street-level SaaS helping Indian shop owners manage customers using AI-powered automation.</p>
+                    <p><strong>DukaanMitra AI</strong> is a multi-tenant SaaS platform built to digitize India's Kirana stores. It leverages a "WhatsApp-first" approach, allowing shop owners to manage their ledger, customers, and sales using natural language commands over WhatsApp, powered by a sophisticated AI agent.</p>
 
-                    <h3>Target Users</h3>
-                    <ul>
-                        <li>Restaurants, cafes</li>
-                        <li>Salons, clinics</li>
-                        <li>Retail shops</li>
-                        <li>Service providers</li>
-                    </ul>
-                    
-                    <h3>Business Model</h3>
-                    <pre><code>{`Free Trial: 14 Days, Full Access
-Basic:      ₹1999/mo, Core Features
-Pro:        ₹4999/mo, Advanced AI & Analytics
-Enterprise: Custom, API Access & Priority Support`}</code></pre>
+                    <h3>Core User Value</h3>
+                    <p>The platform eliminates the need for traditional `Billbooks` or complex apps. A shop owner can simply send a message like "Ravi 500 udhaar chini," and the system automatically parses it, updates the digital ledger, and provides analytics—all within WhatsApp.</p>
                 </Section>
                 
                 <Section title="System Architecture" id="2-system-architecture">
-                    <h3>Technology Stack ("Stax")</h3>
-                    <p>A "boring but reliable" stack focused on execution speed and stability.</p>
+                    <h3>Technology Stack</h3>
+                    <p>The stack is designed for rapid development, scalability, and reliability, centered around the Firebase and Google Cloud ecosystem.</p>
                     <ul>
-                        <li><strong>Frontend (Dashboard):</strong> Next.js (React) & Tailwind CSS</li>
-                        <li><strong>Backend:</strong> Node.js (Express) or Python (FastAPI) for REST APIs</li>
-                        <li><strong>Database:</strong> PostgreSQL via <strong>Supabase</strong> (for multi-tenancy & core data)</li>
-                        <li><strong>Real-time Layer:</strong> Firebase (for auth & live dashboard updates)</li>
-                        <li><strong>Automation Engine:</strong> n8n or Celery (The "Brain" connecting DB to WhatsApp)</li>
-                        <li><strong>AI Model API:</strong> OpenAI (GPT-4o) or Google Gemini</li>
+                        <li><strong>Frontend:</strong> Next.js (App Router) & React</li>
+                        <li><strong>UI:</strong> Tailwind CSS with ShadCN components</li>
+                        <li><strong>Backend & Database:</strong> Google Firebase (Firestore, Authentication, Hosting)</li>
+                        <li><strong>AI Agent & Flows:</strong> Google Genkit with the Gemini model</li>
                     </ul>
                     
                     <h3>Logic Flow: From WhatsApp to Action</h3>
-                    <p>This is the end-to-end flow for processing every incoming message.</p>
-                    <pre><code className="language-js">{`// 1. ENTRY POINT: WhatsApp Webhook receives a message
-function whatsapp_webhook(message, sender_id, shop_id) {
-    // 2. CONTEXT: Load all data for the specific shop
-    const shopContext = load_shop_context(shop_id);
+                    <p>The system is designed around a decoupled, tool-based AI agent that processes incoming messages and decides on actions.</p>
+                    <pre><code className="language-js">{`// HIGH-LEVEL FLOW
+// 1. ENTRY POINT: A WhatsApp Webhook (external service) forwards a message.
+function processIncomingMessage(message, shop_id) {
+    // 2. AI AGENT: The message is passed to the core Genkit AI agent.
+    const agentOutput = anigravityAgent({ query: message, shopContext: {...} });
 
-    // 3. INTENT: Detect what the user wants (rules-first, then AI)
-    const intentResult = intent_detector(message);
-
-    // 4. POLICY: Check if the action is allowed (e.g., credit limit)
-    const policyDecision = policy_guard(intentResult, shopContext);
-    if (policyDecision === 'BLOCK') {
-        return execute_decision('ESCALATE', ...);
+    // 3. DECISION: The agent's output contains an intent and a potential action.
+    if (agentOutput.escalate) {
+        notifyHuman(shop_id, message);
+    } else if (agentOutput.action) {
+        // 4. EXECUTION: A separate service would execute the action.
+        executeBackendAction(agentOutput.action);
+    } else {
+        // 5. REPLY: Send a generated response back via WhatsApp.
+        sendWhatsAppReply(shop_id, agentOutput.response);
     }
-
-    // 5. DECIDE: Choose whether to Reply, Act, or Escalate
-    const decision = decision_engine(intentResult, shopContext);
-
-    // 6. EXECUTE: Perform the final action
-    execute_decision(decision, sender_id, shopContext, intentResult);
-}
-`}</code></pre>
-                </Section>
-
-                <Section title="Database Design" id="3-database-design">
-                    <h3>The Hybrid Model: Supabase + Firebase</h3>
-                    <p>This architecture uses the best of both worlds:</p>
-                    <ul>
-                        <li><strong>Supabase (PostgreSQL):</strong> The "digital khata" or ledger. It's the permanent, structured source of truth for all business-critical data (shops, customers, bills). Chosen for its relational integrity and multi-tenancy capabilities.</li>
-                        <li><strong>Firebase (Firestore):</strong> The real-time layer. Used for powering the live dashboard, showing stats, and sending notifications. It's fast and perfect for UI-facing data.</li>
-                    </ul>
-
-                    <h3>PostgreSQL Schema (Multi-Tenant Ready)</h3>
-                    <p>Every table includes a `business_id` or `shop_id` to ensure a shopkeeper can ONLY access their own data. This is the core of our multi-tenant strategy.</p>
-                    <pre><code className="language-sql">{`-- USERS (The shop owners who subscribe to DukaanMitra)
-CREATE TABLE users (
-    id UUID PRIMARY KEY,
-    firebase_uid VARCHAR(128) UNIQUE NOT NULL, -- Links to Firebase Auth
-    phone VARCHAR(15) UNIQUE NOT NULL,
-    business_name VARCHAR(255) NOT NULL,
-    plan VARCHAR(20) DEFAULT 'trial'
-);
-
--- CUSTOMERS (The shop's end-customers)
-CREATE TABLE customers (
-    id UUID PRIMARY KEY,
-    business_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL,
-    phone VARCHAR(15) NOT NULL,
-    visit_count INT DEFAULT 0,
-    total_spend DECIMAL(10,2) DEFAULT 0,
-    last_visit TIMESTAMP,
-    -- Ensures a phone number is unique PER shop, not globally
-    UNIQUE(business_id, phone)
-);
-
--- BILLS (Individual transactions)
-CREATE TABLE bills (
-    id UUID PRIMARY KEY,
-    business_id UUID NOT NULL REFERENCES users(id),
-    customer_id UUID NOT NULL REFERENCES customers(id),
-    amount DECIMAL(10, 2) NOT NULL,
-    type VARCHAR(20) NOT NULL, -- 'credit' or 'payment'
-    raw_text VARCHAR(500), -- Original WhatsApp message for audit
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
--- MESSAGE_LOGS (Record of automated messages sent)
-CREATE TABLE message_logs (
-    id UUID PRIMARY KEY,
-    customer_id UUID NOT NULL REFERENCES customers(id),
-    type VARCHAR(50), -- e.g., 'welcome_message', 'payment_reminder'
-    status VARCHAR(20), -- 'sent', 'failed'
-    created_at TIMESTAMP DEFAULT NOW()
-);
-`}</code></pre>
-                    <h3>Firebase Structure (For Real-time UI)</h3>
-                    <pre><code className="language-javascript">{`// /shops/{shopId}/realtime_stats
-{
-  "name": "Sharma Cafe",
-  "status": "online",
-  "live_customers": 12,
-  "live_revenue": 4500,
-  "pending_messages": 3
-}
-
-// /shops/{shopId}/notifications/{notificationId}
-{
-  "type": "ai_suggestion",
-  "title": "3 customers inactive",
-  "message": "Send comeback offer to them?",
-  "action_required": true,
-  "read": false,
-  "createdAt": timestamp
 }`}</code></pre>
                 </Section>
+
+                <Section title="Data Model (Firestore)" id="3-database-design">
+                    <h3>The Firestore-First Model</h3>
+                    <p>Cloud Firestore is the single source of truth for all application data. Its NoSQL, document-based structure is highly scalable and integrates seamlessly with Firebase Authentication for security.</p>
+                    <p>The data model is defined in <strong>`docs/backend.json`</strong> and is structured for multi-tenancy from the ground up.</p>
+
+                    <h3>Core Collections (Multi-Tenant Ready)</h3>
+                    <p>Every shop's data is isolated using Firestore's subcollection model. A user's `shopId` is the key to accessing their data, which is enforced by security rules.</p>
+
+                    <pre><code className="language-text">{`// /users/{userId}`}</code></pre>
+                    <p>Stores the profile for each authenticated user, including their role (`user`, `admin`, `super_admin`) and the `shopId` they belong to.</p>
+
+                    <pre><code className="language-text">{`// /shops/{shopId}` }</code></pre>
+                    <p>The root document for each tenant (shop). Contains shop-level information like name, owner ID, and subscription plan details.</p>
+
+                    <pre><code className="language-text">{`// /shops/{shopId}/customers/{customerPhone}`}</code></pre>
+                    <p>A subcollection under each shop. Each document represents a customer, uniquely identified by their phone number to prevent duplicates.</p>
+                    
+                    <pre><code className="language-text">{`// /shops/{shopId}/ledger/{ledgerId}`}</code></pre>
+                    <p>A subcollection containing all financial transactions (credit/payment) for a specific shop.</p>
+                </Section>
                 
-                <Section title="Security & Auth" id="9-security--auth">
-                    <p>Authentication is handled by Firebase Auth (Phone/OTP). Authorization is managed at two levels:</p>
-                    <ul>
-                        <li><strong>API Level:</strong> The backend API validates the user's token and injects the `shop_id` into every database query, ensuring data isolation.</li>
-                        <li><strong>Database Level (PostgreSQL RLS):</strong> Row-Level Security policies in Supabase provide a final, unbreakable barrier, ensuring a request for Shop A can never access data from Shop B.</li>
-                    </ul>
+                <Section title="Security & Auth" id="4-security--auth">
+                    <p>Authentication is handled by **Firebase Authentication**, supporting email/password and social providers like Google.</p>
+                    
+                    <p>Authorization is enforced directly at the database level via **Firestore Security Rules** (`firestore.rules`). This is the core of the multi-tenant security model.</p>
+                    
+                    <pre><code className="language-javascript">{`// Example Security Rule for Shop Data Isolation
+match /shops/{shopId}/{subcollection}/{docId=**} {
+  function isShopOwner() {
+    // The user's profile document must contain the shopId they are trying to access.
+    return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.shopId == shopId;
+  }
+
+  // Allow read/write access only if the authenticated user is the owner of the shop.
+  allow read, write: if isShopOwner();
+}`}</code></pre>
+                    <p>This rule ensures that a user from Shop A can never read, write, or even know about the existence of data from Shop B.</p>
                 </Section>
+                
                 <Section title="Deployment" id="10-deployment">
+                    <p>The application is configured for seamless deployment on serverless platforms.</p>
                     <ul>
-                        <li><strong>Frontend:</strong> Firebase Hosting or Vercel</li>
-                        <li><strong>Backend:</strong> Railway, Render, or any serverless platform</li>
-                        <li><strong>Database:</strong> Supabase Cloud</li>
+                        <li><strong>Frontend & Backend:</strong> Firebase App Hosting (configured via `apphosting.yaml`) or Vercel.</li>
+                        <li><strong>Database:</strong> Google Firestore (automatically available with the Firebase project).</li>
                     </ul>
-                </Section>
-                <Section title="Go-to-Market" id="13-go-to-market">
-                    <p>A B2B2C model focusing on hyper-local marketing to shop owners, showcasing the immediate value of digitizing their customer interactions via WhatsApp.</p>
-                </Section>
-                <Section title="Scaling Strategy" id="15-scaling-strategy">
-                    <p>The multi-tenant architecture allows for horizontal scaling from day one. The system is designed to grow from a single city to a nationwide service without a core architectural redesign.</p>
                 </Section>
 
                 <footer className="bg-card border border-border p-12 rounded-[4rem] text-center space-y-4 mt-20">
                     <p className="text-primary font-bold uppercase tracking-widest text-sm">You are ready to build.</p>
                     <p className="text-lg opacity-80 max-w-2xl mx-auto italic">
-                        This guide provides the complete architectural and strategic foundation. Now, let's bring this vision to life, one feature at a time.
+                        This guide provides the complete architectural foundation for the DukaanMitra platform.
                     </p>
                 </footer>
             </main>
