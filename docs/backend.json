@@ -296,6 +296,10 @@
       "description": "Represents a single credit or payment transaction in a shop's ledger.",
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ledger entry."
+        },
         "shop_id": {
           "type": "string"
         },
@@ -326,7 +330,8 @@
           "enum": [
             "whatsapp",
             "app",
-            "manual"
+            "manual",
+            "app-ai"
           ]
         },
         "createdAt": {
@@ -335,6 +340,7 @@
         }
       },
       "required": [
+        "id",
         "shop_id",
         "amount",
         "type",

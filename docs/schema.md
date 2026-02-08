@@ -82,6 +82,7 @@ Stores individual credit/payment transactions for a shop.
 
 -   **Entity**: `LedgerEntry`
 -   **Key Properties**:
+    -   `id`: string (Unique ID for the ledger entry)
     -   `shop_id`: string (Parent shop ID)
     -   `customerPhone`: string (The customer this entry belongs to)
     -   `amount`: number
