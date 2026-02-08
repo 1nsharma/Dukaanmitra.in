@@ -35,8 +35,8 @@ const formatDate = (date: any) => {
 
 const renderRoleBadge = (role: string) => {
     switch(role) {
-        case 'super_admin': return <Badge className="bg-primary text-primary-foreground hover:bg-primary/80">Super Admin</Badge>;
-        case 'admin': return <Badge variant="secondary">Admin</Badge>;
+        case 'super_admin': return <Badge className="bg-primary text-primary-foreground hover:bg-primary/80"><Shield className="mr-1 h-3 w-3" />Super Admin</Badge>;
+        case 'admin': return <Badge variant="secondary"><UserCheck className="mr-1 h-3 w-3" />Admin</Badge>;
         default: return <Badge variant="outline">User</Badge>;
     }
 }

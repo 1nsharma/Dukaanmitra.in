@@ -1,5 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import AdminsTable from "./admins-table";
 
 export default function AdminControlPage() {
   return (
@@ -8,10 +9,10 @@ export default function AdminControlPage() {
       <Card>
         <CardHeader>
           <CardTitle>Manage Administrators</CardTitle>
-          <CardDescription>Assign or remove admin privileges and view admin activity.</CardDescription>
+          <CardDescription>View, manage, and demote administrators in the system. Super Admins cannot be modified.</CardDescription>
         </CardHeader>
         <CardContent>
-            <p className="text-muted-foreground">Admin management interface will be built here.</p>
+            <AdminsTable />
         </CardContent>
       </Card>
     </div>
