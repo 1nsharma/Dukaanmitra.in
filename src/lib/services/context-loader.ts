@@ -43,6 +43,13 @@ export async function loadShopContextByWhatsappNumber(whatsappBusinessNumber: st
     // TODO: In a real system, product catalogs would be loaded from a separate collection.
     // For now, we simulate a simple catalog.
     const productCatalog = "Doodh ₹55/liter, Aata ₹40/kg, Chawal ₹50/kg, Cheeni ₹42/kg";
+    
+    // Build timing string from settings if available
+    let timingsString = 'Subah 9 baje se raat 10 baje tak'; // Default
+    if (shopData.settings?.working_hours?.start && shopData.settings?.working_hours?.end) {
+        timingsString = `Subah ${shopData.settings.working_hours.start} se raat ${shopData.settings.working_hours.end} tak`;
+    }
+
 
     // Build the ShopContext object required by the AI agent
     const shopContext: ShopContext = {
@@ -50,7 +57,7 @@ export async function loadShopContextByWhatsappNumber(whatsappBusinessNumber: st
       name: shopData.name,
       region: shopData.city || 'Mumbai', // Default region for trend analysis
       paymentModes: ['UPI', 'Cash'], // TODO: Make this configurable in shop settings
-      timings: 'Subah 9 baje se raat 10 baje tak', // TODO: Make this configurable
+      timings: timingsString,
       known_products_and_prices: productCatalog,
       rules: {
         credit_limit_per_transaction: shopData.settings?.credit_limit_per_transaction ?? 5000,

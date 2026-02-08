@@ -39,6 +39,8 @@ const formSchema = z.object({
   pincode: z.string().optional(),
   settings_allow_credit: z.boolean().default(true),
   settings_credit_limit_per_transaction: z.coerce.number().positive().default(5000),
+  settings_working_hours_start: z.string().optional(),
+  settings_working_hours_end: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -64,17 +66,22 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
       pincode: shop.pincode || "",
       settings_allow_credit: shop.settings?.allow_credit ?? true,
       settings_credit_limit_per_transaction: shop.settings?.credit_limit_per_transaction ?? 5000,
+      settings_working_hours_start: shop.settings?.working_hours?.start || "",
+      settings_working_hours_end: shop.settings?.working_hours?.end || "",
     },
   });
 
   const onUpdateDetailsSubmit = (values: FormValues) => {
     startTransition(() => {
       const shopRef = doc(firestore, "shops", shop.id);
-      const { settings_allow_credit, settings_credit_limit_per_transaction, ...shopDetails } = values;
+      const { settings_allow_credit, settings_credit_limit_per_transaction, settings_working_hours_start, settings_working_hours_end, ...shopDetails } = values;
+      
       const shopData = {
         ...shopDetails,
         "settings.allow_credit": settings_allow_credit,
         "settings.credit_limit_per_transaction": settings_credit_limit_per_transaction,
+        "settings.working_hours.start": settings_working_hours_start,
+        "settings.working_hours.end": settings_working_hours_end,
         updated_at: serverTimestamp(),
       };
       
@@ -258,8 +265,38 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
                     )}
                     />
 
-                    <div className="space-y-4 rounded-lg border bg-secondary/30 p-4 my-4">
+                    <div className="space-y-6 rounded-lg border bg-secondary/30 p-4 my-4">
                         <h4 className="font-semibold">Business Rules</h4>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="settings_working_hours_start"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Opening Time</FormLabel>
+                                        <FormControl>
+                                            <Input type="time" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="settings_working_hours_end"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Closing Time</FormLabel>
+                                        <FormControl>
+                                            <Input type="time" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        
                         <FormField
                             control={form.control}
                             name="settings_allow_credit"

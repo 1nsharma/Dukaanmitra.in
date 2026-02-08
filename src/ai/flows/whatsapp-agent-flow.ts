@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview The core DukaanMitra AI Agent, built on the Anigravity architecture.
@@ -256,10 +257,46 @@ export const anigravityAgent = ai.defineFlow(
             response: trendResponse
         };
 
-      // For these intents, the agent is not allowed to hallucinate.
-      // It must escalate to a human for confirmation.
       case 'price_query':
+        if (entities?.product) {
+          const product = entities.product.toLowerCase();
+          const prices = shopContext.known_products_and_prices.toLowerCase();
+          
+          const productIndex = prices.indexOf(product);
+          if (productIndex !== -1) {
+            const searchString = prices.substring(productIndex);
+            const priceMatch = searchString.match(/₹\s*(\d+(\.\d+)?)/);
+            if (priceMatch) {
+              return {
+                intent, confidence, escalate: false,
+                response: `${entities.product} ka rate ${priceMatch[0]} hai.`,
+              };
+            }
+          }
+        }
+        return {
+          intent, confidence, escalate: true,
+          escalation_reason: `Price for '${entities?.product}' not found in catalog.`,
+          response: `Iske liye shopkeeper se confirm karna padega ki ${entities?.product || 'is item'} ka rate kya hai.`,
+        };
+        
       case 'availability_query':
+        if (entities?.product) {
+          const product = entities.product.toLowerCase();
+          const catalog = shopContext.known_products_and_prices.toLowerCase();
+          if (catalog.includes(product)) {
+            return {
+              intent, confidence, escalate: false,
+              response: `Ji haan, ${entities.product} abhi available hai.`,
+            };
+          }
+        }
+        return {
+          intent, confidence, escalate: true,
+          escalation_reason: `Availability of '${entities?.product}' not found in catalog.`,
+          response: `Iske liye shopkeeper se confirm karna padega ki ${entities?.product || 'yeh item'} stock me hai ya nahi.`,
+        };
+
       case 'order_create':
       case 'order_cancel':
       case 'unknown':
