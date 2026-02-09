@@ -25,8 +25,12 @@ export function ThemeToggle() {
     { name: 'eco', icon: ZapOff, label: 'Eco' },
   ]
 
-  const handleEcoDoubleClick = () => {
-    setTheme(lastTheme);
+  const handleEcoClick = () => {
+    if (theme === 'eco') {
+      setTheme(lastTheme);
+    } else {
+      setTheme('eco');
+    }
   };
 
   return (
@@ -40,14 +44,13 @@ export function ThemeToggle() {
             key={item.name}
             variant="ghost"
             size="sm"
-            onClick={() => setTheme(item.name)}
-            onDoubleClick={isEcoButton ? handleEcoDoubleClick : undefined} // Add double click handler only for eco button
+            onClick={isEcoButton ? handleEcoClick : () => setTheme(item.name)}
             className={cn(
               "rounded-full px-4",
               // `theme` can be 'system', so we must use `resolvedTheme` for UI state.
               resolvedTheme === item.name && "bg-background text-foreground shadow-sm"
             )}
-            aria-label={`Switch to ${item.name} mode` + (isEcoButton ? ". Double-click to restore colors." : "")}
+            aria-label={`Switch to ${item.name} mode`}
           >
             <Icon className="h-[1.2rem] w-[1.2rem] mr-2" />
             <span className="capitalize">{item.label}</span>
