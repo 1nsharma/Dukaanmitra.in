@@ -1,8 +1,7 @@
-
 "use client"
 
 import * as React from "react"
-import { Moon, Sun, Leaf } from "lucide-react"
+import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
@@ -14,7 +13,6 @@ export function ThemeToggle() {
   const themes = [
     { name: 'light', icon: Sun, label: 'Light' },
     { name: 'dark', icon: Moon, label: 'Dark' },
-    { name: 'eco', icon: Leaf, label: 'CO2' },
   ]
 
   return (
