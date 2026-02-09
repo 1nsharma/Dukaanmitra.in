@@ -14,11 +14,11 @@
     --card-foreground: 222.2 84% 4.9%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --primary: 142.1 70% 45%; /* WhatsApp Green */
+    --primary: 142.1 76% 48%; /* Brighter WhatsApp Green */
     --primary-foreground: 210 20% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --accent: 262.1 83.3% 57.8%; /* Purple */
+    --accent: 262.1 88% 60%; /* Brighter Purple */
     --accent-foreground: 210 20% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -26,7 +26,7 @@
     --success-foreground: 210 40% 98%;
     --warning: 48.1 97.4% 50%;
     --warning-foreground: 30.1 95.4% 10.8%;
-    --ring: 142.1 70% 45%;
+    --ring: 142.1 76% 48%;
     --radius: 0.5rem;
   }
 
@@ -41,11 +41,11 @@
     --card-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --primary: 142.1 70% 55%; /* WhatsApp Green */
+    --primary: 142.1 75% 60%; /* Brighter WhatsApp Green */
     --primary-foreground: 210 20% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --accent: 262.1 83.3% 57.8%; /* Purple */
+    --accent: 262.1 88% 65%; /* Brighter Purple */
     --accent-foreground: 210 20% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
@@ -53,7 +53,7 @@
     --success-foreground: 210 40% 98%;
     --warning: 48.1 97.4% 50%;
     --warning-foreground: 30.1 95.4% 10.8%;
-    --ring: 142.1 70% 55%;
+    --ring: 142.1 75% 60%;
   }
 
   .admin-light {
@@ -63,7 +63,7 @@
     --card-foreground: 220 20% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 10%;
-    --primary: 221.2 83.2% 53.3%; /* Blue */
+    --primary: 220 90% 55%; /* More Vivid Blue */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -77,7 +77,7 @@
     --success-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 220 90% 55%;
   }
 
   .admin-dark {
@@ -87,13 +87,13 @@
     --card-foreground: 0 0% 90%;
     --popover: 0 0% 5%;
     --popover-foreground: 0 0% 90%;
-    --primary: 0 84.2% 60.2%; /* Red */
+    --primary: 0 90% 62%; /* More Vivid Red */
     --primary-foreground: 210 40% 98%;
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 90%;
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 60%;
-    --accent: 0 84.2% 60.2%;
+    --accent: 0 90% 62%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 72.2% 50.6%;
     --destructive-foreground: 210 40% 98%;
@@ -101,7 +101,7 @@
     --success-foreground: 210 40% 98%;
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 0 84.2% 60.2%;
+    --ring: 0 90% 62%;
   }
   
   .eco {
