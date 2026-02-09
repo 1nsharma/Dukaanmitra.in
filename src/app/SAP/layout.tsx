@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 import SuperAdminSidebar from './components/super-admin-sidebar';
+import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
 
 export default function SuperAdminLayout({ children }: { children: ReactNode }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     if (!isUserLoading) {
@@ -29,7 +32,7 @@ export default function SuperAdminLayout({ children }: { children: ReactNode }) 
   }
 
   return (
-    <div className="super-admin-theme">
+    <div className={cn(resolvedTheme === 'dark' ? 'admin-dark' : 'admin-light')}>
       <div className="flex min-h-screen">
         <SuperAdminSidebar />
         <main className="flex-1 p-6 lg:p-8 bg-background">
