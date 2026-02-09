@@ -31,8 +31,19 @@ export default function SuperAdminLayout({ children }: { children: ReactNode }) 
     );
   }
 
+  const getThemeClass = () => {
+    if (resolvedTheme === 'dark') {
+      return 'admin-dark';
+    }
+    if (resolvedTheme === 'light') {
+      return 'admin-light';
+    }
+    // For 'eco' theme, no special class is needed; it will inherit the global .eco styles
+    return '';
+  };
+
   return (
-    <div className={cn(resolvedTheme === 'dark' ? 'admin-dark' : 'admin-light')}>
+    <div className={cn(getThemeClass())}>
       <div className="flex min-h-screen">
         <SuperAdminSidebar />
         <main className="flex-1 p-6 lg:p-8 bg-background">

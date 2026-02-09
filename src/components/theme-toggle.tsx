@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
 
   const themes = [
     { name: 'light', icon: Sun, label: 'Light' },
@@ -28,7 +28,7 @@ export function ThemeToggle() {
             onClick={() => setTheme(item.name)}
             className={cn(
               "rounded-full px-4",
-              theme === item.name && "bg-background text-foreground shadow-sm"
+              resolvedTheme === item.name && "bg-background text-foreground shadow-sm"
             )}
             aria-label={`Switch to ${item.name} mode`}
           >

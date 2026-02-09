@@ -104,7 +104,7 @@
     --ring: 0 84.2% 60.2%;
   }
   
-  .eco-mode {
+  .eco {
     --background: 0 0% 100%;
     --foreground: 0 0% 0%;
     --card: 0 0% 95%;
@@ -128,7 +128,7 @@
     --ring: 0 0% 50%;
   }
 
-  .dark.eco-mode {
+  .dark.eco {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
     --card: 0 0% 10%;
