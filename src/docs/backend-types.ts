@@ -33,6 +33,8 @@ export type Shop = {
   city?: string;
   state?: string;
   pincode?: string;
+  mrr?: number;
+  lastActive?: any;
   plan?: "free" | "basic" | "pro" | "enterprise";
   status?: "active" | "trial" | "suspended" | "cancelled";
   trial_ends_at?: any;

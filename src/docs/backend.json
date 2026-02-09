@@ -1,0 +1,513 @@
+
+{
+  "entities": {
+    "ContactFormSubmission": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContactFormSubmission",
+      "type": "object",
+      "description": "Represents a contact form submission from the website.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the contact form submission."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the person submitting the form."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the person submitting the form.",
+          "format": "email"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject of the contact form submission."
+        },
+        "message": {
+          "type": "string",
+          "description": "The message content of the contact form submission."
+        },
+        "submittedAt": {
+          "type": "string",
+          "description": "Timestamp of when the form was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "subject",
+        "message",
+        "submittedAt"
+      ]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's public profile information.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID from Firebase Authentication."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's chosen display name."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the user account was created."
+        },
+        "shopId": {
+          "type": "string",
+          "description": "The ID of the shop this user belongs to."
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role in the system.",
+          "enum": [
+            "user",
+            "admin",
+            "super_admin"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "The user's account status.",
+          "enum": [
+            "active",
+            "pending",
+            "suspended"
+          ]
+        },
+        "lastLogin": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the user's last login."
+        }
+      },
+      "required": [
+        "uid",
+        "email",
+        "createdAt",
+        "role",
+        "status"
+      ]
+    },
+    "Shop": {
+      "title": "Shop",
+      "description": "Represents a Kirana store in the system.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the shop (UUID)."
+        },
+        "owner_id": {
+          "type": "string",
+          "description": "The UID of the user who owns the shop."
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "whatsapp": {
+          "type": "string"
+        },
+        "owner_name": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "pincode": {
+          "type": "string"
+        },
+        "mrr": {
+            "type": "number",
+            "description": "The monthly recurring revenue for this shop's subscription."
+        },
+        "lastActive": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the last activity from this shop."
+        },
+        "plan": {
+          "type": "string",
+          "enum": [
+            "free",
+            "basic",
+            "pro",
+            "enterprise"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "trial",
+            "suspended",
+            "cancelled"
+          ]
+        },
+        "trial_ends_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "paid_till": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp indicating when the current subscription period ends."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "language": {
+              "type": "string",
+              "enum": [
+                "hi",
+                "en",
+                "hinglish"
+              ]
+            },
+            "currency": {
+              "type": "string"
+            },
+            "timezone": {
+              "type": "string"
+            },
+            "allow_credit": {
+              "type": "boolean",
+              "description": "Whether the shop allows giving credit (udhaar)."
+            },
+            "credit_limit_per_transaction": {
+              "type": "number",
+              "description": "The maximum amount allowed for a single credit transaction."
+            },
+            "working_hours": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": "string",
+                  "format": "time"
+                },
+                "end": {
+                  "type": "string",
+                  "format": "time"
+                },
+                "days": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "id",
+        "owner_id",
+        "name",
+        "phone"
+      ]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Represents a customer of a specific shop.",
+      "type": "object",
+      "properties": {
+        "shop_id": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Customer's phone number, used as the document ID."
+        },
+        "name": {
+          "type": "string"
+        },
+        "first_visit": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_visit": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "visit_count": {
+          "type": "number"
+        },
+        "total_spent": {
+          "type": "number"
+        },
+        "totalUdhaar": {
+          "type": "number",
+          "description": "Total outstanding credit for the customer."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "new",
+            "regular",
+            "vip",
+            "churned",
+            "blocked"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "shop_id",
+        "phone"
+      ]
+    },
+    "LedgerEntry": {
+      "title": "Ledger Entry",
+      "description": "Represents a single credit or payment transaction in a shop's ledger.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ledger entry."
+        },
+        "shop_id": {
+          "type": "string"
+        },
+        "customerPhone": {
+          "type": "string",
+          "description": "The phone number of the customer this entry belongs to."
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Denormalized name of the customer for display purposes."
+        },
+        "amount": {
+          "type": "number"
+        },
+        "item": {
+          "type": "string",
+          "description": "A description of the item(s) in the transaction."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "credit",
+            "payment"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "whatsapp",
+            "app",
+            "manual",
+            "app-ai"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "shop_id",
+        "amount",
+        "type",
+        "customerPhone"
+      ]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "Represents a blog post.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "category": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "author": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "views": { "type": "number" },
+        "likes": { "type": "number" }
+      },
+      "required": ["id", "title", "slug", "category", "excerpt", "content", "author", "createdAt"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "Represents a comment on a blog post.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "postSlug": { "type": "string" },
+        "name": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "postSlug", "name", "message", "createdAt"]
+    }
+  },
+  "auth": {
+    "providers": [
+      "google",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/contactFormSubmissions/{contactFormSubmissionId}",
+        "definition": {
+          "entityName": "ContactFormSubmission",
+          "schema": {
+            "$ref": "#/backend/entities/ContactFormSubmission"
+          },
+          "description": "Stores contact form submissions from the website.",
+          "params": [
+            {
+              "name": "contactFormSubmissionId",
+              "description": "Unique identifier for the contact form submission."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores public user profile information, including their shop ID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The user's unique ID, matching their Firebase Auth UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/shops/{shopId}",
+        "definition": {
+          "entityName": "Shop",
+          "schema": {
+            "$ref": "#/backend/entities/Shop"
+          },
+          "description": "Stores information about individual shops.",
+          "params": [
+            {
+              "name": "shopId",
+              "description": "Unique ID for the shop."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/shops/{shopId}/customers/{customerPhone}",
+        "definition": {
+          "entityName": "Customer",
+          "schema": {
+            "$ref": "#/backend/entities/Customer"
+          },
+          "description": "Stores customers for a specific shop, using their phone number as the document ID.",
+          "params": [
+            {
+              "name": "shopId",
+              "description": "Parent shop ID."
+            },
+            {
+              "name": "customerPhone",
+              "description": "Customer's phone number, used as the unique document ID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/shops/{shopId}/ledger/{ledgerId}",
+        "definition": {
+          "entityName": "LedgerEntry",
+          "schema": {
+            "$ref": "#/backend/entities/LedgerEntry"
+          },
+          "description": "Stores individual credit/payment transactions for a shop.",
+          "params": [
+            {
+              "name": "shopId",
+              "description": "Parent shop ID."
+            },
+            {
+              "name": "ledgerId",
+              "description": "Unique ID for the ledger entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/posts/{postId}",
+        "definition": {
+          "entityName": "Post",
+          "schema": { "$ref": "#/backend/entities/Post" },
+          "description": "Stores blog posts.",
+          "params": [{ "name": "postId", "description": "Unique ID for the post." }]
+        }
+      },
+      {
+        "path": "/comments/{commentId}",
+        "definition": {
+          "entityName": "Comment",
+          "schema": { "$ref": "#/backend/entities/Comment" },
+          "description": "Stores comments for blog posts. Queried by postSlug.",
+          "params": [{ "name": "commentId", "description": "Unique ID for the comment." }]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure organizes data by shop, allowing for secure, scalable multi-tenancy. Each shop's data (customers, bills) is nested under its own document. Security rules ensure that a user can only access data related to the shop they own. Blog posts and comments are stored in root collections for public access."
+  }
+}

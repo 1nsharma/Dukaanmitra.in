@@ -11,15 +11,21 @@ import {
   HeartPulse,
   Settings,
   UserCheck,
+  DollarSign,
+  TrendingUp,
+  MessageSquare,
+  Briefcase,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/SAP/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/SAP/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/SAP/businesses', label: 'Businesses', icon: Briefcase },
   { href: '/SAP/users', label: 'User Management', icon: Users },
   { href: '/SAP/admins', label: 'Admin Control', icon: UserCheck },
-  { href: '/SAP/data', label: 'Data Explorer', icon: Database },
-  { href: '/SAP/logs', label: 'Logs & Activity', icon: FileClock },
+  { href: '/SAP/revenue', label: 'Revenue', icon: DollarSign },
+  { href: '/SAP/platform-analytics', label: 'Analytics', icon: TrendingUp },
+  { href: '/SAP/messages', label: 'Messages', icon: MessageSquare },
   { href: '/SAP/system', label: 'System Health', icon: HeartPulse },
   { href: '/SAP/security', label: 'Security Center', icon: Shield },
   { href: '/SAP/settings', label: 'Global Settings', icon: Settings },
@@ -54,6 +60,13 @@ export default function SuperAdminSidebar() {
           );
         })}
       </nav>
+       <div className="mt-auto p-4 bg-muted/50 rounded-lg border border-border">
+            <div className="text-xs text-muted-foreground mb-2">System Status</div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-sm font-semibold">All Systems Operational</span>
+            </div>
+          </div>
     </aside>
   );
 }
