@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -43,7 +44,7 @@ export default function SuperAdminLoginPage() {
       <div className="relative z-10 w-full max-w-md">
         <Card className="w-full shadow-xl">
           <CardHeader className="text-center">
-            <CardTitle className="font-headline text-2xl">Super Admin Panel</CardTitle>
+            <CardTitle className="font-headline text-2xl">Super Dashboard</CardTitle>
             <CardDescription>Enter your administrator credentials to continue.</CardDescription>
           </CardHeader>
           <CardContent>

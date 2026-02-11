@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -37,7 +38,7 @@ export default function SuperAdminSidebar() {
   return (
     <aside className="w-64 bg-card border-r border-border p-4 flex flex-col">
       <div className="mb-6">
-        <h2 className="text-lg font-bold text-primary tracking-tight">SUPER ADMIN</h2>
+        <h2 className="text-lg font-bold text-primary tracking-tight">SUPER DASHBOARD</h2>
         <p className="text-xs text-muted-foreground">System Control Center</p>
       </div>
       <nav className="flex flex-col gap-2">
