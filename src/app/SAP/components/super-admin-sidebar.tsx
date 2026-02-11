@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/SAP/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/SAP/Superdashboard', label: 'Super Dashboard', icon: LayoutDashboard },
   { href: '/SAP/businesses', label: 'Businesses', icon: Briefcase },
   { href: '/SAP/users', label: 'User Management', icon: Users },
   { href: '/SAP/admins', label: 'Admin Control', icon: UserCheck },

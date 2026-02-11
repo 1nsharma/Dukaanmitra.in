@@ -21,7 +21,7 @@ export default function DashboardPage() {
       if (!user) {
         router.push("/login");
       } else if (user.role === 'super_admin') {
-        router.push('/SAP/dashboard');
+        router.push('/SAP/Superdashboard');
       } else if (user.status === 'suspended') {
         auth.signOut();
         toast({
@@ -83,4 +83,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

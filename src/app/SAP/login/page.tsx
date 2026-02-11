@@ -17,7 +17,7 @@ export default function SuperAdminLoginPage() {
 
   useEffect(() => {
     if (!isUserLoading && user?.role === 'super_admin') {
-      router.push('/SAP/dashboard');
+      router.push('/SAP/Superdashboard');
     }
   }, [user, isUserLoading, router]);
 

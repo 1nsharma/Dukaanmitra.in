@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useTransition, useState } from "react";
@@ -122,7 +123,7 @@ export default function SAPLoginForm() {
           description: isSignUp ? "Your account has been created." : "You have been logged in.",
         });
         // The key change: redirect to SAP dashboard
-        router.push('/SAP/dashboard');
+        router.push('/SAP/Superdashboard');
 
       } catch (authError: any) {
         console.error(authError);
