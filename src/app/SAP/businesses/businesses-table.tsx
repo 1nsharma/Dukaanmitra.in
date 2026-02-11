@@ -1,15 +1,16 @@
 
 'use client';
 
+import { useState } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Shop } from '@/docs/backend-types';
-import { Loader2, MoreHorizontal, Eye, Edit, Lock, Unlock, Ban } from 'lucide-react';
+import { Loader2, MoreHorizontal, Eye, Edit, Lock, Unlock } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { format, formatDistanceToNowStrict } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useTransition } from 'react';
 import { updateShopStatus } from '@/firebase/admin-actions';
@@ -24,12 +25,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-
-const formatDate = (date: any) => {
-    if (!date) return 'N/A';
-    const d = date.toDate ? date.toDate() : new Date(date);
-    return format(d, 'PP');
-};
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { cn } from '@/lib/utils';
+import EditBusinessForm from './edit-business-form';
 
 const formatLastActive = (date: any) => {
     if (!date) return 'Never';
@@ -60,6 +64,7 @@ export default function BusinessesTable() {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
+    const [editingShop, setEditingShop] = useState<Shop | null>(null);
 
     const shopsQuery = useMemoFirebase(() => {
         return query(collection(firestore, "shops"), orderBy("created_at", "desc"));
@@ -95,6 +100,7 @@ export default function BusinessesTable() {
     }
 
     return (
+        <>
         <div className="bg-slate-900/50 rounded-2xl border border-purple-800 overflow-hidden">
             <table className="w-full">
               <thead className="bg-purple-900/50">
@@ -134,7 +140,11 @@ export default function BusinessesTable() {
                             <DropdownMenuContent align="end" className="bg-slate-900 border-purple-700 text-white">
                                 <DropdownMenuLabel>Actions for {shop.name}</DropdownMenuLabel>
                                 <DropdownMenuItem className="hover:bg-purple-800 focus:bg-purple-800"><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
-                                <DropdownMenuItem className="hover:bg-purple-800 focus:bg-purple-800"><Edit className="mr-2 h-4 w-4" /> Edit Business</DropdownMenuItem>
+                                
+                                <DropdownMenuItem onSelect={() => setEditingShop(shop)} className="hover:bg-purple-800 focus:bg-purple-800">
+                                    <Edit className="mr-2 h-4 w-4" /> Edit Business
+                                </DropdownMenuItem>
+
                                 <DropdownMenuSeparator className="bg-purple-700"/>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
@@ -173,5 +183,18 @@ export default function BusinessesTable() {
               </tbody>
             </table>
         </div>
+
+        <Dialog open={!!editingShop} onOpenChange={(isOpen) => !isOpen && setEditingShop(null)}>
+            <DialogContent className="bg-slate-900 border-purple-700 text-white">
+                <DialogHeader>
+                    <DialogTitle>Edit: {editingShop?.name}</DialogTitle>
+                    <DialogDescription className="text-purple-300">
+                        Modify the details for this business. Changes are saved live.
+                    </DialogDescription>
+                </DialogHeader>
+                {editingShop && <EditBusinessForm shop={editingShop} onFinished={() => setEditingShop(null)} />}
+            </DialogContent>
+        </Dialog>
+        </>
     );
 }
