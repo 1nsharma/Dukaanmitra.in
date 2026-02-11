@@ -59,7 +59,8 @@ service cloud.firestore {
      */
     match /users/{userId} {
       // READ: Users can read their own profile. Super admins can read any profile.
-      allow read: if (isOwner(userId) || isSuperAdmin()) && isUserActive();
+      // The isUserActive() check is removed to prevent recursive reads on this path.
+      allow read: if isOwner(userId) || isSuperAdmin();
       
       // LIST: Only super admins can list users. The isUserActive() check is removed as it's not compatible with list queries.
       allow list: if isSuperAdmin();
@@ -88,20 +89,27 @@ service cloud.firestore {
     /**
      * SHOPS and Subcollections
      */
-    function isShopOwner(shopId) {
-      let shop = get(/databases/$(database)/documents/shops/$(shopId));
-      return request.auth != null && shop.data.owner_id == request.auth.uid;
-    }
-    
     match /shops/{shopId} {
       // Active users can create shops, and must set themselves as owner.
       allow create: if isUserActive() && request.auth != null && request.resource.data.owner_id == request.auth.uid;
 
-      // Only the owner (who must be active) or a super admin can read/update/delete.
-      allow read, update, delete: if (isShopOwner(shopId) && isUserActive()) || isSuperAdmin();
+      // READ: The owner (whose user profile links to this shopId and is active) or a super admin can read.
+      allow read: if
+          (let userProfile = get(/databases/$(database)/documents/users/$(request.auth.uid));
+          (request.auth != null && userProfile.data.shopId == shopId && userProfile.data.status == 'active'))
+        || isSuperAdmin();
+
+      // UPDATE/DELETE: Only the owner of the existing document (who must be active) or a super admin can update/delete.
+      allow update, delete: if
+        (request.auth != null && resource.data.owner_id == request.auth.uid && isUserActive())
+        || isSuperAdmin();
       
        // All subcollections are protected by the same logic.
       match /{subcollection}/{docId=**} {
+        // This check verifies that the person accessing the subcollection owns the parent shop.
+        // It is safe because it reads the parent document, not the document being requested.
+        let isParentShopOwner = get(/databases/$(database)/documents/shops/$(shopId)).data.owner_id == request.auth.uid;
+
         // Super admin has full access to all subcollections
         if isSuperAdmin() {
           allow read, write: if true;
@@ -109,9 +117,9 @@ service cloud.firestore {
           // Ledger entries have special immutability rules
           if subcollection == 'ledger' {
             allow update, delete: if false;
-            allow read, create: if isShopOwner(shopId) && isUserActive();
+            allow read, create: if isParentShopOwner && isUserActive();
           } else {
-            allow read, write: if isShopOwner(shopId) && isUserActive();
+            allow read, write: if isParentShopOwner && isUserActive();
           }
         }
       }
