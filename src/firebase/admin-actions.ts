@@ -2,7 +2,7 @@
 'use client';
 
 import { doc, updateDoc, Firestore } from 'firebase/firestore';
-import { type UserProfile } from '@/docs/backend-types';
+import { type UserProfile, type Shop } from '@/docs/backend-types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -60,3 +60,29 @@ export const updateUserStatus = async (firestore: Firestore, uid: string, status
     throw serverError;
   }
 };
+
+
+/**
+ * Updates a shop's status in Firestore.
+ * This action is protected by security rules and should only succeed if the caller is a super_admin.
+ * @param firestore - The Firestore instance.
+ * @param shopId - The ID of the shop to update.
+ * @param status - The new status to assign.
+ */
+export const updateShopStatus = async (firestore: Firestore, shopId: string, status: Shop['status']) => {
+    const shopRef = doc(firestore, 'shops', shopId);
+    const data = { status };
+    try {
+        await updateDoc(shopRef, data);
+    } catch (serverError: any) {
+        if (serverError.code === 'permission-denied') {
+            const permissionError = new FirestorePermissionError({
+                path: shopRef.path,
+                operation: 'update',
+                requestResourceData: data,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        }
+        throw serverError;
+    }
+}
