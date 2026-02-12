@@ -27,19 +27,19 @@ export default function SuperAdminDashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><PieChart /> Plan Distribution</CardTitle>
-                 <CardDescription>Mock data showing plan distribution.</CardDescription>
+                 <CardDescription>Shows the distribution of subscription plans across all shops. Awaiting backend metric updates.</CardDescription>
               </CardHeader>
               <CardContent>
-                   <p className="text-muted-foreground">A live chart showing the distribution of subscription plans (Free, Basic, Pro) across all shops will be built here.</p>
+                   <p className="text-muted-foreground">A live chart will be built here, reading from aggregated data in the `/metrics/global` document.</p>
               </CardContent>
             </Card>
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><FileClock /> Recent System Activity</CardTitle>
-                     <CardDescription>This requires the 'logs' collection to be populated with admin actions.</CardDescription>
+                     <CardDescription>A log of important admin actions and system events. This requires the 'logs' collection to be populated.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">A live activity log will be displayed here, showing new sign-ups, upgrades, payments, and admin actions.</p>
+                    <p className="text-muted-foreground">A live activity log will be displayed here, showing new sign-ups, upgrades, payments, and admin actions from the `/logs` collection.</p>
                 </CardContent>
             </Card>
         </div>
