@@ -24,13 +24,14 @@ export const dailySummaryFlow = ai.defineFlow(
     }),
   },
   async () => {
-    console.log('[DailySummaryFlow] Starting daily summary and trial management...');
+    console.log('[DailySummaryFlow] Starting daily summary and subscription management...');
+    // Process all shops that are not cancelled or suspended
     const shopsRef = collection(firestore, 'shops');
-    const q = query(shopsRef, where('status', 'in', ['active', 'trial']));
+    const q = query(shopsRef, where('status', 'in', ['active', 'trial', 'locked']));
     
     const shopsSnapshot = await getDocs(q);
     if (shopsSnapshot.empty) {
-      console.log('[DailySummaryFlow] No active or trial shops found.');
+      console.log('[DailySummaryFlow] No relevant shops found.');
       return { processedShops: 0, failedShops: 0, lockedShops: 0 };
     }
 
@@ -50,27 +51,32 @@ export const dailySummaryFlow = ai.defineFlow(
       const ownerNumber = shop.phone.startsWith('+') ? shop.phone : `+91${shop.phone}`;
 
       try {
-        // --- Trial Management Logic ---
-        if (shop.status === 'trial' && shop.trial_ends_at) {
-          const trialEndDate = shop.trial_ends_at.toDate();
-          if (isPast(trialEndDate)) {
+        // --- Subscription & Trial Management Logic ---
+        let shouldLock = false;
+        if (shop.status === 'trial' && shop.trial_ends_at && isPast(shop.trial_ends_at.toDate())) {
             console.log(`[DailySummaryFlow] Trial for shop ${shopId} has expired. Locking account.`);
+            shouldLock = true;
+        } else if (shop.status === 'active' && shop.paid_till && isPast(shop.paid_till.toDate())) {
+            console.log(`[DailySummaryFlow] Subscription for shop ${shopId} has expired. Locking account.`);
+            shouldLock = true;
+        }
+
+        if (shouldLock) {
             const shopRef = shopDoc.ref;
             batch.update(shopRef, { status: 'locked' });
             lockedCount++;
             
-            // Send notification to shopkeeper about trial expiry
+            // Send notification to shopkeeper about expiry
             if(ownerNumber) {
-                await sendWhatsAppMessage(ownerNumber, "Aapka DukaanMitra trial khatam ho gaya hai. Service continue karne ke liye, apne customer number se 'PAY' likh kar bhejein.");
+                await sendWhatsAppMessage(ownerNumber, "Aapka DukaanMitra plan expire ho gaya hai. Service continue karne ke liye, apne customer number se 'PAY' likh kar bhejein.");
             }
             
             // Don't send a summary to a newly locked shop
             continue;
-          }
         }
         
-        // --- Daily Summary Logic (only for 'active' shops) ---
-        if (shop.status !== 'active') {
+        // --- Daily Summary Logic (only for 'active' or 'trial' shops) ---
+        if (shop.status !== 'active' && shop.status !== 'trial') {
             processedCount++;
             continue;
         }
@@ -103,7 +109,7 @@ Total Visits: *${totalVisits}*
 New Customers: *${newCustomersCount}*
 Loyal Customers: *${loyalCustomersCount}*
 
-Keep growing 💪
+Kal ke liye shubhkamnayein! 💪
         `.trim();
         
         if (ownerNumber) {
@@ -121,7 +127,7 @@ Keep growing 💪
       }
     }
     
-    // Commit any status changes for expired trials
+    // Commit any status changes for expired trials or subscriptions
     if (lockedCount > 0) {
         await batch.commit();
         console.log(`[DailySummaryFlow] Committed ${lockedCount} shop(s) to 'locked' status.`);

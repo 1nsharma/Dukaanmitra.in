@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getFirestore } from 'firebase-admin/firestore';
 import { initializeAdminApp } from '@/lib/firebase-admin';
-import { addMonths } from 'date-fns';
+import { addMonths, format } from 'date-fns';
+import { sendWhatsAppMessage } from '@/lib/services/whatsapp';
 
 const { RAZORPAY_WEBHOOK_SECRET } = process.env;
 
@@ -44,6 +45,9 @@ export async function POST(request: NextRequest) {
       // Initialize Firebase Admin
       await initializeAdminApp();
       const firestore = getFirestore();
+      
+      let shopOwnerPhone = '';
+      const newExpiryDate = addMonths(new Date(), 1);
 
       // 3. Update Firestore in a transaction
       await firestore.runTransaction(async (transaction) => {
@@ -64,6 +68,12 @@ export async function POST(request: NextRequest) {
         }
         
         const shopRef = firestore.collection('shops').doc(shopId);
+        const shopDoc = await transaction.get(shopRef);
+        if (!shopDoc.exists) {
+            throw new Error(`Shop with ID ${shopId} not found.`);
+        }
+        shopOwnerPhone = shopDoc.data()?.phone;
+
 
         // Update Order
         transaction.update(orderDoc.ref, {
@@ -76,7 +86,7 @@ export async function POST(request: NextRequest) {
         transaction.update(shopRef, {
           status: 'active',
           plan: plan,
-          paid_till: addMonths(new Date(), 1),
+          paid_till: newExpiryDate,
           updated_at: new Date(),
         });
         
@@ -98,6 +108,13 @@ export async function POST(request: NextRequest) {
       });
       
       console.log(`Successfully processed payment for Shop ID: ${shopId}`);
+      
+      // 4. Send WhatsApp Confirmation
+      if (shopOwnerPhone) {
+        const formattedExpiry = format(newExpiryDate, 'dd MMM yyyy');
+        const confirmationMessage = `Namaste 🙏 Payment received. Your DukaanMitra plan is now active until ${formattedExpiry}. Shukriya!`;
+        await sendWhatsAppMessage(shopOwnerPhone, confirmationMessage);
+      }
     }
 
     return NextResponse.json({ status: 'ok' }, { status: 200 });
