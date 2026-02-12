@@ -2,16 +2,26 @@
 import * as admin from 'firebase-admin';
 
 // This function ensures that the Firebase Admin SDK is initialized only once.
-export const initializeAdminApp = async () => {
+export const initializeAdminApp = () => {
   if (admin.apps.length > 0) {
     return admin.app();
   }
 
+  // First, try to initialize with managed identity (for production on GCP/Firebase).
+  // This is the most secure method as it doesn't require storing key files.
+  try {
+    return admin.initializeApp();
+  } catch (e) {
+    console.log('Managed identity initialization failed, falling back to service account key. This is expected in local development.');
+  }
+
+  // If managed identity fails, fall back to the service account key from env variables.
+  // This is primarily for local development or non-GCP environments.
   const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
   if (!serviceAccountKey) {
     throw new Error(
-      'FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set. This is required for server-side operations.'
+      'FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set and managed identity is not available. This is required for server-side operations.'
     );
   }
 

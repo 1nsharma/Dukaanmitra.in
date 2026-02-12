@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Initialize Firebase Admin
-      await initializeAdminApp();
+      initializeAdminApp();
       const firestore = getFirestore();
       
       let shopOwnerPhone = '';

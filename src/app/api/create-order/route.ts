@@ -23,7 +23,7 @@ const requestBodySchema = z.object({
 export async function POST(request: Request) {
   try {
     // Initialize services
-    await initializeAdminApp();
+    initializeAdminApp();
     const firestore = getFirestore();
     const razorpay = new Razorpay({
       key_id: RAZORPAY_KEY_ID!,
