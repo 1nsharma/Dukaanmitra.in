@@ -1,12 +1,14 @@
+
 'use server';
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, Timestamp, writeBatch } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 import { sendWhatsAppMessage } from '@/lib/services/whatsapp';
 import { type Shop, type LedgerEntry, type Customer } from '@/docs/backend-types';
+import { isPast } from 'date-fns';
 
 const firestore = getFirestore(initializeFirebase().firebaseApp);
 
@@ -18,21 +20,25 @@ export const dailySummaryFlow = ai.defineFlow(
     outputSchema: z.object({
       processedShops: z.number(),
       failedShops: z.number(),
+      lockedShops: z.number(),
     }),
   },
   async () => {
-    console.log('[DailySummaryFlow] Starting daily summary generation...');
+    console.log('[DailySummaryFlow] Starting daily summary and trial management...');
     const shopsRef = collection(firestore, 'shops');
     const q = query(shopsRef, where('status', 'in', ['active', 'trial']));
     
     const shopsSnapshot = await getDocs(q);
     if (shopsSnapshot.empty) {
       console.log('[DailySummaryFlow] No active or trial shops found.');
-      return { processedShops: 0, failedShops: 0 };
+      return { processedShops: 0, failedShops: 0, lockedShops: 0 };
     }
 
     let processedCount = 0;
     let failedCount = 0;
+    let lockedCount = 0;
+    
+    const batch = writeBatch(firestore);
 
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
@@ -43,7 +49,20 @@ export const dailySummaryFlow = ai.defineFlow(
       const shopId = shopDoc.id;
 
       try {
-        // 1. Calculate Total Sales and Visits for today
+        // --- Trial Management Logic ---
+        if (shop.status === 'trial' && shop.trial_ends_at) {
+          const trialEndDate = shop.trial_ends_at.toDate();
+          if (isPast(trialEndDate)) {
+            console.log(`[DailySummaryFlow] Trial for shop ${shopId} has expired. Locking account.`);
+            const shopRef = shopDoc.ref;
+            batch.update(shopRef, { status: 'locked' });
+            lockedCount++;
+            // Don't send a summary to a newly locked shop
+            continue;
+          }
+        }
+        
+        // --- Daily Summary Logic ---
         const ledgerRef = collection(firestore, 'shops', shopId, 'ledger');
         const ledgerQuery = query(ledgerRef, where('createdAt', '>=', todayStartTimestamp));
         const ledgerSnapshot = await getDocs(ledgerQuery);
@@ -54,7 +73,6 @@ export const dailySummaryFlow = ai.defineFlow(
         });
         const totalVisits = ledgerSnapshot.size;
 
-        // 2. Calculate New and Loyal Customers
         const customersRef = collection(firestore, 'shops', shopId, 'customers');
         const newCustomersQuery = query(customersRef, where('created_at', '>=', todayStartTimestamp));
         const loyalCustomersQuery = query(customersRef, where('visit_count', '>=', 5));
@@ -65,7 +83,6 @@ export const dailySummaryFlow = ai.defineFlow(
         const newCustomersCount = newCustomersSnapshot.size;
         const loyalCustomersCount = loyalCustomersSnapshot.size;
 
-        // 3. Construct and send the message
         const summaryMessage = `
 📊 *Aaj ka DukaanMitra Summary*
 
@@ -77,9 +94,7 @@ Loyal Customers: *${loyalCustomersCount}*
 Keep growing 💪
         `.trim();
         
-        // Assuming shop.phone is the owner's WhatsApp number for notifications
         if (shop.phone) {
-            // Using the full international format for the WhatsApp API
             const ownerNumber = shop.phone.startsWith('+') ? shop.phone : `+91${shop.phone}`;
             await sendWhatsAppMessage(ownerNumber, summaryMessage);
             console.log(`[DailySummaryFlow] Sent summary to shop ${shopId} (${shop.name})`);
@@ -94,9 +109,16 @@ Keep growing 💪
         failedCount++;
       }
     }
+    
+    // Commit any status changes for expired trials
+    if (lockedCount > 0) {
+        await batch.commit();
+        console.log(`[DailySummaryFlow] Committed ${lockedCount} shop(s) to 'locked' status.`);
+    }
 
-    console.log(`[DailySummaryFlow] Finished. Processed: ${processedCount}, Failed: ${failedCount}`);
-    return { processedShops: processedCount, failedShops: failedCount };
+
+    console.log(`[DailySummaryFlow] Finished. Processed: ${processedCount}, Failed: ${failedCount}, Locked: ${lockedCount}`);
+    return { processedShops: processedCount, failedShops: failedCount, lockedShops: lockedCount };
   }
 );
 
