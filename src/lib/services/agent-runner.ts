@@ -78,7 +78,12 @@ export async function processBillMessage(message: NormalizedMessage) {
         // 3. HARD STOP: Check if shop is locked
         if (shop.status === 'locked' || shop.status === 'suspended') {
             console.log(`[Processor] Shop ${shopCode} is locked. Blocking message.`);
-            await sendWhatsAppMessage(message.from, "This shop's DukaanMitra plan has expired. Please contact the owner to continue service.");
+            // Special trigger for payment
+            if (cleanedQuery.trim().toUpperCase() === 'PAY') {
+                await sendWhatsAppMessage(message.from, "To reactivate your plan, please complete your payment here: [Your Payment Link]"); // TODO: Add real payment link
+            } else {
+                await sendWhatsAppMessage(message.from, "Aapka DukaanMitra plan expire ho gaya hai. Service continue karne ke liye 'PAY' likh kar bhejein.");
+            }
             await addDoc(logCollection, { id: doc(logCollection).id, event: 'shop_locked', details: { shopId: shopCode, phone: message.from }, createdAt: serverTimestamp() });
             return;
         }

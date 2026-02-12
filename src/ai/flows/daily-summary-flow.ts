@@ -3,7 +3,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { collection, query, where, getDocs, Timestamp, writeBatch } from 'firebase/firestore';
+import { collection, query, where, getDocs, Timestamp, writeBatch, doc } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 import { sendWhatsAppMessage } from '@/lib/services/whatsapp';
@@ -47,6 +47,7 @@ export const dailySummaryFlow = ai.defineFlow(
     for (const shopDoc of shopsSnapshot.docs) {
       const shop = shopDoc.data() as Shop;
       const shopId = shopDoc.id;
+      const ownerNumber = shop.phone.startsWith('+') ? shop.phone : `+91${shop.phone}`;
 
       try {
         // --- Trial Management Logic ---
@@ -57,12 +58,23 @@ export const dailySummaryFlow = ai.defineFlow(
             const shopRef = shopDoc.ref;
             batch.update(shopRef, { status: 'locked' });
             lockedCount++;
+            
+            // Send notification to shopkeeper about trial expiry
+            if(ownerNumber) {
+                await sendWhatsAppMessage(ownerNumber, "Aapka DukaanMitra trial khatam ho gaya hai. Service continue karne ke liye, apne customer number se 'PAY' likh kar bhejein.");
+            }
+            
             // Don't send a summary to a newly locked shop
             continue;
           }
         }
         
-        // --- Daily Summary Logic ---
+        // --- Daily Summary Logic (only for 'active' shops) ---
+        if (shop.status !== 'active') {
+            processedCount++;
+            continue;
+        }
+
         const ledgerRef = collection(firestore, 'shops', shopId, 'ledger');
         const ledgerQuery = query(ledgerRef, where('createdAt', '>=', todayStartTimestamp));
         const ledgerSnapshot = await getDocs(ledgerQuery);
@@ -94,8 +106,7 @@ Loyal Customers: *${loyalCustomersCount}*
 Keep growing 💪
         `.trim();
         
-        if (shop.phone) {
-            const ownerNumber = shop.phone.startsWith('+') ? shop.phone : `+91${shop.phone}`;
+        if (ownerNumber) {
             await sendWhatsAppMessage(ownerNumber, summaryMessage);
             console.log(`[DailySummaryFlow] Sent summary to shop ${shopId} (${shop.name})`);
             processedCount++;
