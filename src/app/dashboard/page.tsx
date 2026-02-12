@@ -17,20 +17,33 @@ export default function DashboardPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!isUserLoading) {
-      if (!user) {
-        router.push("/login");
-      } else if (user.role === 'super_admin') {
-        router.push('/SAP/Superdashboard');
-      } else if (user.status === 'suspended') {
-        auth.signOut();
-        toast({
-          title: 'Account Suspended',
-          description: 'Your account has been suspended. Please contact support.',
-          variant: 'destructive',
-        });
-        router.push('/login');
-      }
+    // Wait until the user's auth and profile state are fully resolved.
+    if (isUserLoading) {
+      return; 
+    }
+
+    // If no user is found, redirect to the main login page.
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    // **Primary redirect logic**: If the user is a super_admin, send them to the correct dashboard.
+    if (user.role === 'super_admin') {
+      router.push('/SAP/Superdashboard');
+      return;
+    }
+    
+    // If the user's account is suspended, sign them out and redirect.
+    if (user.status === 'suspended') {
+      auth.signOut();
+      toast({
+        title: 'Account Suspended',
+        description: 'Your account has been suspended. Please contact support.',
+        variant: 'destructive',
+      });
+      router.push('/login');
+      return;
     }
   }, [user, isUserLoading, router, auth, toast]);
 
@@ -42,16 +55,10 @@ export default function DashboardPage() {
       console.error("Error signing out:", error);
     }
   };
-
-  const onShopCreated = (newShopId: string) => {
-    // The user object in the context will update automatically via the listener.
-    // We can force a router refresh if needed, but it's often not necessary.
-    // router.refresh(); 
-  }
-
-  const isLoading = isUserLoading || !user || user.role === 'super_admin';
-
-  if (isLoading) {
+  
+  // This condition now correctly handles the loading state and the pre-redirect state for super admins.
+  // A loader is shown while auth state is resolving OR if the user is a super admin (who will be redirected).
+  if (isUserLoading || !user || user.role === 'super_admin') {
     return (
       <div className="flex min-h-[calc(100vh-theme(spacing.14))] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -59,6 +66,7 @@ export default function DashboardPage() {
     );
   }
 
+  // This content will ONLY be rendered for a regular, authenticated, active user.
   return (
     <div className="container py-16 md:py-24">
       <div className="flex justify-between items-start mb-8">
@@ -78,7 +86,8 @@ export default function DashboardPage() {
       {user.shopId ? (
         <ShopDashboard shopId={user.shopId} />
       ) : (
-        <CreateShopForm onShopCreated={onShopCreated} />
+        // The user object is guaranteed to be available here, so we don't need to force a refresh.
+        <CreateShopForm onShopCreated={() => {}} />
       )}
     </div>
   );
