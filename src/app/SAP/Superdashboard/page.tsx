@@ -1,8 +1,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AlertTriangle, FileClock, PieChart, TrendingUp, Users } from 'lucide-react';
+import { FileClock, Users } from 'lucide-react';
 import DashboardStatCards from './dashboard-stat-cards';
 import BusinessesTable from '../businesses/businesses-table';
+import RecentActivity from './recent-activity';
+import PlanDistributionChart from './plan-distribution-chart';
+import RevenueGrowthChart from './revenue-growth-chart';
 
 export default function SuperAdminDashboardPage() {
   return (
@@ -26,20 +29,20 @@ export default function SuperAdminDashboardPage() {
         <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><PieChart /> Plan Distribution</CardTitle>
-                 <CardDescription>Shows the distribution of subscription plans across all shops. Awaiting backend metric updates.</CardDescription>
+                <CardTitle>Platform Metrics</CardTitle>
               </CardHeader>
-              <CardContent>
-                   <p className="text-muted-foreground">A live chart will be built here, reading from aggregated data in the `/metrics/global` document.</p>
+              <CardContent className="space-y-4">
+                  <PlanDistributionChart />
+                  <RevenueGrowthChart />
               </CardContent>
             </Card>
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><FileClock /> Recent System Activity</CardTitle>
-                     <CardDescription>A log of important admin actions and system events. This requires the 'logs' collection to be populated.</CardDescription>
+                     <CardDescription>A log of important admin actions and system events.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">A live activity log will be displayed here, showing new sign-ups, upgrades, payments, and admin actions from the `/logs` collection.</p>
+                    <RecentActivity />
                 </CardContent>
             </Card>
         </div>
