@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -86,7 +85,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-12 md:mt-16 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {year || new Date().getFullYear()} DukaanMitra Technologies Pvt. Ltd. Built with ❤️ in India.</p>
+          <p>&copy; {year} DukaanMitra Technologies Pvt. Ltd. Built with ❤️ in India.</p>
         </div>
       </div>
     </footer>
