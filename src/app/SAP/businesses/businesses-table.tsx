@@ -77,6 +77,7 @@ export default function BusinessesTable() {
     const { user: currentUser } = useUser();
     const [isPending, startTransition] = useTransition();
     const [editingShop, setEditingShop] = useState<Shop | null>(null);
+    const [shopToSuspend, setShopToSuspend] = useState<Shop | null>(null);
 
     const shopsQuery = useMemoFirebase(() => {
         return query(collection(firestore, "shops"), orderBy("created_at", "desc"));
@@ -84,12 +85,12 @@ export default function BusinessesTable() {
 
     const { data: shops, isLoading } = useCollection<Shop>(shopsQuery);
     
-    const handleStatusChange = (shopId: string, currentStatus: Shop['status']) => {
-        if (!currentUser) return;
-        const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
+    const handleStatusChange = () => {
+        if (!currentUser || !shopToSuspend) return;
+        const newStatus = shopToSuspend.status === 'suspended' ? 'active' : 'suspended';
         startTransition(async () => {
             try {
-                await updateShopStatus(firestore, currentUser.uid, shopId, newStatus);
+                await updateShopStatus(firestore, currentUser.uid, shopToSuspend.id, newStatus);
                 toast({
                     title: 'Success',
                     description: `Business has been ${newStatus}.`,
@@ -100,6 +101,8 @@ export default function BusinessesTable() {
                     description: error.message || 'An unexpected error occurred.',
                     variant: 'destructive'
                 });
+            } finally {
+                setShopToSuspend(null);
             }
         });
     };
@@ -158,38 +161,17 @@ export default function BusinessesTable() {
                                 </DropdownMenuItem>
 
                                 <DropdownMenuSeparator />
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem
-                                            className={cn("focus:bg-destructive/10 text-destructive", shop.status === 'suspended' && "text-green-500 focus:text-green-600 focus:bg-green-500/10" )}
-                                            onSelect={(e) => e.preventDefault()}
-                                        >
-                                            {shop.status === 'suspended' ? <Unlock className="mr-2 h-4 w-4" /> : <Lock className="mr-2 h-4 w-4" />}
-                                            {shop.status === 'suspended' ? 'Reactivate' : 'Suspend'}
-                                        </DropdownMenuItem>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This will {shop.status === 'suspended' ? 'reactivate the business and allow them to access the platform.' : 'suspend the business and block them from accessing the platform.'}
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction 
-                                                className={cn(shop.status !== 'suspended' && "bg-destructive hover:bg-destructive/90")}
-                                                onClick={() => handleStatusChange(shop.id, shop.status)}
-                                                disabled={isPending}
-                                            >
-                                                {isPending ? "Updating..." : `Yes, ${shop.status === 'suspended' ? 'Reactivate' : 'Suspend'}`}
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
+
+                                <DropdownMenuItem
+                                    className={cn("focus:bg-destructive/10 text-destructive", shop.status === 'suspended' && "text-green-500 focus:text-green-600 focus:bg-green-500/10" )}
+                                    onSelect={() => setShopToSuspend(shop)}
+                                >
+                                    {shop.status === 'suspended' ? <Unlock className="mr-2 h-4 w-4" /> : <Lock className="mr-2 h-4 w-4" />}
+                                    {shop.status === 'suspended' ? 'Reactivate' : 'Suspend'}
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                    </td>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -207,6 +189,27 @@ export default function BusinessesTable() {
                 {editingShop && <EditBusinessForm shop={editingShop} onFinished={() => setEditingShop(null)} />}
             </DialogContent>
         </Dialog>
+        
+        <AlertDialog open={!!shopToSuspend} onOpenChange={(isOpen) => !isOpen && setShopToSuspend(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This will {shopToSuspend?.status === 'suspended' ? 'reactivate this business and allow them to access the platform.' : 'suspend this business and block them from accessing the platform.'}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                        className={cn(shopToSuspend?.status !== 'suspended' && "bg-destructive hover:bg-destructive/90")}
+                        onClick={handleStatusChange}
+                        disabled={isPending}
+                    >
+                        {isPending ? "Updating..." : `Yes, ${shopToSuspend?.status === 'suspended' ? 'Reactivate' : 'Suspend'}`}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
         </>
     );
 }
