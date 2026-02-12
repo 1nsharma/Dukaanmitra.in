@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useUser, useAuth } from "@/firebase";
@@ -18,7 +19,7 @@ export default function DashboardPage() {
   useEffect(() => {
     // Wait until the user's auth and profile state are fully resolved.
     if (isUserLoading) {
-      return; 
+      return;
     }
 
     // If no user is found, redirect to the main login page.
@@ -46,6 +47,11 @@ export default function DashboardPage() {
       return;
     }
   }, [user, isUserLoading, router, auth, toast]);
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    router.push('/');
+  };
 
   // This condition now correctly handles the loading state and the pre-redirect state for super admins.
   // A loader is shown while auth state is resolving OR if the user is a super admin (who will be redirected).
