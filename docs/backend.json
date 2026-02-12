@@ -144,6 +144,15 @@
         "pincode": {
           "type": "string"
         },
+        "mrr": {
+            "type": "number",
+            "description": "The monthly recurring revenue for this shop's subscription."
+        },
+        "lastActive": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the last activity from this shop."
+        },
         "plan": {
           "type": "string",
           "enum": [
@@ -159,7 +168,8 @@
             "active",
             "trial",
             "suspended",
-            "cancelled"
+            "cancelled",
+            "locked"
           ]
         },
         "trial_ends_at": {
@@ -269,9 +279,9 @@
         "status": {
           "type": "string",
           "enum": [
-            "new",
-            "regular",
-            "vip",
+            "NEW",
+            "REPEAT",
+            "LOYAL",
             "churned",
             "blocked"
           ]
@@ -382,6 +392,28 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "postSlug", "name", "message", "createdAt"]
+    },
+    "ProcessedMessage": {
+      "title": "Processed Message",
+      "description": "Stores the ID of a processed WhatsApp message to prevent duplicates.",
+      "type": "object",
+      "properties": {
+        "messageId": { "type": "string" },
+        "processedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["messageId", "processedAt"]
+    },
+    "Log": {
+      "title": "Log Entry",
+      "description": "A generic log entry for system events.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "event": { "type": "string" },
+        "details": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "event", "createdAt"]
     }
   },
   "auth": {
@@ -497,8 +529,26 @@
           "description": "Stores comments for blog posts. Queried by postSlug.",
           "params": [{ "name": "commentId", "description": "Unique ID for the comment." }]
         }
+      },
+      {
+        "path": "/processedMessages/{messageId}",
+        "definition": {
+          "entityName": "ProcessedMessage",
+          "schema": { "$ref": "#/backend/entities/ProcessedMessage" },
+          "description": "Stores processed WhatsApp message IDs to prevent duplicates.",
+          "params": [{ "name": "messageId", "description": "The unique ID from the WhatsApp message." }]
+        }
+      },
+      {
+        "path": "/logs/{logId}",
+        "definition": {
+          "entityName": "Log",
+          "schema": { "$ref": "#/backend/entities/Log" },
+          "description": "Stores system event logs for debugging and auditing.",
+          "params": [{ "name": "logId", "description": "Unique ID for the log entry." }]
+        }
       }
     ],
-    "reasoning": "This Firestore structure organizes data by shop, allowing for secure, scalable multi-tenancy. Each shop's data (customers, bills) is nested under its own document. Security rules ensure that a user can only access data related to the shop they own. Blog posts and comments are stored in root collections for public access."
+    "reasoning": "This Firestore structure organizes data by shop, allowing for secure, scalable multi-tenancy. Each shop's data (customers, bills) is nested under its own document. Security rules ensure that a user can only access data related to the shop they own. Root collections are used for public data (posts), system data (logs, processedMessages), and user-agnostic submissions (contact)."
   }
 }

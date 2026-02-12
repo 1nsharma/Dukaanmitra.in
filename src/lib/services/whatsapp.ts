@@ -1,7 +1,11 @@
 
-import { runAgentForMessage } from "./agent-runner";
+import { runAgentForMessage, processBillMessage } from "./agent-runner";
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
 
 const { WHATSAPP_API_TOKEN, WHATSAPP_PHONE_NUMBER_ID } = process.env;
+const firestore = getFirestore(initializeFirebase().firebaseApp);
 
 /**
  * Handles the incoming WhatsApp message payload from the webhook.
@@ -9,33 +13,40 @@ const { WHATSAPP_API_TOKEN, WHATSAPP_PHONE_NUMBER_ID } = process.env;
  * @param body - The parsed JSON body from the WhatsApp webhook.
  */
 export function handleWhatsAppMessage(body: any) {
-    // Using a Promise to handle the async work without blocking the main thread
     new Promise<void>(async (resolve) => {
         try {
-            // 1. Log the incoming payload for debugging
-            // In production, you'd use a proper logger and strip PII.
             console.log('[WhatsAppService] Received webhook payload:', JSON.stringify(body, null, 2));
 
-            // 2. Check if it's a message event
             if (body.object === 'whatsapp_business_account' && body.entry) {
                 for (const entry of body.entry) {
                     if (entry.changes) {
                         for (const change of entry.changes) {
                             if (change.field === 'messages' && change.value.messages) {
                                 for (const message of change.value.messages) {
-                                    // 3. Process only text messages for now
+                                    
+                                    // 1. Duplicate Message Protection
+                                    const messageId = message.id;
+                                    const processedRef = doc(firestore, 'processedMessages', messageId);
+                                    const processedDoc = await getDoc(processedRef);
+
+                                    if (processedDoc.exists()) {
+                                        console.log(`[WhatsAppService] Duplicate message ID ${messageId} received. Ignoring.`);
+                                        continue; // Skip already processed message
+                                    }
+                                    
                                     if (message.type === 'text') {
-                                        
-                                        // 4. Normalize the message into a standard format
                                         const normalizedMessage = {
-                                            from: message.from, // Customer's number
-                                            to: change.value.metadata.display_phone_number, // Your business number
+                                            from: message.from,
+                                            to: change.value.metadata.display_phone_number,
                                             text: message.text.body,
                                             messageId: message.id,
                                         };
                                         
-                                        // 5. Trigger the AI agent runner
-                                        await runAgentForMessage(normalizedMessage);
+                                        // Mark message as processed immediately
+                                        await setDoc(processedRef, { processedAt: serverTimestamp() });
+                                        
+                                        // 2. Route to the deterministic bill processor
+                                        await processBillMessage(normalizedMessage);
                                     }
                                 }
                             }
@@ -87,12 +98,10 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
 
         if (!response.ok) {
             console.error(`[WhatsAppService] Error sending message: ${response.status} ${response.statusText}`, responseData);
-            // TODO: Add to a retry queue
         } else {
             console.log('[WhatsAppService] Message sent successfully:', responseData);
         }
     } catch (error) {
         console.error('[WhatsAppService] Exception while sending message:', error);
-        // TODO: Add to a retry queue
     }
 }
