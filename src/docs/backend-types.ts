@@ -4,7 +4,7 @@
 export type ContactFormSubmission = {
   id: string;
   name: string;
-  email: string;
+  email: string; // "email"
   subject: string;
   message: string;
   submittedAt: any;
@@ -12,7 +12,7 @@ export type ContactFormSubmission = {
 
 export type UserProfile = {
   uid: string;
-  email: string;
+  email: string; // "email"
   displayName?: string;
   photoURL?: string; // "uri"
   createdAt: any;
@@ -50,7 +50,6 @@ export type Shop = {
     working_hours?: {
       start?: string; // "time"
       end?: string; // "time"
-      days?: number[];
     };
   };
 };
@@ -66,7 +65,6 @@ export type Customer = {
   total_spent?: number;
   totalUdhaar?: number;
   status?: "NEW" | "REPEAT" | "LOYAL" | "churned" | "blocked";
-  tags?: string[];
   created_at?: any;
   updated_at?: any;
   lastReminderSentAt?: any;
@@ -77,12 +75,26 @@ export type LedgerEntry = {
   id: string;
   shop_id: string;
   customerPhone: string;
-  amount: number;
-  type: "credit" | "payment";
   customerName?: string;
+  amount: number;
   item?: string;
+  type: "credit" | "payment";
   source?: "whatsapp" | "app" | "manual" | "app-ai";
-  createdAt?: any;
+  createdAt: any;
+};
+
+export type Order = {
+  id: string;
+  shopId: string;
+  userId: string;
+  plan: string;
+  amount: number;
+  currency: string;
+  razorpayOrderId: string;
+  razorpayPaymentId?: string;
+  status: "created" | "paid" | "failed";
+  createdAt: any;
+  paidAt?: any;
 };
 
 export type Post = {
@@ -94,8 +106,6 @@ export type Post = {
   content: string;
   author: string;
   createdAt: any;
-  views?: number;
-  likes?: number;
 };
 
 export type Comment = {

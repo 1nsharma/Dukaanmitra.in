@@ -76,6 +76,7 @@ The system is built on a modern, serverless architecture centered around Next.js
 - **Authentication**: [Firebase Authentication](https://firebase.google.com/docs/auth)
 - **AI Engine**: [Google Genkit](https://firebase.google.com/docs/genkit)
 - **AI Model**: [Google Gemini](https://deepmind.google/technologies/gemini/)
+- **Payments**: [Razorpay](https://razorpay.com/)
 
 ## Local Development Setup
 
@@ -106,11 +107,11 @@ npm run dev
 ```
 The application will be available at `http://localhost:3000`.
 
-To receive webhooks from WhatsApp locally, you will need to use a tunneling service like `ngrok`.
+To receive webhooks from WhatsApp and Razorpay locally, you will need to use a tunneling service like `ngrok`.
 ```bash
 ngrok http 3000
 ```
-Use the HTTPS URL provided by ngrok (e.g., `https://<random-string>.ngrok-free.app`) and set it as your webhook URL in the Meta for Developers dashboard, appending `/api/whatsapp`.
+Use the HTTPS URL provided by ngrok (e.g., `https://<random-string>.ngrok-free.app`) and set it as your webhook URL in the Meta and Razorpay dashboards, appending the correct path (`/api/whatsapp` or `/api/verify-payment`).
 
 ## Environment Variables
 
@@ -122,23 +123,31 @@ You need to set the following environment variables in your `.env` file for the 
 GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 
 # For sending emails from the contact form
-# You can use any email provider, this example uses Mailgun
 MAILGUN_API_KEY="YOUR_MAILGUN_API_KEY"
 MAILGUN_DOMAIN="YOUR_MAILGUN_DOMAIN"
 CONTACT_EMAIL_RECIPIENT="your-support-email@example.com"
 MAILGUN_FROM_EMAIL="DukaanMitra <no-reply@yourdomain.com>"
 
 # --- For WhatsApp Business API Integration ---
-# A random, secure string you create. Used to verify webhook GET requests.
 WHATSAPP_VERIFY_TOKEN="YOUR_RANDOM_VERIFY_TOKEN"
-# The App Secret from your Meta for Developers app dashboard. Used to verify webhook POST requests.
 WHATSAPP_WEBHOOK_SECRET="YOUR_META_APP_SECRET"
-# The temporary or permanent access token for your WhatsApp Business account.
 WHATSAPP_API_TOKEN="YOUR_WHATSAPP_BUSINESS_API_TOKEN"
-# The Phone Number ID for the business number you are using. Found in the Meta dashboard.
 WHATSAPP_PHONE_NUMBER_ID="YOUR_WHATSAPP_PHONE_NUMBER_ID"
+
+# --- For Razorpay Payment Gateway ---
+# Get your keys from the Razorpay Dashboard under Settings -> API Keys
+RAZORPAY_KEY_ID="YOUR_RAZORPAY_KEY_ID"
+RAZORPAY_KEY_SECRET="YOUR_RAZORPAY_KEY_SECRET"
+# Create a webhook in the Razorpay Dashboard (Settings -> Webhooks) and set this as the secret.
+RAZORPAY_WEBHOOK_SECRET="YOUR_RAZORPAY_WEBHOOK_SECRET"
+
+# --- For Firebase Admin SDK (Server-Side Operations) ---
+# In your Firebase project settings under "Service accounts", generate a new private key.
+# Paste the entire contents of the downloaded JSON file here as a single-line string.
+FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
+
 ```
-**Note**: The Firebase configuration is hard-coded in `src/firebase/config.ts` as it contains public, non-sensitive keys.
+**Note**: The Firebase client-side configuration is hard-coded in `src/firebase/config.ts` as it contains public, non-sensitive keys.
 
 ## Running the Application
 

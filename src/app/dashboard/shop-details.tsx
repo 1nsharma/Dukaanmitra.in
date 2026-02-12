@@ -8,7 +8,7 @@ import * as z from "zod";
 import { useTransition } from "react";
 import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { format, differenceInDays, isFuture, addMonths } from 'date-fns';
-import { Star, Clock, CreditCard, MessageSquare, CheckCircle } from 'lucide-react';
+import { Star, Clock, CreditCard, MessageSquare, CheckCircle, Loader2 } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { useFirestore, FirestorePermissionError, errorEmitter, useAuth } from "@/firebase";
 import type { Shop } from '@/docs/backend-types';
 import { cn } from '@/lib/utils';
 import WhatsAppOnboarding from './whatsapp-onboarding';
@@ -49,11 +49,18 @@ interface ShopDetailsProps {
   shop: Shop;
 }
 
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
+
 export default function ShopDetails({ shop }: ShopDetailsProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [isActivating, startActivatingTransition] = useTransition();
   const firestore = useFirestore();
+  const auth = useAuth();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -108,37 +115,88 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
     });
   };
 
-  const handleActivateSubscription = () => {
-    startActivatingTransition(() => {
-      const shopRef = doc(firestore, "shops", shop.id);
-      const newPaidTillDate = addMonths(new Date(), 1);
-
-      const shopData = {
-        plan: 'basic',
-        status: 'active',
-        paid_till: newPaidTillDate,
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => {
+        resolve(true);
       };
+      script.onerror = () => {
+        resolve(false);
+      };
+      document.body.appendChild(script);
+    });
+  };
 
-      updateDoc(shopRef, shopData)
-        .then(() => {
-          toast({
-            title: "Subscription Activated!",
-            description: `You are now on the Basic plan until ${format(newPaidTillDate, "PPP")}.`,
-          });
-        })
-        .catch(serverError => {
-          const permissionError = new FirestorePermissionError({
-            path: shopRef.path,
-            operation: 'update',
-            requestResourceData: shopData,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-          toast({
-            title: "Activation Error",
-            description: "Could not activate your subscription. Please try again.",
-            variant: "destructive",
-          });
-        });
+  const handleActivateSubscription = async () => {
+    startActivatingTransition(async () => {
+        const hasLoaded = await loadRazorpayScript();
+        if (!hasLoaded) {
+            toast({ title: "Error", description: "Could not load payment gateway. Please check your connection.", variant: "destructive" });
+            return;
+        }
+
+        try {
+            const idToken = await auth.currentUser?.getIdToken();
+            if (!idToken) {
+                throw new Error("Authentication token not found.");
+            }
+
+            const response = await fetch('/api/create-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`,
+                },
+                body: JSON.stringify({ shopId: shop.id, plan: 'basic', amount: 1999 }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create payment order.');
+            }
+
+            const order = await response.json();
+
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                amount: order.amount,
+                currency: order.currency,
+                name: "DukaanMitra",
+                description: `Basic Plan Subscription for ${shop.name}`,
+                order_id: order.id,
+                handler: function (response: any) {
+                    toast({
+                        title: "Payment Successful!",
+                        description: "Your subscription has been activated. Refreshing...",
+                    });
+                    // The webhook will handle the DB update, but we can optimistically refresh.
+                    window.location.reload();
+                },
+                prefill: {
+                    name: shop.owner_name,
+                    email: auth.currentUser?.email,
+                    contact: shop.phone,
+                },
+                notes: {
+                    shopId: shop.id,
+                    userId: auth.currentUser?.uid,
+                },
+                theme: {
+                    color: "#25D366",
+                },
+            };
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+
+        } catch (error: any) {
+             toast({
+                title: "Activation Error",
+                description: error.message || "Could not initiate payment. Please try again.",
+                variant: "destructive",
+            });
+        }
     });
   };
 
@@ -161,6 +219,10 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
       return { text: `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`, isExpired: false, status: 'trial' };
     }
 
+    if (shop.status === 'locked') {
+        return { text: "Plan Expired", isExpired: true, status: 'locked' };
+    }
+
     return null;
   };
 
@@ -175,9 +237,10 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
                     <CardDescription>Your current plan and status.</CardDescription>
                 </div>
                 <div>
-                    {subInfo?.status === 'trial' ? (
+                    {subInfo?.status === 'trial' || subInfo?.status === 'locked' ? (
                         <Button onClick={handleActivateSubscription} disabled={isActivating}>
-                            {isActivating ? 'Activating...' : 'Activate Basic Plan'}
+                            {isActivating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isActivating ? 'Processing...' : 'Activate Basic Plan'}
                         </Button>
                     ) : (
                         <Button asChild>

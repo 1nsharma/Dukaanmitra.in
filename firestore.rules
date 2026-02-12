@@ -92,6 +92,18 @@ service cloud.firestore {
       // DELETE: Only super admins can delete user profiles.
       allow delete: if isSuperAdmin();
     }
+    
+    /**
+     * PAYMENT ORDERS
+     */
+    match /orders/{orderId} {
+        // CREATE: A user can create their own order document.
+        allow create: if request.auth.uid == request.resource.data.userId;
+        // READ: A user can read their own orders. Super admins can read all.
+        allow read: if isSuperAdmin() || request.auth.uid == resource.data.userId;
+        // UPDATE/DELETE: Only backend with admin rights can update/delete.
+        allow update, delete: if false;
+    }
 
     /**
      * SHOPS and Subcollections
