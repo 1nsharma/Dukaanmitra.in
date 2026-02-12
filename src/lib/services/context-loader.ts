@@ -1,5 +1,5 @@
 
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 import type { Shop } from '@/docs/backend-types';
@@ -10,34 +10,33 @@ let firestore = getFirestore(initializeFirebase().firebaseApp);
 
 interface LoadContextResult {
   success: boolean;
+  shop?: Shop;
   shopContext?: ShopContext;
   message?: string;
 }
 
 /**
- * Loads the full context for a specific shop based on its WhatsApp Business number.
- * This is a critical service that isolates data per shop.
- * @param whatsappBusinessNumber - The WhatsApp number associated with the shop.
- * @returns An object containing the shop context or an error message.
+ * Loads the full context for a specific shop based on its unique shop code (document ID).
+ * This is a critical service that isolates data per shop in a single-master-number environment.
+ * @param shopCode - The unique ID of the shop (e.g., from a parsed #SHP123 code).
+ * @returns An object containing the shop data, AI context, or an error message.
  */
-export async function loadShopContextByWhatsappNumber(whatsappBusinessNumber: string): Promise<LoadContextResult> {
-  console.log(`[ContextLoader] Loading context for WhatsApp number: ${whatsappBusinessNumber}`);
+export async function loadShopAndContextByShopCode(shopCode: string): Promise<LoadContextResult> {
+  console.log(`[ContextLoader] Loading context for Shop Code: ${shopCode}`);
   
-  if (!whatsappBusinessNumber) {
-    return { success: false, message: 'WhatsApp business number is missing.' };
+  if (!shopCode) {
+    return { success: false, message: 'Shop code is missing.' };
   }
 
   try {
-    const shopsRef = collection(firestore, 'shops');
-    const q = query(shopsRef, where('whatsapp', '==', whatsappBusinessNumber), limit(1));
-    const querySnapshot = await getDocs(q);
+    const shopRef = doc(firestore, 'shops', shopCode);
+    const shopDoc = await getDoc(shopRef);
 
-    if (querySnapshot.empty) {
-      console.warn(`[ContextLoader] No shop found with WhatsApp number: ${whatsappBusinessNumber}`);
-      return { success: false, message: 'Shop not found for this number.' };
+    if (!shopDoc.exists()) {
+      console.warn(`[ContextLoader] No shop found with code: ${shopCode}`);
+      return { success: false, message: 'Shop not found for this code.' };
     }
 
-    const shopDoc = querySnapshot.docs[0];
     const shopData = shopDoc.data() as Shop;
 
     // TODO: In a real system, product catalogs would be loaded from a separate collection.
@@ -49,7 +48,6 @@ export async function loadShopContextByWhatsappNumber(whatsappBusinessNumber: st
     if (shopData.settings?.working_hours?.start && shopData.settings?.working_hours?.end) {
         timingsString = `Subah ${shopData.settings.working_hours.start} se raat ${shopData.settings.working_hours.end} tak`;
     }
-
 
     // Build the ShopContext object required by the AI agent
     const shopContext: ShopContext = {
@@ -66,10 +64,10 @@ export async function loadShopContextByWhatsappNumber(whatsappBusinessNumber: st
     };
     
     console.log(`[ContextLoader] Successfully loaded context for shop: ${shopData.name} (${shopDoc.id})`);
-    return { success: true, shopContext };
+    return { success: true, shop: shopData, shopContext };
 
   } catch (error) {
-    console.error('[ContextLoader] Error fetching shop from Firestore:', error);
+    console.error(`[ContextLoader] Error fetching shop from Firestore for code ${shopCode}:`, error);
     return { success: false, message: 'Database query failed.' };
   }
 }
