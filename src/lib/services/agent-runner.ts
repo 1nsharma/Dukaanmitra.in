@@ -57,7 +57,7 @@ export async function processBillMessage(message: NormalizedMessage) {
         if (!shopCodeMatch) {
             console.warn(`[Processor] No shop code found.`);
             await sendWhatsAppMessage(message.from, "Kripya shop code ke saath bill bhejein. Example: HI #SHP123");
-            await addDoc(logCollection, { event: 'missing_shop_code', phone: message.from, text: message.text, createdAt: serverTimestamp() });
+            await addDoc(logCollection, { id: doc(logCollection).id, event: 'missing_shop_code', details: { phone: message.from, text: message.text }, createdAt: serverTimestamp() });
             return;
         }
         const shopCode = shopCodeMatch[1].toUpperCase();
@@ -70,7 +70,7 @@ export async function processBillMessage(message: NormalizedMessage) {
         if (!shopDoc.exists()) {
             console.warn(`[Processor] Invalid shop code: ${shopCode}`);
             await sendWhatsAppMessage(message.from, "Invalid shop code. Please check and try again.");
-            await addDoc(logCollection, { event: 'invalid_shop_code', shopCode, phone: message.from, createdAt: serverTimestamp() });
+            await addDoc(logCollection, { id: doc(logCollection).id, event: 'invalid_shop_code', details: { shopCode, phone: message.from }, createdAt: serverTimestamp() });
             return;
         }
         const shop = shopDoc.data();
@@ -79,7 +79,7 @@ export async function processBillMessage(message: NormalizedMessage) {
         if (shop.status === 'locked' || shop.status === 'suspended') {
             console.log(`[Processor] Shop ${shopCode} is locked. Blocking message.`);
             await sendWhatsAppMessage(message.from, "This shop's DukaanMitra plan has expired. Please contact the owner to continue service.");
-            await addDoc(logCollection, { event: 'shop_locked', shopId: shopCode, phone: message.from, createdAt: serverTimestamp() });
+            await addDoc(logCollection, { id: doc(logCollection).id, event: 'shop_locked', details: { shopId: shopCode, phone: message.from }, createdAt: serverTimestamp() });
             return;
         }
 
@@ -87,7 +87,7 @@ export async function processBillMessage(message: NormalizedMessage) {
         const parsedBill = parseBill(cleanedQuery);
         if (!parsedBill) {
             console.log(`[Processor] No amount found in message. Not a bill. Message: "${cleanedQuery}"`);
-            await addDoc(logCollection, { event: 'non_bill_message', shopId: shopCode, phone: message.from, text: cleanedQuery, createdAt: serverTimestamp() });
+            await addDoc(logCollection, { id: doc(logCollection).id, event: 'non_bill_message', details: { shopId: shopCode, phone: message.from, text: cleanedQuery }, createdAt: serverTimestamp() });
             return;
         }
 
@@ -166,12 +166,12 @@ export async function processBillMessage(message: NormalizedMessage) {
         
         // 6. Send reply
         await sendWhatsAppMessage(customerPhone, replyMessage);
-        await addDoc(logCollection, { event: 'bill_processed_successfully', shopId: shopCode, phone: customerPhone, amount, items, type, createdAt: serverTimestamp() });
+        await addDoc(logCollection, { id: doc(logCollection).id, event: 'bill_processed_successfully', details: { shopId: shopCode, phone: customerPhone, amount, items, type }, createdAt: serverTimestamp() });
 
     } catch (error) {
         console.error('[Processor] Unhandled error during message processing:', error);
         await sendWhatsAppMessage(message.from, "Sorry, an unexpected error occurred. Please try again later.");
-        await addDoc(logCollection, { event: 'processing_error', error: (error as Error).message, text: message.text, createdAt: serverTimestamp() });
+        await addDoc(logCollection, { id: doc(logCollection).id, event: 'processing_error', details: { error: (error as Error).message, text: message.text }, createdAt: serverTimestamp() });
     }
 }
 

@@ -92,6 +92,7 @@ Dhanyavaad 🙂
             // Log notification and update customer in a batch
             const notificationRef = doc(collection(firestore, 'notifications'));
             batch.set(notificationRef, {
+                id: notificationRef.id,
                 shopId: shopId,
                 customerPhone: customer.phone,
                 type: 'PAYMENT_REMINDER',
