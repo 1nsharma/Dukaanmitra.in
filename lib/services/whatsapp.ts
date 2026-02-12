@@ -25,11 +25,11 @@ export function handleWhatsAppMessage(body: any) {
                                 for (const message of change.value.messages) {
                                     
                                     const messageId = message.id;
-                                    const processedRef = doc(firestore, 'processedMessages', messageId);
-                                    const processedDoc = await getDoc(processedRef);
+                                    const interactionRef = doc(firestore, 'interactions', messageId);
+                                    const interactionDoc = await getDoc(interactionRef);
 
-                                    if (processedDoc.exists()) {
-                                        console.log(`[WhatsAppService] Duplicate message ID ${messageId} received. Ignoring.`);
+                                    if (interactionDoc.exists()) {
+                                        console.log(`[WhatsAppService] Duplicate interaction ID ${messageId} received. Ignoring.`);
                                         continue;
                                     }
                                     
@@ -44,14 +44,17 @@ export function handleWhatsAppMessage(body: any) {
                                         const shopCodeMatch = normalizedMessage.text.match(/#(\w+)/);
                                         const shopId = shopCodeMatch ? shopCodeMatch[1].toUpperCase() : undefined;
                                         
-                                        // Mark message as processed immediately with enriched data
-                                        await setDoc(processedRef, {
-                                            messageId: messageId,
-                                            processedAt: serverTimestamp(),
-                                            from: normalizedMessage.from,
-                                            shopId: shopId,
-                                            raw_text: normalizedMessage.text,
-                                        });
+                                        // Create a structured interaction log
+                                        const interactionData = {
+                                            interactionId: messageId,
+                                            shop_id: shopId,
+                                            sender_phone: normalizedMessage.from,
+                                            sender_type: 'customer',
+                                            raw_message: normalizedMessage.text,
+                                            processing_status: 'received',
+                                            created_at: serverTimestamp(),
+                                        };
+                                        await setDoc(interactionRef, interactionData);
                                         
                                         // Route to the deterministic bill processor
                                         await processBillMessage(normalizedMessage);
@@ -113,3 +116,5 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
         console.error('[WhatsAppService] Exception while sending message:', error);
     }
 }
+
+    

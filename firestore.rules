@@ -45,9 +45,11 @@ service cloud.firestore {
         allow read, update, delete: if isSuperAdmin();
     }
     
-    match /processedMessages/{messageId} {
-        // Only allow creation by the backend. No client access.
-        allow read, write: if false;
+    match /interactions/{interactionId} {
+        // Written by backend services, can be read by super admins for auditing.
+        allow create: if true; 
+        allow read: if isSuperAdmin();
+        allow update, delete: if false; // Interactions should be immutable logs.
     }
 
     match /logs/{logId} {
@@ -141,3 +143,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
