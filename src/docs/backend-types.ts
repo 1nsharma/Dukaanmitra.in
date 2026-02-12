@@ -81,6 +81,7 @@ export type LedgerEntry = {
   type: "credit" | "payment";
   source?: "whatsapp" | "app" | "manual" | "app-ai";
   createdAt: any;
+  raw_text?: string;
 };
 
 export type Order = {
@@ -119,6 +120,9 @@ export type Comment = {
 export type ProcessedMessage = {
   messageId: string;
   processedAt: any;
+  shopId?: string;
+  from: string;
+  raw_text?: string;
 };
 
 export type Log = {

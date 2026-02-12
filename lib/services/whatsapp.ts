@@ -24,14 +24,13 @@ export function handleWhatsAppMessage(body: any) {
                             if (change.field === 'messages' && change.value.messages) {
                                 for (const message of change.value.messages) {
                                     
-                                    // 1. Duplicate Message Protection
                                     const messageId = message.id;
                                     const processedRef = doc(firestore, 'processedMessages', messageId);
                                     const processedDoc = await getDoc(processedRef);
 
                                     if (processedDoc.exists()) {
                                         console.log(`[WhatsAppService] Duplicate message ID ${messageId} received. Ignoring.`);
-                                        continue; // Skip already processed message
+                                        continue;
                                     }
                                     
                                     if (message.type === 'text') {
@@ -41,11 +40,19 @@ export function handleWhatsAppMessage(body: any) {
                                             text: message.text.body,
                                             messageId: message.id,
                                         };
+
+                                        const shopCodeMatch = normalizedMessage.text.match(/#(\w+)/);
+                                        const shopId = shopCodeMatch ? shopCodeMatch[1].toUpperCase() : undefined;
                                         
-                                        // Mark message as processed immediately
-                                        await setDoc(processedRef, { processedAt: serverTimestamp() });
+                                        // Mark message as processed immediately with enriched data
+                                        await setDoc(processedRef, {
+                                            processedAt: serverTimestamp(),
+                                            from: normalizedMessage.from,
+                                            shopId: shopId,
+                                            raw_text: normalizedMessage.text,
+                                        });
                                         
-                                        // 2. Route to the deterministic bill processor
+                                        // Route to the deterministic bill processor
                                         await processBillMessage(normalizedMessage);
                                     }
                                 }
@@ -64,7 +71,7 @@ export function handleWhatsAppMessage(body: any) {
 
 /**
  * Sends a reply back to the user via the WhatsApp Business API.
- * @param to - The recipient's phone number in international format (e.g., +919876543210).
+ * @param to - The recipient's phone number.
  * @param text - The message text to send.
  */
 export async function sendWhatsAppMessage(to: string, text: string): Promise<void> {
@@ -79,7 +86,7 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
     
     const payload = {
         messaging_product: 'whatsapp',
-        to: to.replace('+',''), // API requires number without the '+'
+        to: to,
         type: 'text',
         text: { body: text },
     };

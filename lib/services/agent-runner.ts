@@ -80,9 +80,9 @@ export async function processBillMessage(message: NormalizedMessage) {
             console.log(`[Processor] Shop ${shopCode} is locked. Blocking message.`);
             // Special trigger for payment
             if (cleanedQuery.trim().toUpperCase() === 'PAY') {
-                await sendWhatsAppMessage(message.from, "To reactivate your plan, please complete your payment here: [Your Payment Link]"); // TODO: Add real payment link
+                await sendWhatsAppMessage(message.from, "Aapka plan expire ho gaya hai. Apne account ko reactivate karne ke liye, kripya apne DukaanMitra dashboard me login karein aur payment complete karein.");
             } else {
-                await sendWhatsAppMessage(message.from, "This shop's DukaanMitra plan has expired. Please contact the owner to continue service.");
+                await sendWhatsAppMessage(message.from, "Aapka DukaanMitra plan expire ho gaya hai. Service continue karne ke liye 'PAY' likh kar bhejein.");
             }
             await addDoc(logCollection, { id: doc(logCollection).id, event: 'shop_locked', details: { shopId: shopCode, phone: message.from }, createdAt: serverTimestamp() });
             return;
@@ -166,6 +166,7 @@ export async function processBillMessage(message: NormalizedMessage) {
                 type: type,
                 source: 'whatsapp',
                 createdAt: serverTimestamp(),
+                raw_text: message.text, // Store the raw message text
             });
         });
         
