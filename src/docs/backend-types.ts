@@ -36,7 +36,7 @@ export type Shop = {
   mrr?: number;
   lastActive?: any;
   plan?: "free" | "basic" | "pro" | "enterprise";
-  status?: "active" | "trial" | "suspended" | "cancelled";
+  status?: "active" | "trial" | "suspended" | "cancelled" | "locked";
   trial_ends_at?: any;
   paid_till?: any;
   created_at?: any;
@@ -61,13 +61,16 @@ export type Customer = {
   name?: string;
   first_visit?: any;
   last_visit?: any;
+  lastPaymentDate?: any;
   visit_count?: number;
   total_spent?: number;
   totalUdhaar?: number;
-  status?: "new" | "regular" | "vip" | "churned" | "blocked";
+  status?: "NEW" | "REPEAT" | "LOYAL" | "churned" | "blocked";
   tags?: string[];
   created_at?: any;
   updated_at?: any;
+  lastReminderSentAt?: any;
+  reminderCount?: number;
 };
 
 export type LedgerEntry = {
@@ -101,4 +104,25 @@ export type Comment = {
   name: string;
   message: string;
   createdAt: any;
+};
+
+export type ProcessedMessage = {
+  messageId: string;
+  processedAt: any;
+};
+
+export type Log = {
+  id: string;
+  event: string;
+  details: object;
+  createdAt: any;
+};
+
+export type Notification = {
+  id: string;
+  shopId: string;
+  customerPhone: string;
+  type: "PAYMENT_REMINDER" | "DAILY_SUMMARY";
+  sentAt: any;
+  status: "sent" | "failed" | "delivered" | "read";
 };

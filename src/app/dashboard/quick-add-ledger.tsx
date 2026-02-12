@@ -89,19 +89,27 @@ export default function QuickAddLedger({ shopId, onEntryAdded }: QuickAddLedgerP
                 status: 'new',
                 first_visit: serverTimestamp(),
                 last_visit: serverTimestamp(),
+                lastPaymentDate: parsed.type === 'payment' ? serverTimestamp() : null,
                 created_at: serverTimestamp(),
                 updated_at: serverTimestamp(),
+                reminderCount: 0,
             };
             batch.set(customerRef, newCustomerData);
         } else {
             // Case 2: EXISTING CUSTOMER
-             const updatedCustomerData = {
+            const updatedCustomerData: any = {
                 totalUdhaar: increment(udhaarAmount),
                 total_spent: increment(parsed.amount),
                 visit_count: increment(1),
                 last_visit: serverTimestamp(),
                 updated_at: serverTimestamp(),
             };
+
+            if (parsed.type === 'payment') {
+                updatedCustomerData.lastPaymentDate = serverTimestamp();
+                updatedCustomerData.reminderCount = 0; // Reset on payment
+            }
+
             batch.update(customerRef, updatedCustomerData);
         }
 

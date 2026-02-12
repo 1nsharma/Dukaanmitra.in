@@ -266,6 +266,11 @@
           "type": "string",
           "format": "date-time"
         },
+        "lastPaymentDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the last successful payment made by the customer."
+        },
         "visit_count": {
           "type": "number"
         },
@@ -299,6 +304,15 @@
         "updated_at": {
           "type": "string",
           "format": "date-time"
+        },
+        "lastReminderSentAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the last payment reminder sent."
+        },
+        "reminderCount": {
+          "type": "number",
+          "description": "Number of reminders sent for the current outstanding balance."
         }
       },
       "required": [
@@ -414,6 +428,26 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "event", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Represents a system-sent notification, like a payment reminder.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "shopId": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["PAYMENT_REMINDER", "DAILY_SUMMARY"]
+        },
+        "sentAt": { "type": "string", "format": "date-time" },
+        "status": {
+          "type": "string",
+          "enum": ["sent", "failed", "delivered", "read"]
+        }
+      },
+      "required": ["id", "shopId", "customerPhone", "type", "sentAt", "status"]
     }
   },
   "auth": {
@@ -546,6 +580,15 @@
           "schema": { "$ref": "#/backend/entities/Log" },
           "description": "Stores system event logs for debugging and auditing.",
           "params": [{ "name": "logId", "description": "Unique ID for the log entry." }]
+        }
+      },
+      {
+        "path": "/notifications/{notificationId}",
+        "definition": {
+          "entityName": "Notification",
+          "schema": { "$ref": "#/backend/entities/Notification" },
+          "description": "Stores system-sent notifications like payment reminders.",
+          "params": [{ "name": "notificationId", "description": "Unique ID for the notification." }]
         }
       }
     ],

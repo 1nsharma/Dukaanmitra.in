@@ -46,17 +46,23 @@ service cloud.firestore {
     }
     
     match /processedMessages/{messageId} {
-        // Only allow creation. The webhook is a trusted environment.
-        // This rule prevents modification or deletion and relies on the unguessable nature of message IDs.
-        allow create: if true;
-        allow read, update, delete: if false;
+        // Only allow creation by the backend. No client access.
+        allow read, write: if false;
     }
 
     match /logs/{logId} {
-        // Logs are append-only. For now, only super admins can create them for testing.
-        // In production, this would be a service account.
-        allow create: if true; // Open for cloud functions
+        // Logs are append-only and can only be created by the backend. Super admins can read.
+        allow create: if true; 
         allow read: if isSuperAdmin();
+        allow update, delete: if false;
+    }
+    
+    match /notifications/{notificationId} {
+        // Notifications are written by backend only.
+        allow create: if true;
+        // Shop owner can read their own notifications. Super admin can read all.
+        allow read: if isSuperAdmin() || 
+                    (request.auth != null && get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.owner_id == request.auth.uid);
         allow update, delete: if false;
     }
 

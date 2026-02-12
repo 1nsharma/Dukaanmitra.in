@@ -77,6 +77,7 @@ export default function AddLedgerEntryForm({ shopId, onFinished }: AddLedgerEntr
       const ledgerCollection = collection(firestore, "shops", shopId, "ledger");
       const newLedgerRef = doc(ledgerCollection);
       const ledgerData = {
+          id: newLedgerRef.id,
           shop_id: shopId,
           customerPhone: values.customer_phone,
           customerName: customer.name, // Denormalized
@@ -91,13 +92,19 @@ export default function AddLedgerEntryForm({ shopId, onFinished }: AddLedgerEntr
       // 2. Update Customer Stats
       const customerRef = doc(firestore, "shops", shopId, "customers", values.customer_phone);
       const udhaarAmount = values.type === 'credit' ? values.amount : -values.amount;
-      const updatedCustomerData = {
+      const updatedCustomerData: any = {
         visit_count: increment(1),
         total_spent: increment(values.amount),
         totalUdhaar: increment(udhaarAmount),
         last_visit: serverTimestamp(),
         updated_at: serverTimestamp(),
       };
+      
+      if (values.type === 'payment') {
+          updatedCustomerData.lastPaymentDate = serverTimestamp();
+          updatedCustomerData.reminderCount = 0; // Reset reminder count on payment
+      }
+
       batch.update(customerRef, updatedCustomerData);
 
       try {
@@ -214,5 +221,3 @@ export default function AddLedgerEntryForm({ shopId, onFinished }: AddLedgerEntr
     </Form>
   );
 }
-
-    

@@ -20,17 +20,23 @@ interface NormalizedMessage {
 
 /**
  * Parses a bill from a text message.
- * Extracts the first number as the amount and the rest as items.
+ * Extracts the first number as the amount, identifies payment keywords, and the rest as items.
  * @param text The message text.
  * @returns Parsed bill information or null if no amount is found.
  */
-function parseBill(text: string): { amount: number; items: string } | null {
+function parseBill(text: string): { amount: number; items: string; type: 'credit' | 'payment' } | null {
+    const paymentKeywords = /\b(paid|jama|diya)\b/i;
+    const isPayment = paymentKeywords.test(text);
+    
+    // Remove keywords for cleaner parsing
+    const cleanText = text.replace(paymentKeywords, '').trim();
+
     // Regex to find the first number (integer or decimal) and capture the rest of the string.
-    const match = text.match(/(\d+\.?\d*)\s*(.*)/);
+    const match = cleanText.match(/(\d+\.?\d*)\s*(.*)/);
     if (match) {
         const amount = parseFloat(match[1]);
-        const items = match[2].trim() || 'Bill Entry';
-        return { amount, items };
+        const items = match[2].trim() || (isPayment ? 'Payment Received' : 'Bill Entry');
+        return { amount, items, type: isPayment ? 'payment' : 'credit' };
     }
     return null;
 }
@@ -81,13 +87,11 @@ export async function processBillMessage(message: NormalizedMessage) {
         const parsedBill = parseBill(cleanedQuery);
         if (!parsedBill) {
             console.log(`[Processor] No amount found in message. Not a bill. Message: "${cleanedQuery}"`);
-            // For Raasta-1, we can choose to either ignore or send to AI for general chat.
-            // For now, we ignore to keep it simple.
             await addDoc(logCollection, { event: 'non_bill_message', shopId: shopCode, phone: message.from, text: cleanedQuery, createdAt: serverTimestamp() });
             return;
         }
 
-        const { amount, items } = parsedBill;
+        const { amount, items, type } = parsedBill;
         const customerPhone = message.from;
         
         let replyMessage = '';
@@ -99,6 +103,8 @@ export async function processBillMessage(message: NormalizedMessage) {
 
             const customerDoc = await transaction.get(customerRef);
             let visitCount = 0;
+            
+            const udhaarAmount = type === 'credit' ? amount : -amount;
 
             if (!customerDoc.exists()) {
                 // New Customer
@@ -109,10 +115,13 @@ export async function processBillMessage(message: NormalizedMessage) {
                     name: `Customer ${customerPhone.slice(-4)}`, // Default name
                     visit_count: 1,
                     total_spent: amount,
+                    totalUdhaar: udhaarAmount,
                     last_visit: serverTimestamp(),
+                    lastPaymentDate: type === 'payment' ? serverTimestamp() : null,
                     status: 'NEW',
                     created_at: serverTimestamp(),
                     updated_at: serverTimestamp(),
+                    reminderCount: 0,
                 });
             } else {
                 // Existing Customer
@@ -124,23 +133,32 @@ export async function processBillMessage(message: NormalizedMessage) {
                 } else {
                     replyMessage = "Dhanyavaad! Aap phir aaye 😊";
                 }
-
-                transaction.update(customerRef, {
+                
+                const customerUpdateData: any = {
                     visit_count: increment(1),
                     total_spent: increment(amount),
+                    totalUdhaar: increment(udhaarAmount),
                     last_visit: serverTimestamp(),
                     status: visitCount + 1 >= 5 ? 'LOYAL' : 'REPEAT',
                     updated_at: serverTimestamp()
-                });
+                };
+
+                if (type === 'payment') {
+                    customerUpdateData.lastPaymentDate = serverTimestamp();
+                    customerUpdateData.reminderCount = 0; // Reset reminder count on payment
+                }
+
+                transaction.update(customerRef, customerUpdateData);
             }
 
-            // Create ledger entry (assuming all entries are credit for now)
+            // Create ledger entry
             transaction.set(ledgerRef, {
+                id: ledgerRef.id,
                 shop_id: shopCode,
                 customerPhone: customerPhone,
                 amount: amount,
                 item: items,
-                type: 'credit', // Defaulting to credit
+                type: type,
                 source: 'whatsapp',
                 createdAt: serverTimestamp(),
             });
@@ -148,7 +166,7 @@ export async function processBillMessage(message: NormalizedMessage) {
         
         // 6. Send reply
         await sendWhatsAppMessage(customerPhone, replyMessage);
-        await addDoc(logCollection, { event: 'bill_processed_successfully', shopId: shopCode, phone: customerPhone, amount, items, createdAt: serverTimestamp() });
+        await addDoc(logCollection, { event: 'bill_processed_successfully', shopId: shopCode, phone: customerPhone, amount, items, type, createdAt: serverTimestamp() });
 
     } catch (error) {
         console.error('[Processor] Unhandled error during message processing:', error);
