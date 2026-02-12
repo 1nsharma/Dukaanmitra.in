@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import type { Shop } from '@/docs/backend-types';
 import { Loader2, MoreHorizontal, Eye, Edit, Lock, Unlock } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -63,6 +63,7 @@ const renderStatusBadge = (status?: string) => {
 export default function BusinessesTable() {
     const firestore = useFirestore();
     const { toast } = useToast();
+    const { user: currentUser } = useUser();
     const [isPending, startTransition] = useTransition();
     const [editingShop, setEditingShop] = useState<Shop | null>(null);
 
@@ -73,10 +74,11 @@ export default function BusinessesTable() {
     const { data: shops, isLoading } = useCollection<Shop>(shopsQuery);
     
     const handleStatusChange = (shopId: string, currentStatus: Shop['status']) => {
+        if (!currentUser) return;
         const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
         startTransition(async () => {
             try {
-                await updateShopStatus(firestore, shopId, newStatus);
+                await updateShopStatus(firestore, currentUser.uid, shopId, newStatus);
                 toast({
                     title: 'Success',
                     description: `Business has been ${newStatus}.`,

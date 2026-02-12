@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useTransition } from 'react';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { type Shop } from '@/docs/backend-types';
 import {
@@ -46,6 +46,7 @@ export default function EditBusinessForm({ shop, onFinished }: EditBusinessFormP
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const firestore = useFirestore();
+  const { user: currentUser } = useUser();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -59,9 +60,10 @@ export default function EditBusinessForm({ shop, onFinished }: EditBusinessFormP
   });
 
   const onSubmit = (values: FormValues) => {
+    if (!currentUser) return;
     startTransition(async () => {
       try {
-        await updateBusinessDetails(firestore, shop.id, values);
+        await updateBusinessDetails(firestore, currentUser.uid, shop.id, values);
         toast({
           title: 'Business Updated',
           description: `${shop.name} has been successfully updated.`,

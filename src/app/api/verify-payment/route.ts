@@ -79,6 +79,22 @@ export async function POST(request: NextRequest) {
           paid_till: addMonths(new Date(), 1),
           updated_at: new Date(),
         });
+        
+        // Create an audit log
+        const logRef = firestore.collection('logs').doc();
+        transaction.set(logRef, {
+            id: logRef.id,
+            event: 'payment_verified',
+            createdAt: new Date(),
+            details: {
+                shopId,
+                userId,
+                plan,
+                amount: payment.amount / 100,
+                razorpayPaymentId: payment.id,
+                message: `Subscription activated for shop ${shopId}.`
+            }
+        });
       });
       
       console.log(`Successfully processed payment for Shop ID: ${shopId}`);

@@ -1,25 +1,41 @@
 
 'use client';
 
-import { doc, updateDoc, Firestore, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, Firestore, serverTimestamp, collection, addDoc } from 'firebase/firestore';
 import { type UserProfile, type Shop } from '@/docs/backend-types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+
+
+const logAdminAction = (firestore: Firestore, actorId: string, event: string, details: object) => {
+    const logData = {
+        id: doc(collection(firestore, 'logs')).id,
+        event,
+        actorId,
+        createdAt: serverTimestamp(),
+        details,
+    };
+    addDoc(collection(firestore, 'logs'), logData).catch(err => {
+        console.error("CRITICAL: Failed to write admin audit log:", err);
+    });
+};
 
 
 /**
  * Updates a user's role in Firestore.
  * This action is protected by security rules and should only succeed if the caller is a super_admin.
  * Throws an error on failure and emits a contextual permission error.
- * @param firestore - The Firestore instance.
- * @param uid - The UID of the user to update.
- * @param role - The new role to assign.
  */
-export const updateUserRole = async (firestore: Firestore, uid: string, role: UserProfile['role']) => {
-  const userRef = doc(firestore, 'users', uid);
+export const updateUserRole = async (firestore: Firestore, actorId: string, targetUid: string, role: UserProfile['role']) => {
+  const userRef = doc(firestore, 'users', targetUid);
   const data = { role };
   try {
     await updateDoc(userRef, data);
+    logAdminAction(firestore, actorId, 'admin_update_user_role', {
+        targetUid,
+        newRole: role,
+        message: `Admin ${actorId} changed role of user ${targetUid} to ${role}.`
+    });
   } catch (serverError: any) {
     if (serverError.code === 'permission-denied') {
       const permissionError = new FirestorePermissionError({
@@ -29,7 +45,6 @@ export const updateUserRole = async (firestore: Firestore, uid: string, role: Us
       });
       errorEmitter.emit('permission-error', permissionError);
     }
-    // Re-throw for the UI to handle
     throw serverError;
   }
 };
@@ -37,16 +52,17 @@ export const updateUserRole = async (firestore: Firestore, uid: string, role: Us
 /**
  * Updates a user's status in Firestore.
  * This action is protected by security rules and should only succeed if the caller is a super_admin.
- * Throws an error on failure and emits a contextual permission error.
- * @param firestore - The Firestore instance.
- * @param uid - The UID of the user to update.
- * @param status - The new status to assign.
  */
-export const updateUserStatus = async (firestore: Firestore, uid: string, status: UserProfile['status']) => {
-  const userRef = doc(firestore, 'users', uid);
+export const updateUserStatus = async (firestore: Firestore, actorId: string, targetUid: string, status: UserProfile['status']) => {
+  const userRef = doc(firestore, 'users', targetUid);
   const data = { status };
   try {
     await updateDoc(userRef, data);
+    logAdminAction(firestore, actorId, 'admin_update_user_status', {
+        targetUid,
+        newStatus: status,
+        message: `Admin ${actorId} changed status of user ${targetUid} to ${status}.`
+    });
   } catch (serverError: any) {
     if (serverError.code === 'permission-denied') {
       const permissionError = new FirestorePermissionError({
@@ -56,7 +72,6 @@ export const updateUserStatus = async (firestore: Firestore, uid: string, status
       });
       errorEmitter.emit('permission-error', permissionError);
     }
-    // Re-throw for the UI to handle
     throw serverError;
   }
 };
@@ -65,15 +80,17 @@ export const updateUserStatus = async (firestore: Firestore, uid: string, status
 /**
  * Updates a shop's status in Firestore.
  * This action is protected by security rules and should only succeed if the caller is a super_admin.
- * @param firestore - The Firestore instance.
- * @param shopId - The ID of the shop to update.
- * @param status - The new status to assign.
  */
-export const updateShopStatus = async (firestore: Firestore, shopId: string, status: Shop['status']) => {
+export const updateShopStatus = async (firestore: Firestore, actorId: string, shopId: string, status: Shop['status']) => {
     const shopRef = doc(firestore, 'shops', shopId);
     const data = { status };
     try {
         await updateDoc(shopRef, data);
+        logAdminAction(firestore, actorId, 'admin_update_shop_status', {
+            shopId,
+            newStatus: status,
+            message: `Admin ${actorId} changed status of shop ${shopId} to ${status}.`
+        });
     } catch (serverError: any) {
         if (serverError.code === 'permission-denied') {
             const permissionError = new FirestorePermissionError({
@@ -90,20 +107,23 @@ export const updateShopStatus = async (firestore: Firestore, shopId: string, sta
 /**
  * Updates details for a specific shop.
  * This action is protected by security rules and should only succeed if the caller is a super_admin.
- * @param firestore - The Firestore instance.
- * @param shopId - The ID of the shop to update.
- * @param data - The data to update.
  */
-export const updateBusinessDetails = async (firestore: Firestore, shopId: string, data: Partial<Shop>) => {
+export const updateBusinessDetails = async (firestore: Firestore, actorId: string, shopId: string, data: Partial<Shop>) => {
     const shopRef = doc(firestore, 'shops', shopId);
+    const updateData = { ...data, updated_at: serverTimestamp() };
     try {
-        await updateDoc(shopRef, { ...data, updated_at: serverTimestamp() });
+        await updateDoc(shopRef, updateData);
+        logAdminAction(firestore, actorId, 'admin_update_shop_details', {
+            shopId,
+            updatedFields: Object.keys(data),
+            message: `Admin ${actorId} updated details for shop ${shopId}.`
+        });
     } catch (serverError: any) {
         if (serverError.code === 'permission-denied') {
             const permissionError = new FirestorePermissionError({
                 path: shopRef.path,
                 operation: 'update',
-                requestResourceData: data,
+                requestResourceData: updateData,
             });
             errorEmitter.emit('permission-error', permissionError);
         }
