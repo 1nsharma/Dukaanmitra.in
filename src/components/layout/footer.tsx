@@ -66,8 +66,8 @@ export default function Footer() {
            <div className="md:col-span-2">
             <h4 className="font-bold text-foreground mb-4 uppercase tracking-wider">Legal</h4>
             <ul className="space-y-3 text-muted-foreground">
-              <li><Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-service" className="hover:text-primary transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
 
