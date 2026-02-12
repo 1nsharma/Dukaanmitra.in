@@ -83,6 +83,8 @@ export type LedgerEntry = {
   source?: "whatsapp" | "app" | "manual" | "app-ai";
   createdAt: any;
   raw_text?: string;
+  source_model_version?: string;
+  source_confidence?: number;
 };
 
 export type Order = {
@@ -118,12 +120,18 @@ export type Comment = {
   createdAt: any;
 };
 
-export type ProcessedMessage = {
-  messageId: string;
-  processedAt: any;
-  shopId?: string;
-  from: string;
-  raw_text?: string;
+export type Interaction = {
+  interactionId: string;
+  shop_id?: string;
+  sender_type?: "customer" | "shopkeeper" | "system";
+  sender_phone: string;
+  raw_message?: string;
+  detected_intent?: string;
+  extracted_entities?: object;
+  system_response?: string;
+  response_time_ms?: number;
+  processing_status?: "received" | "processing" | "processed" | "failed";
+  created_at: any;
 };
 
 export type Log = {
@@ -140,4 +148,15 @@ export type Notification = {
   type: "PAYMENT_REMINDER" | "DAILY_SUMMARY" | "SUBSCRIPTION_REMINDER";
   sentAt: any;
   status: "sent" | "failed" | "delivered" | "read";
+};
+
+export type GlobalMetrics = {
+  id: string;
+  mrr: number;
+  activeSubscriptions: number;
+  activeTrials: number;
+  lockedAccounts: number;
+  totalShops: number;
+  totalUsers: number;
+  updatedAt: any;
 };

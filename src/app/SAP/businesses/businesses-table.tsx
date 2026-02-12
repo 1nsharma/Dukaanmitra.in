@@ -5,12 +5,12 @@ import { useState } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import type { Shop } from '@/docs/backend-types';
-import { Loader2, MoreHorizontal, Eye, Edit, Lock, Unlock } from 'lucide-react';
+import { Loader2, MoreHorizontal, Eye, Edit, Lock, Unlock, AlertTriangle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { formatDistanceToNowStrict } from 'date-fns';
+import { format, formatDistanceToNowStrict, isFuture, differenceInDays } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useTransition } from 'react';
 import { updateShopStatus } from '@/firebase/admin-actions';
@@ -23,7 +23,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
   Dialog,
@@ -35,10 +34,13 @@ import {
 import { cn } from '@/lib/utils';
 import EditBusinessForm from './edit-business-form';
 
-const formatLastActive = (date: any) => {
-    if (!date) return 'Never';
+const formatDate = (date: any, isDistance = false) => {
+    if (!date) return 'N/A';
     const d = date.toDate ? date.toDate() : new Date(date);
-    return formatDistanceToNowStrict(d, { addSuffix: true });
+    if (isDistance) {
+        return formatDistanceToNowStrict(d, { addSuffix: true });
+    }
+    return format(d, 'dd MMM yyyy');
 };
 
 const renderPlanBadge = (plan?: string) => {
@@ -50,14 +52,22 @@ const renderPlanBadge = (plan?: string) => {
     }
 }
 
-const renderStatusBadge = (status?: string) => {
-    switch(status) {
+const renderStatusBadge = (shop: Shop) => {
+    if (shop.status === 'trial' && shop.trial_ends_at) {
+        const trialEndDate = shop.trial_ends_at.toDate ? shop.trial_ends_at.toDate() : new Date(shop.trial_ends_at);
+        const daysLeft = differenceInDays(trialEndDate, new Date());
+        if (isFuture(trialEndDate) && daysLeft <= 3) {
+            return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 flex items-center gap-1.5"><AlertTriangle className="h-3 w-3"/>Trial Ends Soon</Badge>;
+        }
+        return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">Trial</Badge>;
+    }
+
+    switch(shop.status) {
         case 'active': return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Active</Badge>;
-        case 'trial': return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">Trial</Badge>;
         case 'locked': return <Badge variant="destructive">Locked</Badge>;
         case 'suspended': return <Badge variant="destructive" className="bg-orange-500/20 text-orange-300 border-orange-500/30">Suspended</Badge>;
         case 'cancelled': return <Badge variant="secondary">Cancelled</Badge>;
-        default: return <Badge variant="outline">{status || 'N/A'}</Badge>;
+        default: return <Badge variant="outline">{shop.status || 'N/A'}</Badge>;
     }
 }
 
@@ -108,11 +118,11 @@ export default function BusinessesTable() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Business</TableHead>
-                  <TableHead>Owner</TableHead>
+                  <TableHead>Business / Owner</TableHead>
                   <TableHead>Plan</TableHead>
-                  <TableHead>MRR</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>MRR</TableHead>
+                  <TableHead>Paid Till / Trial Ends</TableHead>
                   <TableHead>Last Active</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -122,16 +132,15 @@ export default function BusinessesTable() {
                   <TableRow key={shop.id} className="hover:bg-muted/50 transition-colors">
                     <TableCell>
                       <div className="font-semibold">{shop.name}</div>
-                      <div className="text-xs text-muted-foreground">{shop.city || 'N/A'}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{shop.owner_name || 'N/A'}</div>
-                      <div className="text-xs text-muted-foreground">{shop.phone}</div>
+                      <div className="text-xs text-muted-foreground">{shop.owner_name || shop.phone}</div>
                     </TableCell>
                     <TableCell>{renderPlanBadge(shop.plan)}</TableCell>
+                    <TableCell>{renderStatusBadge(shop)}</TableCell>
                     <TableCell className="font-mono">₹{shop.mrr || 0}</TableCell>
-                    <TableCell>{renderStatusBadge(shop.status)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{formatLastActive(shop.lastActive)}</TableCell>
+                    <TableCell>
+                      {shop.status === 'trial' ? formatDate(shop.trial_ends_at) : formatDate(shop.paid_till)}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{formatDate(shop.lastActive, true)}</TableCell>
                     <TableCell className="text-right">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

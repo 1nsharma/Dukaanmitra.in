@@ -68,6 +68,13 @@ service cloud.firestore {
         allow update, delete: if false;
     }
 
+    match /metrics/{metricId} {
+        // Metrics are read-only for super admins.
+        allow read: if isSuperAdmin();
+        // Only backend functions should write to metrics. For safety, disable client writes.
+        allow write: if false;
+    }
+
     /**
      * USER PROFILES
      */
@@ -143,5 +150,3 @@ service cloud.firestore {
     }
   }
 }
-
-    

@@ -205,6 +205,22 @@
         "status": { "type": "string", "enum": ["sent", "failed", "delivered", "read"] }
       },
       "required": ["id", "shopId", "customerPhone", "type", "sentAt", "status"]
+    },
+    "GlobalMetrics": {
+      "title": "Global Metrics",
+      "description": "Aggregated real-time metrics for the entire platform, updated by backend functions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "mrr": { "type": "number", "description": "Monthly Recurring Revenue" },
+        "activeSubscriptions": { "type": "number" },
+        "activeTrials": { "type": "number" },
+        "lockedAccounts": { "type": "number" },
+        "totalShops": { "type": "number" },
+        "totalUsers": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "mrr", "activeSubscriptions", "activeTrials", "lockedAccounts", "totalShops", "totalUsers", "updatedAt"]
     }
   },
   "auth": {
@@ -222,9 +238,8 @@
       { "path": "/contactFormSubmissions/{submissionId}", "definition": { "schema": { "$ref": "#/entities/ContactFormSubmission" } } },
       { "path": "/interactions/{interactionId}", "definition": { "schema": { "$ref": "#/entities/Interaction" } } },
       { "path": "/logs/{logId}", "definition": { "schema": { "$ref": "#/entities/Log" } } },
-      { "path": "/notifications/{notificationId}", "definition": { "schema": { "$ref": "#/entities/Notification" } } }
+      { "path": "/notifications/{notificationId}", "definition": { "schema": { "$ref": "#/entities/Notification" } } },
+      { "path": "/metrics/{metricId}", "definition": { "schema": { "$ref": "#/entities/GlobalMetrics" } } }
     ]
   }
 }
-
-    
