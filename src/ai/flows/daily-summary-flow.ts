@@ -27,7 +27,7 @@ export const dailySummaryFlow = ai.defineFlow(
     console.log('[DailySummaryFlow] Starting daily summary and subscription management...');
     // Process all shops that are not cancelled or suspended
     const shopsRef = collection(firestore, 'shops');
-    const q = query(shopsRef, where('status', 'in', ['active', 'trial', 'locked']));
+    const q = query(shopsRef, where('status', 'in', ['active', 'trial']));
     
     const shopsSnapshot = await getDocs(q);
     if (shopsSnapshot.empty) {
@@ -53,12 +53,16 @@ export const dailySummaryFlow = ai.defineFlow(
       try {
         // --- Subscription & Trial Management Logic ---
         let shouldLock = false;
+        let lockReason = '';
+
         if (shop.status === 'trial' && shop.trial_ends_at && isPast(shop.trial_ends_at.toDate())) {
             console.log(`[DailySummaryFlow] Trial for shop ${shopId} has expired. Locking account.`);
             shouldLock = true;
+            lockReason = 'Trial Expired';
         } else if (shop.status === 'active' && shop.paid_till && isPast(shop.paid_till.toDate())) {
             console.log(`[DailySummaryFlow] Subscription for shop ${shopId} has expired. Locking account.`);
             shouldLock = true;
+            lockReason = 'Subscription Expired';
         }
 
         if (shouldLock) {
@@ -68,7 +72,7 @@ export const dailySummaryFlow = ai.defineFlow(
             
             // Send notification to shopkeeper about expiry
             if(ownerNumber) {
-                await sendWhatsAppMessage(ownerNumber, "Aapka DukaanMitra plan expire ho gaya hai. Service continue karne ke liye, apne customer number se 'PAY' likh kar bhejein.");
+                await sendWhatsAppMessage(ownerNumber, `Aapka DukaanMitra plan expire ho gaya hai (${lockReason}). Service continue karne ke liye, apne customer number se 'PAY' likh kar bhejein ya dashboard se payment karein.`);
             }
             
             // Don't send a summary to a newly locked shop

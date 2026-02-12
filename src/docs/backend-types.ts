@@ -132,7 +132,7 @@ export type Notification = {
   id: string;
   shopId: string;
   customerPhone: string;
-  type: "PAYMENT_REMINDER" | "DAILY_SUMMARY";
+  type: "PAYMENT_REMINDER" | "DAILY_SUMMARY" | "SUBSCRIPTION_REMINDER";
   sentAt: any;
   status: "sent" | "failed" | "delivered" | "read";
 };

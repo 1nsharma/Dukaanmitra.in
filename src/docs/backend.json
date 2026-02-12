@@ -187,7 +187,7 @@
         "id": { "type": "string" },
         "shopId": { "type": "string" },
         "customerPhone": { "type": "string" },
-        "type": { "type": "string", "enum": ["PAYMENT_REMINDER", "DAILY_SUMMARY"] },
+        "type": { "type": "string", "enum": ["PAYMENT_REMINDER", "DAILY_SUMMARY", "SUBSCRIPTION_REMINDER"] },
         "sentAt": { "type": "string", "format": "date-time" },
         "status": { "type": "string", "enum": ["sent", "failed", "delivered", "read"] }
       },

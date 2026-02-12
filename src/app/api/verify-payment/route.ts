@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
       const firestore = getFirestore();
       
       let shopOwnerPhone = '';
+      let shopName = '';
       const newExpiryDate = addMonths(new Date(), 1);
 
       // 3. Update Firestore in a transaction
@@ -72,7 +73,9 @@ export async function POST(request: NextRequest) {
         if (!shopDoc.exists) {
             throw new Error(`Shop with ID ${shopId} not found.`);
         }
-        shopOwnerPhone = shopDoc.data()?.phone;
+        const shopData = shopDoc.data();
+        shopOwnerPhone = shopData?.phone;
+        shopName = shopData?.name;
 
 
         // Update Order
@@ -111,8 +114,8 @@ export async function POST(request: NextRequest) {
       
       // 4. Send WhatsApp Confirmation
       if (shopOwnerPhone) {
-        const formattedExpiry = format(newExpiryDate, 'dd MMM yyyy');
-        const confirmationMessage = `Namaste 🙏 Payment received. Your DukaanMitra plan is now active until ${formattedExpiry}. Shukriya!`;
+        const formattedExpiry = format(newExpiryDate, 'dd MMMM yyyy');
+        const confirmationMessage = `Namaste ${shopName || ''} 🎉\n\n₹${payment.amount / 100} payment received successfully.\n\nDukaanMitra active till ${formattedExpiry}.\n\nAapka business ab secure hai.`;
         await sendWhatsAppMessage(shopOwnerPhone, confirmationMessage);
       }
     }
