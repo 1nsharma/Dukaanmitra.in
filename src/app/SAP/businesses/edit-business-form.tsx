@@ -90,7 +90,7 @@ export default function EditBusinessForm({ shop, onFinished }: EditBusinessFormP
             <FormItem>
               <FormLabel>Business Name</FormLabel>
               <FormControl>
-                <Input {...field} className="bg-slate-800 border-purple-600" />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -103,7 +103,7 @@ export default function EditBusinessForm({ shop, onFinished }: EditBusinessFormP
             <FormItem>
               <FormLabel>Owner Name</FormLabel>
               <FormControl>
-                <Input {...field} className="bg-slate-800 border-purple-600" />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -116,7 +116,7 @@ export default function EditBusinessForm({ shop, onFinished }: EditBusinessFormP
             <FormItem>
               <FormLabel>Contact Phone</FormLabel>
               <FormControl>
-                <Input {...field} className="bg-slate-800 border-purple-600" />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -131,15 +131,15 @@ export default function EditBusinessForm({ shop, onFinished }: EditBusinessFormP
                 <FormLabel>Plan</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                    <SelectTrigger className="bg-slate-800 border-purple-600">
+                    <SelectTrigger>
                         <SelectValue placeholder="Select a plan" />
                     </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-slate-900 border-purple-700 text-white">
-                        <SelectItem value="free" className="focus:bg-purple-800">Free</SelectItem>
-                        <SelectItem value="basic" className="focus:bg-purple-800">Basic</SelectItem>
-                        <SelectItem value="pro" className="focus:bg-purple-800">Pro</SelectItem>
-                        <SelectItem value="enterprise" className="focus:bg-purple-800">Enterprise</SelectItem>
+                    <SelectContent>
+                        <SelectItem value="free">Free</SelectItem>
+                        <SelectItem value="basic">Basic</SelectItem>
+                        <SelectItem value="pro">Pro</SelectItem>
+                        <SelectItem value="enterprise">Enterprise</SelectItem>
                     </SelectContent>
                 </Select>
                 <FormMessage />
@@ -153,7 +153,7 @@ export default function EditBusinessForm({ shop, onFinished }: EditBusinessFormP
                 <FormItem>
                 <FormLabel>MRR (₹)</FormLabel>
                 <FormControl>
-                    <Input type="number" {...field} className="bg-slate-800 border-purple-600" />
+                    <Input type="number" {...field} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -161,7 +161,7 @@ export default function EditBusinessForm({ shop, onFinished }: EditBusinessFormP
             />
         </div>
         <div className="flex justify-end pt-4">
-          <Button type="submit" disabled={isPending} className="bg-purple-600 hover:bg-purple-700">
+          <Button type="submit" disabled={isPending}>
             {isPending ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
