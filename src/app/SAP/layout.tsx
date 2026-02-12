@@ -20,17 +20,22 @@ export default function SuperAdminLayout({ children }: { children: ReactNode }) 
   }
 
   useEffect(() => {
+    // Wait for the user's auth state to be fully resolved.
     if (!isUserLoading) {
+      // If no user is found, redirect them to the dedicated SAP login page.
       if (!user) {
-        // Redirect to the dedicated SAP login page
-        router.push('/SAP/login');
+        router.replace('/SAP/login');
       } else if (user.role !== 'super_admin') {
-        // If a non-admin tries to access, send them to their dashboard
-        router.push('/dashboard');
+        // If a non-admin user tries to access, send them to their own dashboard.
+        router.replace('/dashboard');
       }
     }
   }, [user, isUserLoading, router]);
 
+  // CRITICAL LOADING GUARD:
+  // While `isUserLoading` is true, or if the resolved user is not a super_admin,
+  // show a loading spinner. This prevents any unauthorized content from flickering
+  // and covers the brief moment during a redirect.
   if (isUserLoading || !user || user.role !== 'super_admin') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -55,6 +60,7 @@ export default function SuperAdminLayout({ children }: { children: ReactNode }) 
   };
 
 
+  // Only render the admin layout if all checks have passed.
   return (
     <div className={cn(getThemeClass())}>
       <div className="flex min-h-screen">

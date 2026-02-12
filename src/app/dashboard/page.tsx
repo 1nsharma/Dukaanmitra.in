@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useUser, useAuth } from "@/firebase";
@@ -24,13 +23,14 @@ export default function DashboardPage() {
 
     // If no user is found, redirect to the main login page.
     if (!user) {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
 
     // **Primary redirect logic**: If the user is a super_admin, send them to the correct dashboard.
+    // Use router.replace to avoid adding this to the browser history.
     if (user.role === 'super_admin') {
-      router.push('/SAP/Superdashboard');
+      router.replace('/SAP/Superdashboard');
       return;
     }
     
@@ -42,20 +42,11 @@ export default function DashboardPage() {
         description: 'Your account has been suspended. Please contact support.',
         variant: 'destructive',
       });
-      router.push('/login');
+      router.replace('/login');
       return;
     }
   }, [user, isUserLoading, router, auth, toast]);
 
-  const handleSignOut = async () => {
-    try {
-      await auth.signOut();
-      router.push("/");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
-  
   // This condition now correctly handles the loading state and the pre-redirect state for super admins.
   // A loader is shown while auth state is resolving OR if the user is a super admin (who will be redirected).
   if (isUserLoading || !user || user.role === 'super_admin') {
