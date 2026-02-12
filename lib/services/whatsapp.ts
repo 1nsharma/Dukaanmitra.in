@@ -46,6 +46,7 @@ export function handleWhatsAppMessage(body: any) {
                                         
                                         // Mark message as processed immediately with enriched data
                                         await setDoc(processedRef, {
+                                            messageId: messageId,
                                             processedAt: serverTimestamp(),
                                             from: normalizedMessage.from,
                                             shopId: shopId,
