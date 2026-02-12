@@ -169,6 +169,7 @@
     "Interaction": {
       "title": "Interaction Log",
       "description": "Stores every raw incoming message and the system's reaction, for auditing and AI training.",
+      "type": "object",
       "properties": {
         "interactionId": { "type": "string" },
         "shop_id": { "type": "string" },
@@ -186,6 +187,7 @@
     },
     "Log": {
       "title": "Log Entry",
+      "type": "object",
       "properties": {
         "id": { "type": "string" },
         "event": { "type": "string" },
@@ -196,6 +198,7 @@
     },
     "Notification": {
       "title": "Notification",
+      "type": "object",
       "properties": {
         "id": { "type": "string" },
         "shopId": { "type": "string" },
@@ -215,12 +218,28 @@
         "mrr": { "type": "number", "description": "Monthly Recurring Revenue" },
         "activeSubscriptions": { "type": "number" },
         "activeTrials": { "type": "number" },
-        "lockedAccounts": { "type": "number" },
+        "churnedShops": { "type": "number" },
         "totalShops": { "type": "number" },
         "totalUsers": { "type": "number" },
+        "trialToPaidConversionRate": { "type": "number" },
+        "avgRevenuePerShop": { "type": "number" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "mrr", "activeSubscriptions", "activeTrials", "lockedAccounts", "totalShops", "totalUsers", "updatedAt"]
+      "required": ["id", "updatedAt"]
+    },
+    "DailyMetrics": {
+      "title": "Daily Metrics Snapshot",
+      "description": "A daily snapshot of key growth metrics.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "newTrials": { "type": "number" },
+        "newPaid": { "type": "number" },
+        "churned": { "type": "number" },
+        "revenueAdded": { "type": "number" }
+      },
+      "required": ["id", "date"]
     }
   },
   "auth": {
@@ -239,7 +258,8 @@
       { "path": "/interactions/{interactionId}", "definition": { "schema": { "$ref": "#/entities/Interaction" } } },
       { "path": "/logs/{logId}", "definition": { "schema": { "$ref": "#/entities/Log" } } },
       { "path": "/notifications/{notificationId}", "definition": { "schema": { "$ref": "#/entities/Notification" } } },
-      { "path": "/metrics/{metricId}", "definition": { "schema": { "$ref": "#/entities/GlobalMetrics" } } }
+      { "path": "/metrics/global", "definition": { "schema": { "$ref": "#/entities/GlobalMetrics" } } },
+      { "path": "/metrics/daily/{dateId}", "definition": { "schema": { "$ref": "#/entities/DailyMetrics" } } }
     ]
   }
 }

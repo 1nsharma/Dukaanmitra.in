@@ -68,11 +68,17 @@ service cloud.firestore {
         allow update, delete: if false;
     }
 
-    match /metrics/{metricId} {
-        // Metrics are read-only for super admins.
+    match /metrics/{docId} {
+        // Global metrics are read-only for super admins.
         allow read: if isSuperAdmin();
         // Only backend functions should write to metrics. For safety, disable client writes.
         allow write: if false;
+
+        match /daily/{dateId} {
+            // Daily metrics are also read-only for super admins and un-writable by clients.
+            allow read: if isSuperAdmin();
+            allow write: if false;
+        }
     }
 
     /**

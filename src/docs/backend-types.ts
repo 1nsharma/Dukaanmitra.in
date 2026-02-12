@@ -152,11 +152,22 @@ export type Notification = {
 
 export type GlobalMetrics = {
   id: string;
-  mrr: number;
-  activeSubscriptions: number;
-  activeTrials: number;
-  lockedAccounts: number;
-  totalShops: number;
-  totalUsers: number;
+  mrr?: number;
+  activeSubscriptions?: number;
+  activeTrials?: number;
+  churnedShops?: number;
+  totalShops?: number;
+  totalUsers?: number;
+  trialToPaidConversionRate?: number;
+  avgRevenuePerShop?: number;
   updatedAt: any;
+};
+
+export type DailyMetrics = {
+  id: string;
+  date: any; // "date"
+  newTrials?: number;
+  newPaid?: number;
+  churned?: number;
+  revenueAdded?: number;
 };
