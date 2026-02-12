@@ -1,8 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { getFirestore } from 'firebase-admin/firestore';
-import { initializeAdminApp } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { addMonths, format } from 'date-fns';
 import { sendWhatsAppMessage } from '@/lib/services/whatsapp';
 
@@ -42,9 +41,8 @@ export async function POST(request: NextRequest) {
         throw new Error('shopId not found in payment notes');
       }
 
-      // Initialize Firebase Admin
-      initializeAdminApp();
-      const firestore = getFirestore();
+      // Use the pre-initialized adminDb instance
+      const firestore = adminDb;
       
       let shopOwnerPhone = '';
       let shopName = '';

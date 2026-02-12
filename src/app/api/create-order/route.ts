@@ -1,7 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { getFirestore } from 'firebase-admin/firestore';
-import { initializeAdminApp } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import Razorpay from 'razorpay';
 import shortid from 'shortid';
 import { z } from 'zod';
@@ -22,9 +21,8 @@ const requestBodySchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    // Initialize services
-    initializeAdminApp();
-    const firestore = getFirestore();
+    // Use the pre-initialized adminDb instance
+    const firestore = adminDb;
     const razorpay = new Razorpay({
       key_id: RAZORPAY_KEY_ID!,
       key_secret: RAZORPAY_KEY_SECRET!,
