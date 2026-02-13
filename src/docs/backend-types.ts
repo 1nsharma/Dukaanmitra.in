@@ -142,6 +142,19 @@ export type Log = {
   createdAt: any;
 };
 
+export type AuditLog = {
+  id: string;
+  actorId: string;
+  actorRole: string;
+  shopId?: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  before?: object;
+  after?: object;
+  createdAt: any;
+};
+
 export type Notification = {
   id: string;
   shopId: string;

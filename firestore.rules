@@ -103,8 +103,8 @@ service cloud.firestore {
     // User & Order Collections
     // =================================
     match /users/{userId} {
-      allow read: if isOwner(userId) || isSuperAdmin();
-      allow list: if isSuperAdmin();
+      allow read: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin();
+      allow list: if isSuperAdmin() || isFranchiseAdmin();
       allow create: if isOwner(userId) &&
                      request.resource.data.status == 'active' &&
                      (
@@ -130,10 +130,10 @@ service cloud.firestore {
       allow create: if isUserActive() && request.auth.uid == request.resource.data.owner_id &&
                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
 
-      // READ: Super admins or any active member (owner or staff) of the shop.
-      allow read: if isSuperAdmin() || isShopMember(shopId);
+      // READ: Super admins, franchise admins, or any active member (owner or staff) of the shop.
+      allow read: if isSuperAdmin() || isFranchiseAdmin() || isShopMember(shopId);
 
-      // UPDATE/DELETE: Only the shop owner or a super admin. Staff cannot change shop-level details.
+      // UPDATE/DELETE: Only the shop owner or a super admin. Staff and Franchise Admins cannot change shop-level details.
       allow update, delete: if isSuperAdmin() || isShopOwner(shopId);
       
       // =================================
@@ -141,14 +141,16 @@ service cloud.firestore {
       // =================================
       match /customers/{customerId} {
         // Any active shop member can read, write, update, delete customers.
-        allow read, write: if isShopMember(shopId);
+        // Franchise Admins and Super Admins can only read.
+        allow write: if isShopMember(shopId);
+        allow read: if isShopMember(shopId) || isFranchiseAdmin() || isSuperAdmin();
       }
       
       match /ledger/{ledgerId} {
-        // Any active shop member can read ledger entries.
-        allow read: if isShopMember(shopId);
-        // Any active shop member can create new entries.
+        // Any active shop member can read and create ledger entries.
+        // Franchise Admins and Super Admins can only read.
         allow create: if isShopMember(shopId);
+        allow read: if isShopMember(shopId) || isFranchiseAdmin() || isSuperAdmin();
         // Ledger entries are immutable for ALL users (including owner) to maintain audit trail.
         allow update, delete: if false;
       }

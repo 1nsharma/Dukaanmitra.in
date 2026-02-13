@@ -136,6 +136,7 @@ export default function UsersTable() {
                                         <DropdownMenuLabel>Change Role</DropdownMenuLabel>
                                         {user.role === 'owner' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'staff')} disabled={isPending}><UserX className="mr-2 h-4 w-4" /> Demote to Staff</DropdownMenuItem>}
                                         {user.role === 'staff' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'owner')} disabled={isPending}><Briefcase className="mr-2 h-4 w-4" /> Promote to Owner</DropdownMenuItem>}
+                                        {user.role === 'owner' && <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'franchise_admin')} disabled={isPending}><Crown className="mr-2 h-4 w-4" /> Promote to Franchise Admin</DropdownMenuItem>}
                                         <DropdownMenuSeparator />
                                         <DropdownMenuLabel>Change Status</DropdownMenuLabel>
                                         {user.status === 'active' ? (
