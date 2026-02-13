@@ -24,6 +24,7 @@ const navItems = [
   { href: '/SAP/businesses', label: 'Businesses', icon: Briefcase },
   { href: '/SAP/users', label: 'User Management', icon: Users },
   { href: '/SAP/admins', label: 'Admin Control', icon: UserCheck },
+  { href: '/SAP/audit-logs', label: 'Audit Logs', icon: FileClock },
   { href: '/SAP/revenue', label: 'Revenue', icon: DollarSign },
   { href: '/SAP/platform-analytics', label: 'Analytics', icon: TrendingUp },
   { href: '/SAP/messages', label: 'Messages', icon: MessageSquare },
