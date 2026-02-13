@@ -1,6 +1,6 @@
 
 import { runAgentForMessage, processBillMessage } from "./agent-runner";
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
@@ -74,7 +74,31 @@ export function handleWhatsAppMessage(body: any) {
 
 
 /**
+ * A utility function to retry an async operation with exponential backoff.
+ * This is a step towards the "Reliability Engine" of Phase 2.
+ * @param fn The async function to retry.
+ * @param retries Number of retries.
+ * @param delayMs Initial delay in milliseconds.
+ * @param operationName A name for the operation for logging.
+ */
+async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1000, operationName = 'operation'): Promise<T> {
+  let lastError: Error | undefined;
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      console.warn(`[Retry] ${operationName} attempt ${i + 1} failed. Retrying in ${delayMs * (i + 1)}ms...`, error.message);
+      await new Promise(resolve => setTimeout(resolve, delayMs * (i + 1))); // Basic exponential backoff
+    }
+  }
+  throw new Error(`[Retry] ${operationName} failed after ${retries} attempts. Last error: ${lastError?.message}`);
+}
+
+
+/**
  * Sends a reply back to the user via the WhatsApp Business API.
+ * This has been hardened with a retry mechanism as part of the Phase 2 Reliability Engine.
  * @param to - The recipient's phone number.
  * @param text - The message text to send.
  */
@@ -95,7 +119,7 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
         text: { body: text },
     };
 
-    try {
+    const sendOperation = async () => {
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -105,14 +129,36 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
             body: JSON.stringify(payload),
         });
 
-        const responseData = await response.json();
-
         if (!response.ok) {
-            console.error(`[WhatsAppService] Error sending message: ${response.status} ${response.statusText}`, responseData);
-        } else {
-            console.log('[WhatsAppService] Message sent successfully:', responseData);
+            const responseData = await response.json();
+            // Throw an error to trigger the retry mechanism
+            throw new Error(`API Error ${response.status}: ${JSON.stringify(responseData)}`);
         }
+        
+        return response.json();
+    };
+
+    try {
+        const responseData = await withRetry(sendOperation, 3, 1000, `Send WhatsApp message to ${to}`);
+        console.log('[WhatsAppService] Message sent successfully:', responseData);
     } catch (error) {
-        console.error('[WhatsAppService] Exception while sending message:', error);
+        console.error(`[WhatsAppService] CRITICAL: Failed to send message to ${to} after multiple retries.`, error);
+        
+        // This acts as our "dead-letter queue" for now, logging the failure for manual review.
+        const logData = {
+            id: doc(collection(firestore, 'logs')).id,
+            event: 'whatsapp_send_failure',
+            level: 'CRITICAL',
+            details: {
+                to,
+                text,
+                error: (error as Error).message,
+            },
+            createdAt: serverTimestamp(),
+        };
+        // This write is fire-and-forget, we don't want to block on logging failure.
+        addDoc(collection(firestore, 'logs'), logData).catch(logErr => {
+            console.error("ULTIMATE FAILURE: Could not even write to failure log.", logErr);
+        });
     }
 }
