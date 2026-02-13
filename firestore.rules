@@ -46,23 +46,22 @@ service cloud.firestore {
     }
     
     match /interactions/{interactionId} {
-        // Written by backend services, can be read by super admins for auditing.
-        allow create: if true; 
+        // Written by backend services ONLY. Can be read by super admins for auditing.
+        allow create: if false; 
         allow read: if isSuperAdmin();
         allow update, delete: if false; // Interactions should be immutable logs.
     }
 
     match /logs/{logId} {
-        // Logs can be created by super admins (for audit trails on the client) or by backend
-        // services (which bypass rules). Only super admins can read. Logs are immutable.
-        allow create: if isSuperAdmin();
+        // Logs are written by backend services ONLY. Only super admins can read. Logs are immutable.
+        allow create: if false;
         allow read: if isSuperAdmin();
         allow update, delete: if false;
     }
     
     match /notifications/{notificationId} {
-        // Notifications are written by backend only.
-        allow create: if true;
+        // Notifications are written by backend services ONLY.
+        allow create: if false;
         // Shop owner can read their own notifications. Super admin can read all.
         allow read: if isSuperAdmin() || 
                     (request.auth != null && get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.owner_id == request.auth.uid);
