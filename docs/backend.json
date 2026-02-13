@@ -27,7 +27,7 @@
         "photoURL": { "type": "string", "format": "uri" },
         "createdAt": { "type": "string", "format": "date-time" },
         "shopId": { "type": "string" },
-        "role": { "type": "string", "enum": ["user", "admin", "super_admin"] },
+        "role": { "type": "string", "enum": ["user", "admin", "super_admin", "staff"] },
         "status": { "type": "string", "enum": ["active", "pending", "suspended"] },
         "lastLogin": { "type": "string", "format": "date-time" }
       },

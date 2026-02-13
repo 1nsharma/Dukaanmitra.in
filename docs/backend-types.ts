@@ -18,7 +18,7 @@ export type UserProfile = {
   photoURL?: string; // "uri"
   createdAt: any;
   shopId?: string;
-  role: "user" | "admin" | "super_admin";
+  role: "user" | "admin" | "super_admin" | "staff";
   status: "active" | "pending" | "suspended";
   lastLogin?: any;
 };
@@ -131,6 +131,7 @@ export type Interaction = {
   system_response?: string;
   response_time_ms?: number;
   processing_status?: "received" | "processing" | "processed" | "failed";
+  processing_path?: "deterministic" | "ai_fallback";
   created_at: any;
 };
 
@@ -149,5 +150,3 @@ export type Notification = {
   sentAt: any;
   status: "sent" | "failed" | "delivered" | "read";
 };
-
-    

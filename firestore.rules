@@ -3,30 +3,47 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // =================================
     // Helper Functions
+    // =================================
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
     function isSuperAdmin() {
-      // Use a hardcoded, non-guessable UID for the super admin in a real app
-      // For this example, using email is okay.
       return request.auth.token.email == "amitsharma99976@gmail.com";
     }
-
+    
+    // Secure way to check if a user is active.
+    // NOTE: This should not be used in rules for the /users/{userId} path itself
+    // to avoid recursive/infinite checks.
     function isUserActive() {
-      // User must be authenticated to check their profile
-      if (request.auth == null) {
-        return false;
-      }
-      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
-      // Allow if doc exists and status is active.
-      return userDoc.data.status == 'active';
+      let userDocPath = /databases/$(database)/documents/users/$(request.auth.uid);
+      // Allow if doc doesn't exist yet (during profile creation) or if status is 'active'.
+      return request.auth != null && (!exists(userDocPath) || get(userDocPath).data.status == 'active');
+    }
+    
+    // Checks if the requesting user is an active member (owner or staff) of a specific shop.
+    function isShopMember(shopId) {
+        let userProfile = get(/databases/$(database)/documents/users/$(request.auth.uid));
+        return request.auth != null && 
+               userProfile.data.shopId == shopId &&
+               userProfile.data.status == 'active' &&
+               (userProfile.data.role == 'user' || userProfile.data.role == 'staff');
+    }
+    
+    // Checks if the requesting user is the owner of a specific shop.
+    function isShopOwner(shopId) {
+        let userProfile = get(/databases/$(database)/documents/users/$(request.auth.uid));
+        return request.auth != null && 
+               userProfile.data.shopId == shopId &&
+               userProfile.data.status == 'active' &&
+               userProfile.data.role == 'user'; // 'user' role signifies the owner
     }
 
-    /**
-     * PUBLIC/SYSTEM COLLECTIONS
-     */
+    // =================================
+    // Public & System Collections
+    // =================================
     match /posts/{postId} {
       allow read: if true;
       allow update: if (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.views == resource.data.views + 1) &&
@@ -46,14 +63,14 @@ service cloud.firestore {
     }
     
     match /interactions/{interactionId} {
-        // Written by backend services ONLY. Can be read by super admins for auditing.
+        // Written by backend services ONLY. Read by super admins for auditing.
         allow create: if false; 
         allow read: if isSuperAdmin();
-        allow update, delete: if false; // Interactions should be immutable logs.
+        allow update, delete: if false;
     }
 
     match /logs/{logId} {
-        // Logs are written by backend services ONLY. Only super admins can read. Logs are immutable.
+        // Logs are written by backend services ONLY. Read by super admins. Immutable.
         allow create: if false;
         allow read: if isSuperAdmin();
         allow update, delete: if false;
@@ -62,93 +79,74 @@ service cloud.firestore {
     match /notifications/{notificationId} {
         // Notifications are written by backend services ONLY.
         allow create: if false;
-        // Shop owner can read their own notifications. Super admin can read all.
-        allow read: if isSuperAdmin() || 
-                    (request.auth != null && get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.owner_id == request.auth.uid);
+        // Shop members can read their own shop's notifications. Super admin can read all.
+        allow read: if isSuperAdmin() || isShopMember(resource.data.shopId);
         allow update, delete: if false;
     }
     
-    match /metrics/global {
+    match /metrics/{docId=**} {
+      // Metrics are written by backend services ONLY. Read by super admins.
       allow read: if isSuperAdmin();
-      allow write: if false; // Can only be written by backend functions
-    }
-    
-    match /metrics/daily/{dateId} {
-      allow read: if isSuperAdmin();
-      allow write: if false; // Can only be written by backend functions
+      allow write: if false;
     }
 
-    /**
-     * USER PROFILES
-     */
+    // =================================
+    // User & Order Collections
+    // =================================
     match /users/{userId} {
-      // READ: Users can read their own profile. Super admins can read any profile.
       allow read: if isOwner(userId) || isSuperAdmin();
-      
-      // LIST: Only super admins can list users.
       allow list: if isSuperAdmin();
-
-      // CREATE: An authenticated user can create THEIR OWN profile.
-      // The role MUST be 'user' UNLESS it's the one-time super admin bootstrap.
       allow create: if isOwner(userId) &&
                      request.resource.data.status == 'active' &&
                      (
                        (request.resource.data.role == 'user') ||
                        (request.resource.data.role == 'super_admin' && request.resource.data.email == "amitsharma99976@gmail.com")
                      );
-
-      // UPDATE: A user can update their own profile (but not role/status). A super admin can update anything.
       allow update: if isSuperAdmin() ||
                     (isOwner(userId) && resource.data.status == 'active' && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])));
-
-      // DELETE: Only super admins can delete user profiles.
       allow delete: if isSuperAdmin();
     }
     
-    /**
-     * PAYMENT ORDERS
-     */
     match /orders/{orderId} {
-        // CREATE: A user can create their own order document.
         allow create: if request.auth.uid == request.resource.data.userId;
-        // READ: A user can read their own orders. Super admins can read all.
         allow read: if isSuperAdmin() || request.auth.uid == resource.data.userId;
-        // UPDATE/DELETE: Only backend with admin rights can update/delete.
-        allow update, delete: if false;
+        allow update, delete: if false; // Only backend can update.
     }
 
-    /**
-     * SHOPS and Subcollections
-     */
+    // =================================
+    // Main Multi-Tenant Shop Collections
+    // =================================
     match /shops/{shopId} {
-      // CREATE: Active users can create shops, and must set themselves as owner.
-      allow create: if isUserActive() && request.auth != null && request.resource.data.owner_id == request.auth.uid;
+      // CREATE: Active users can create shops, must set themselves as owner, and must have the 'user' role.
+      allow create: if isUserActive() && request.auth.uid == request.resource.data.owner_id &&
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'user';
 
-      // READ: The owner (whose user profile links to this shopId) or a super admin can read.
-      allow read: if isSuperAdmin() ||
-          (request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.shopId == shopId);
+      // READ: Super admins or any active member (owner or staff) of the shop.
+      allow read: if isSuperAdmin() || isShopMember(shopId);
 
-      // UPDATE/DELETE: Only the owner of the existing document or a super admin can update/delete.
-      allow update, delete: if isSuperAdmin() ||
-        (request.auth != null && resource.data.owner_id == request.auth.uid);
+      // UPDATE/DELETE: Only the shop owner or a super admin. Staff cannot change shop-level details.
+      allow update, delete: if isSuperAdmin() || isShopOwner(shopId);
       
-       // All subcollections are protected by the same logic.
-      match /{subcollection}/{docId=**} {
-        // This check verifies that the person accessing the subcollection owns the parent shop.
-        let isParentShopOwner = get(/databases/$(database)/documents/shops/$(shopId)).data.owner_id == request.auth.uid;
+      // =================================
+      // Shop Subcollections
+      // =================================
+      match /customers/{customerId} {
+        // Any active shop member can read, write, update, delete customers.
+        allow read, write: if isShopMember(shopId);
+      }
+      
+      match /ledger/{ledgerId} {
+        // Any active shop member can read ledger entries.
+        allow read: if isShopMember(shopId);
+        // Any active shop member can create new entries.
+        allow create: if isShopMember(shopId);
+        // Ledger entries are immutable for ALL users (including owner) to maintain audit trail.
+        allow update, delete: if false;
+      }
 
-        // Super admin has full access to all subcollections
-        if isSuperAdmin() {
-          allow read, write: if true;
-        } else {
-          // Ledger entries have special immutability rules for regular users
-          if subcollection == 'ledger' {
-            allow update, delete: if false; // Users cannot change history
-            allow read, create: if isParentShopOwner && isUserActive();
-          } else {
-            allow read, write: if isParentShopOwner && isUserActive();
-          }
-        }
+      // Default deny for any other subcollection not explicitly defined.
+      match /{subcollection}/{docId=**} {
+          allow read, write: if false;
       }
     }
   }
