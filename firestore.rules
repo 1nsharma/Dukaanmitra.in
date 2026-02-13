@@ -21,27 +21,39 @@ service cloud.firestore {
     
     // Checks if the requesting user is an active member (owner or staff) of a specific shop.
     function isShopMember(shopId) {
-        let userProfile = get(/databases/$(database)/documents/users/$(request.auth.uid));
+        let userProfilePath = /databases/$(database)/documents/users/$(request.auth.uid);
+        if (!exists(userProfilePath)) {
+          return false;
+        }
+        let userProfile = get(userProfilePath).data;
         return request.auth != null && 
-               userProfile.data.shopId == shopId &&
-               userProfile.data.status == 'active' &&
-               (userProfile.data.role == 'owner' || userProfile.data.role == 'staff');
+               userProfile.shopId == shopId &&
+               userProfile.status == 'active' &&
+               (userProfile.role == 'owner' || userProfile.role == 'staff');
     }
     
     // Checks if the requesting user is the owner of a specific shop.
     function isShopOwner(shopId) {
-        let userProfile = get(/databases/$(database)/documents/users/$(request.auth.uid));
+        let userProfilePath = /databases/$(database)/documents/users/$(request.auth.uid);
+        if (!exists(userProfilePath)) {
+          return false;
+        }
+        let userProfile = get(userProfilePath).data;
         return request.auth != null && 
-               userProfile.data.shopId == shopId &&
-               userProfile.data.status == 'active' &&
-               userProfile.data.role == 'owner';
+               userProfile.shopId == shopId &&
+               userProfile.status == 'active' &&
+               userProfile.role == 'owner';
     }
     
     function isFranchiseAdmin() {
-        let userProfile = get(/databases/$(database)/documents/users/$(request.auth.uid));
-        return request.auth != null && 
-               userProfile.data.status == 'active' &&
-               userProfile.data.role == 'franchise_admin';
+        let userProfilePath = /databases/$(database)/documents/users/$(request.auth.uid);
+        if (!exists(userProfilePath)) {
+          return false;
+        }
+        let userProfile = get(userProfilePath).data;
+        return request.auth != null &&
+               userProfile.status == 'active' &&
+               userProfile.role == 'franchise_admin';
     }
 
 
