@@ -1,5 +1,6 @@
 
 
+
 import { AgentInput, anigravityAgent } from '@/ai/flows/whatsapp-agent-flow';
 import { loadShopAndContextByShopCode } from './context-loader';
 import { sendWhatsAppMessage } from './whatsapp';
@@ -166,6 +167,9 @@ export async function processBillMessage(message: NormalizedMessage) {
                 type: type,
                 source: 'whatsapp',
                 createdAt: serverTimestamp(),
+                raw_text: message.text,
+                source_model_version: 'deterministic_parser_v1',
+                source_confidence: 1.0,
             });
         });
         

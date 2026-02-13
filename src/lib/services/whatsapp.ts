@@ -24,14 +24,13 @@ export function handleWhatsAppMessage(body: any) {
                             if (change.field === 'messages' && change.value.messages) {
                                 for (const message of change.value.messages) {
                                     
-                                    // 1. Duplicate Message Protection
                                     const messageId = message.id;
-                                    const processedRef = doc(firestore, 'processedMessages', messageId);
-                                    const processedDoc = await getDoc(processedRef);
+                                    const interactionRef = doc(firestore, 'interactions', messageId);
+                                    const interactionDoc = await getDoc(interactionRef);
 
-                                    if (processedDoc.exists()) {
-                                        console.log(`[WhatsAppService] Duplicate message ID ${messageId} received. Ignoring.`);
-                                        continue; // Skip already processed message
+                                    if (interactionDoc.exists()) {
+                                        console.log(`[WhatsAppService] Duplicate interaction ID ${messageId} received. Ignoring.`);
+                                        continue;
                                     }
                                     
                                     if (message.type === 'text') {
@@ -41,11 +40,23 @@ export function handleWhatsAppMessage(body: any) {
                                             text: message.text.body,
                                             messageId: message.id,
                                         };
+
+                                        const shopCodeMatch = normalizedMessage.text.match(/#(\w+)/);
+                                        const shopId = shopCodeMatch ? shopCodeMatch[1].toUpperCase() : undefined;
                                         
-                                        // Mark message as processed immediately
-                                        await setDoc(processedRef, { processedAt: serverTimestamp() });
+                                        // Create a structured interaction log
+                                        const interactionData = {
+                                            interactionId: messageId,
+                                            shop_id: shopId,
+                                            sender_phone: normalizedMessage.from,
+                                            sender_type: 'customer',
+                                            raw_message: normalizedMessage.text,
+                                            processing_status: 'received',
+                                            created_at: serverTimestamp(),
+                                        };
+                                        await setDoc(interactionRef, interactionData);
                                         
-                                        // 2. Route to the deterministic bill processor
+                                        // Route to the deterministic bill processor
                                         await processBillMessage(normalizedMessage);
                                     }
                                 }

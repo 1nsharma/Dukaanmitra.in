@@ -111,7 +111,10 @@
         "item": { "type": "string" },
         "type": { "type": "string", "enum": ["credit", "payment"] },
         "source": { "type": "string", "enum": ["whatsapp", "app", "manual", "app-ai"] },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "raw_text": { "type": "string", "description": "The original, unmodified message text that triggered this entry." },
+        "source_model_version": { "type": "string", "description": "The version of the model or parser that created this entry." },
+        "source_confidence": { "type": "number", "description": "The confidence score (0-1) of the parser that created this entry." }
       },
       "required": ["id", "shop_id", "amount", "type", "customerPhone"]
     },
@@ -163,16 +166,28 @@
       },
       "required": ["id", "postSlug", "name", "message", "createdAt"]
     },
-    "ProcessedMessage": {
-      "title": "Processed Message",
+    "Interaction": {
+      "title": "Interaction Log",
+      "description": "Stores every raw incoming message and the system's reaction, for auditing and AI training.",
+      "type": "object",
       "properties": {
-        "messageId": { "type": "string" },
-        "processedAt": { "type": "string", "format": "date-time" }
+        "interactionId": { "type": "string" },
+        "shop_id": { "type": "string" },
+        "sender_type": { "type": "string", "enum": ["customer", "shopkeeper", "system"] },
+        "sender_phone": { "type": "string" },
+        "raw_message": { "type": "string" },
+        "detected_intent": { "type": "string" },
+        "extracted_entities": { "type": "object" },
+        "system_response": { "type": "string" },
+        "response_time_ms": { "type": "number" },
+        "processing_status": { "type": "string", "enum": ["received", "processing", "processed", "failed"] },
+        "created_at": { "type": "string", "format": "date-time" }
       },
-      "required": ["messageId", "processedAt"]
+      "required": ["interactionId", "sender_phone", "created_at"]
     },
     "Log": {
       "title": "Log Entry",
+      "type": "object",
       "properties": {
         "id": { "type": "string" },
         "event": { "type": "string" },
@@ -183,6 +198,7 @@
     },
     "Notification": {
       "title": "Notification",
+      "type": "object",
       "properties": {
         "id": { "type": "string" },
         "shopId": { "type": "string" },
@@ -207,7 +223,7 @@
       { "path": "/posts/{postId}", "definition": { "schema": { "$ref": "#/entities/Post" } } },
       { "path": "/comments/{commentId}", "definition": { "schema": { "$ref": "#/entities/Comment" } } },
       { "path": "/contactFormSubmissions/{submissionId}", "definition": { "schema": { "$ref": "#/entities/ContactFormSubmission" } } },
-      { "path": "/processedMessages/{messageId}", "definition": { "schema": { "$ref": "#/entities/ProcessedMessage" } } },
+      { "path": "/interactions/{interactionId}", "definition": { "schema": { "$ref": "#/entities/Interaction" } } },
       { "path": "/logs/{logId}", "definition": { "schema": { "$ref": "#/entities/Log" } } },
       { "path": "/notifications/{notificationId}", "definition": { "schema": { "$ref": "#/entities/Notification" } } }
     ]
