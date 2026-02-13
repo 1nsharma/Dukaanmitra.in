@@ -1,6 +1,6 @@
 
-import { runAgentForMessage, processBillMessage } from "./agent-runner";
-import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore';
+import { processMessage } from "./agent-runner";
+import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc, updateDoc } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
@@ -44,7 +44,7 @@ export function handleWhatsAppMessage(body: any) {
                                         const shopCodeMatch = normalizedMessage.text.match(/#(\w+)/);
                                         const shopId = shopCodeMatch ? shopCodeMatch[1].toUpperCase() : undefined;
                                         
-                                        // Create a structured interaction log
+                                        // Create a structured interaction log. This is the first write.
                                         const interactionData = {
                                             interactionId: messageId,
                                             shop_id: shopId,
@@ -56,8 +56,8 @@ export function handleWhatsAppMessage(body: any) {
                                         };
                                         await setDoc(interactionRef, interactionData);
                                         
-                                        // Route to the deterministic bill processor
-                                        await processBillMessage(normalizedMessage);
+                                        // Route to the unified message processor
+                                        await processMessage(normalizedMessage);
                                     }
                                 }
                             }
@@ -75,7 +75,6 @@ export function handleWhatsAppMessage(body: any) {
 
 /**
  * A utility function to retry an async operation with exponential backoff.
- * This is a step towards the "Reliability Engine" of Phase 2.
  * @param fn The async function to retry.
  * @param retries Number of retries.
  * @param delayMs Initial delay in milliseconds.
@@ -98,7 +97,7 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1000, o
 
 /**
  * Sends a reply back to the user via the WhatsApp Business API.
- * This has been hardened with a retry mechanism as part of the Phase 2 Reliability Engine.
+ * This has been hardened with a retry mechanism.
  * @param to - The recipient's phone number.
  * @param text - The message text to send.
  */
@@ -144,7 +143,6 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
     } catch (error) {
         console.error(`[WhatsAppService] CRITICAL: Failed to send message to ${to} after multiple retries.`, error);
         
-        // This acts as our "dead-letter queue" for now, logging the failure for manual review.
         const logData = {
             id: doc(collection(firestore, 'logs')).id,
             event: 'whatsapp_send_failure',
@@ -156,7 +154,6 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
             },
             createdAt: serverTimestamp(),
         };
-        // This write is fire-and-forget, we don't want to block on logging failure.
         addDoc(collection(firestore, 'logs'), logData).catch(logErr => {
             console.error("ULTIMATE FAILURE: Could not even write to failure log.", logErr);
         });
