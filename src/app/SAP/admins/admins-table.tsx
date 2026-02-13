@@ -4,7 +4,7 @@
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import type { UserProfile } from '@/docs/backend-types';
-import { Loader2, MoreHorizontal, UserCheck, Shield, UserX } from 'lucide-react';
+import { Loader2, MoreHorizontal, UserCheck, Shield, UserX, Crown, Briefcase } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -33,11 +33,13 @@ const formatDate = (date: any) => {
     return format(d, 'PPp');
 };
 
-const renderRoleBadge = (role: string) => {
+const renderRoleBadge = (role: UserProfile['role']) => {
     switch(role) {
         case 'super_admin': return <Badge className="bg-primary text-primary-foreground hover:bg-primary/80"><Shield className="mr-1 h-3 w-3" />Super Admin</Badge>;
-        case 'admin': return <Badge variant="secondary"><UserCheck className="mr-1 h-3 w-3" />Admin</Badge>;
-        default: return <Badge variant="outline">User</Badge>;
+        case 'franchise_admin': return <Badge variant="secondary"><Crown className="mr-1 h-3 w-3" />Franchise Admin</Badge>;
+        case 'owner': return <Badge variant="outline"><Briefcase className="mr-1 h-3 w-3" />Owner</Badge>;
+        case 'staff': return <Badge variant="outline"><UserCheck className="mr-1 h-3 w-3" />Staff</Badge>;
+        default: return <Badge variant="outline">{role}</Badge>;
     }
 }
 
@@ -59,7 +61,7 @@ export default function AdminsTable() {
     const adminsQuery = useMemoFirebase(() => {
         return query(
             collection(firestore, "users"), 
-            where("role", "in", ["admin", "super_admin"]),
+            where("role", "in", ["franchise_admin", "super_admin"]),
             orderBy("createdAt", "desc")
         );
     }, [firestore]);
@@ -144,7 +146,7 @@ export default function AdminsTable() {
                                         {isTargetProtected ? (
                                             <DropdownMenuItem disabled>Role cannot be changed</DropdownMenuItem>
                                         ) : (
-                                            <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'user')} disabled={isPending}><UserX className="mr-2 h-4 w-4" /> Demote to User</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'owner')} disabled={isPending}><UserX className="mr-2 h-4 w-4" /> Demote to Owner</DropdownMenuItem>
                                         )}
                                         <DropdownMenuSeparator />
                                         <DropdownMenuLabel>Change Status</DropdownMenuLabel>
@@ -234,7 +236,7 @@ export default function AdminsTable() {
                                             {isTargetProtected ? (
                                                 <DropdownMenuItem disabled>Role cannot be changed</DropdownMenuItem>
                                             ) : (
-                                                <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'user')} disabled={isPending}><UserX className="mr-2 h-4 w-4" /> Demote to User</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleUpdateRole(user.uid, 'owner')} disabled={isPending}><UserX className="mr-2 h-4 w-4" /> Demote to Owner</DropdownMenuItem>
                                             )}
                                             <DropdownMenuSeparator />
                                             <DropdownMenuLabel>Change Status</DropdownMenuLabel>
@@ -284,4 +286,3 @@ export default function AdminsTable() {
         </>
     );
 }
-

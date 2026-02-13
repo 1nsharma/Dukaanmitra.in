@@ -79,7 +79,7 @@ export default function SAPLoginForm() {
               uid: user.uid,
               email: user.email,
               createdAt: serverTimestamp(),
-              role: isSuperAdminBootstrap ? "super_admin" : "user",
+              role: isSuperAdminBootstrap ? "super_admin" : "owner",
               status: "active",
               lastLogin: serverTimestamp(),
             };
@@ -97,7 +97,7 @@ export default function SAPLoginForm() {
              const permissionError = new FirestorePermissionError({
                   path: `users/${user.uid}`,
                   operation: 'write',
-                  requestResourceData: {uid: user.uid, email: user.email, role: 'user', status: 'active'},
+                  requestResourceData: {uid: user.uid, email: user.email, role: 'owner', status: 'active'},
               });
               errorEmitter.emit('permission-error', permissionError);
               toast({

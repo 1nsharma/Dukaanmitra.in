@@ -18,7 +18,7 @@ export type UserProfile = {
   photoURL?: string; // "uri"
   createdAt: any;
   shopId?: string;
-  role: "user" | "admin" | "super_admin";
+  role: "owner" | "staff" | "franchise_admin" | "super_admin";
   status: "active" | "pending" | "suspended";
   lastLogin?: any;
 };

@@ -80,13 +80,12 @@ export default function LoginForm() {
               uid: user.uid,
               email: user.email,
               createdAt: serverTimestamp(),
-              role: isSuperAdminBootstrap ? "super_admin" : "user", // Set role here
+              role: isSuperAdminBootstrap ? "super_admin" : "owner", // Set role here
               status: "active",
               lastLogin: serverTimestamp(),
             };
 
             // This setDoc will be validated by Firestore rules.
-            // The temporary rule will only allow the role to be 'super_admin' if the email matches.
             setDoc(userProfileRef, profileData, { merge: true }).catch(profileError => {
                  const permissionError = new FirestorePermissionError({
                       path: userProfileRef.path,
@@ -100,7 +99,7 @@ export default function LoginForm() {
              const permissionError = new FirestorePermissionError({
                   path: `users/${user.uid}`,
                   operation: 'write',
-                  requestResourceData: {uid: user.uid, email: user.email, role: 'user', status: 'active'},
+                  requestResourceData: {uid: user.uid, email: user.email, role: 'owner', status: 'active'},
               });
               errorEmitter.emit('permission-error', permissionError);
               toast({

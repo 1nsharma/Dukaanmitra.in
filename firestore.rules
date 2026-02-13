@@ -14,12 +14,8 @@ service cloud.firestore {
       return request.auth.token.email == "amitsharma99976@gmail.com";
     }
     
-    // Secure way to check if a user is active.
-    // NOTE: This should not be used in rules for the /users/{userId} path itself
-    // to avoid recursive/infinite checks.
     function isUserActive() {
       let userDocPath = /databases/$(database)/documents/users/$(request.auth.uid);
-      // Allow if doc doesn't exist yet (during profile creation) or if status is 'active'.
       return request.auth != null && (!exists(userDocPath) || get(userDocPath).data.status == 'active');
     }
     
@@ -29,7 +25,7 @@ service cloud.firestore {
         return request.auth != null && 
                userProfile.data.shopId == shopId &&
                userProfile.data.status == 'active' &&
-               (userProfile.data.role == 'user' || userProfile.data.role == 'staff');
+               (userProfile.data.role == 'owner' || userProfile.data.role == 'staff');
     }
     
     // Checks if the requesting user is the owner of a specific shop.
@@ -38,7 +34,7 @@ service cloud.firestore {
         return request.auth != null && 
                userProfile.data.shopId == shopId &&
                userProfile.data.status == 'active' &&
-               userProfile.data.role == 'user'; // 'user' role signifies the owner
+               userProfile.data.role == 'owner';
     }
 
     // =================================
@@ -99,7 +95,7 @@ service cloud.firestore {
       allow create: if isOwner(userId) &&
                      request.resource.data.status == 'active' &&
                      (
-                       (request.resource.data.role == 'user') ||
+                       (request.resource.data.role == 'owner') ||
                        (request.resource.data.role == 'super_admin' && request.resource.data.email == "amitsharma99976@gmail.com")
                      );
       allow update: if isSuperAdmin() ||
@@ -117,9 +113,9 @@ service cloud.firestore {
     // Main Multi-Tenant Shop Collections
     // =================================
     match /shops/{shopId} {
-      // CREATE: Active users can create shops, must set themselves as owner, and must have the 'user' role.
+      // CREATE: Active users can create shops, must set themselves as owner, and must have the 'owner' role.
       allow create: if isUserActive() && request.auth.uid == request.resource.data.owner_id &&
-                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'user';
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
 
       // READ: Super admins or any active member (owner or staff) of the shop.
       allow read: if isSuperAdmin() || isShopMember(shopId);
