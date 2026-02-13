@@ -181,6 +181,11 @@
         "system_response": { "type": "string" },
         "response_time_ms": { "type": "number" },
         "processing_status": { "type": "string", "enum": ["received", "processing", "processed", "failed"] },
+        "processing_path": {
+          "type": "string",
+          "enum": ["deterministic", "ai_fallback"],
+          "description": "The processing path taken: 'deterministic' for fast parsing, 'ai_fallback' for the full AI agent."
+        },
         "created_at": { "type": "string", "format": "date-time" }
       },
       "required": ["interactionId", "sender_phone", "created_at"]
@@ -208,38 +213,6 @@
         "status": { "type": "string", "enum": ["sent", "failed", "delivered", "read"] }
       },
       "required": ["id", "shopId", "customerPhone", "type", "sentAt", "status"]
-    },
-    "GlobalMetrics": {
-      "title": "Global Metrics",
-      "description": "Aggregated real-time metrics for the entire platform, updated by backend functions.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "mrr": { "type": "number", "description": "Monthly Recurring Revenue" },
-        "activeSubscriptions": { "type": "number" },
-        "activeTrials": { "type": "number" },
-        "churnedShops": { "type": "number" },
-        "totalShops": { "type": "number" },
-        "totalUsers": { "type": "number" },
-        "trialToPaidConversionRate": { "type": "number" },
-        "avgRevenuePerShop": { "type": "number" },
-        "updatedAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "updatedAt"]
-    },
-    "DailyMetrics": {
-      "title": "Daily Metrics Snapshot",
-      "description": "A daily snapshot of key growth metrics.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "date": { "type": "string", "format": "date" },
-        "newTrials": { "type": "number" },
-        "newPaid": { "type": "number" },
-        "churned": { "type": "number" },
-        "revenueAdded": { "type": "number" }
-      },
-      "required": ["id", "date"]
     }
   },
   "auth": {
@@ -257,9 +230,7 @@
       { "path": "/contactFormSubmissions/{submissionId}", "definition": { "schema": { "$ref": "#/entities/ContactFormSubmission" } } },
       { "path": "/interactions/{interactionId}", "definition": { "schema": { "$ref": "#/entities/Interaction" } } },
       { "path": "/logs/{logId}", "definition": { "schema": { "$ref": "#/entities/Log" } } },
-      { "path": "/notifications/{notificationId}", "definition": { "schema": { "$ref": "#/entities/Notification" } } },
-      { "path": "/metrics/global", "definition": { "schema": { "$ref": "#/entities/GlobalMetrics" } } },
-      { "path": "/metrics/daily/{dateId}", "definition": { "schema": { "$ref": "#/entities/DailyMetrics" } } }
+      { "path": "/notifications/{notificationId}", "definition": { "schema": { "$ref": "#/entities/Notification" } } }
     ]
   }
 }

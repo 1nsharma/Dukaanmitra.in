@@ -131,6 +131,7 @@ export type Interaction = {
   system_response?: string;
   response_time_ms?: number;
   processing_status?: "received" | "processing" | "processed" | "failed";
+  processing_path?: "deterministic" | "ai_fallback";
   created_at: any;
 };
 

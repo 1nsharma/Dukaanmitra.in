@@ -119,7 +119,12 @@ export async function processMessage(message: NormalizedMessage) {
             });
 
             await sendWhatsAppMessage(customerPhone, replyMessage);
-            await updateDoc(interactionRef, { processing_status: 'processed', system_response: replyMessage, detected_intent: 'ledger_entry_simple' });
+            await updateDoc(interactionRef, { 
+                processing_status: 'processed', 
+                system_response: replyMessage, 
+                detected_intent: 'ledger_entry_simple',
+                processing_path: 'deterministic',
+            });
         
         } else {
             // --- AI FALLBACK PATH ---
@@ -141,6 +146,7 @@ export async function processMessage(message: NormalizedMessage) {
                 system_response: agentOutput.response,
                 detected_intent: agentOutput.intent,
                 extracted_entities: agentOutput.action?.payload || null,
+                processing_path: 'ai_fallback',
             });
         }
         console.log(`[Processor] Finished processing message ${message.messageId}`);
