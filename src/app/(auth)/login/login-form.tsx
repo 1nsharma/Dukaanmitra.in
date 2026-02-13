@@ -38,8 +38,6 @@ const resetFormSchema = z.object({
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 type ResetFormValues = z.infer<typeof resetFormSchema>;
 
-const SUPER_ADMIN_BOOTSTRAP_EMAIL = "amitsharmaanxt@gmail.com";
-
 export default function LoginForm() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -72,15 +70,13 @@ export default function LoginForm() {
 
         if (isSignUp) {
           try {
-            // On sign up, create a new user profile.
-            // Check if this is the one-time super admin bootstrap.
-            const isSuperAdminBootstrap = values.email.toLowerCase() === SUPER_ADMIN_BOOTSTRAP_EMAIL;
-            
+            // On sign up, create a new user profile with the 'owner' role.
+            // The 'super_admin' role is now assigned out-of-band (manually in Firestore), not during signup.
             const profileData = {
               uid: user.uid,
               email: user.email,
               createdAt: serverTimestamp(),
-              role: isSuperAdminBootstrap ? "super_admin" : "owner", // Set role here
+              role: "owner", // Default role for all new signups
               status: "active",
               lastLogin: serverTimestamp(),
             };

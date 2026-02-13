@@ -10,40 +10,76 @@ const rulesContent = `rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // =================================
     // Helper Functions
-    function isOwner(userId) {
-      return request.auth.uid == userId;
+    // =================================
+    function isAuthenticated() {
+      return request.auth != null;
     }
 
-    // This is more reliable and required for list rules.
-    function isSuperAdmin() {
-      return request.auth.token.email == "amitsharmaanxt@gmail.com";
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userExists() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    
+    function userRole() {
+      return userExists() ? userDoc().data.role : 'guest';
     }
 
     function isUserActive() {
-      // Allow if user is not authenticated (for public pages) or if their user doc doesn't exist yet (profile creation).
-      if (request.auth == null) {
-        return true;
-      }
-      let userDocPath = /databases/$(database)/documents/users/$(request.auth.uid);
-      // Allow if doc doesn't exist (profile creation) or if doc exists and status is active.
-      return !exists(userDocPath) || get(userDocPath).data.status == 'active';
+      return userExists() && userDoc().data.status == 'active';
     }
 
-    /**
-     * PUBLIC COLLECTIONS
-     */
+    function isSuperAdmin() {
+      return isAuthenticated() && userRole() == 'super_admin';
+    }
+    
+    // Checks if the requesting user is an active member (owner or staff) of a specific shop.
+    function isShopMember(shopId) {
+        return isAuthenticated() &&
+               userExists() &&
+               isUserActive() &&
+               userDoc().data.shopId == shopId &&
+               (userRole() == 'owner' || userRole() == 'staff');
+    }
+    
+    // Checks if the requesting user is the owner of a specific shop.
+    function isShopOwner(shopId) {
+        return isAuthenticated() && 
+               userExists() &&
+               isUserActive() &&
+               userDoc().data.shopId == shopId &&
+               userRole() == 'owner';
+    }
+    
+    function isFranchiseAdmin() {
+        return isAuthenticated() &&
+               userExists() &&
+               isUserActive() &&
+               userRole() == 'franchise_admin';
+    }
+
+
+    // =================================
+    // Public & System Collections
+    // =================================
     match /posts/{postId} {
       allow read: if true;
-      allow update: if isUserActive() &&
-                      (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.views == resource.data.views + 1) &&
+      allow update: if (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.views == resource.data.views + 1) &&
                       request.resource.data.diff(resource.data).affectedKeys().size() == 1;
       allow create, delete: if isSuperAdmin();
     }
 
     match /comments/{commentId} {
         allow read: if true;
-        allow create: if isUserActive() && request.resource.data.keys().hasAll(['postSlug', 'name', 'message', 'createdAt']);
+        allow create: if isAuthenticated() && request.resource.data.keys().hasAll(['postSlug', 'name', 'message', 'createdAt']);
         allow update, delete: if isSuperAdmin();
     }
     
@@ -51,88 +87,96 @@ service cloud.firestore {
         allow create: if true;
         allow read, update, delete: if isSuperAdmin();
     }
+    
+    match /interactions/{interactionId} {
+      // Written by backend services ONLY. Read by super admins for auditing.
+      allow write: if false; 
+      allow read: if isSuperAdmin();
+    }
 
     match /logs/{logId} {
-        // Logs are append-only and can only be created by super admins.
-        allow create: if isSuperAdmin();
-        // Only super admins can read logs.
-        allow read: if isSuperAdmin();
-        // Logs are immutable.
-        allow update, delete: if false;
+      // Written by backend services ONLY. Read by super admins. Immutable.
+      allow write: if false;
+      allow read: if isSuperAdmin();
+    }
+    
+    match /auditLogs/{auditLogId} {
+        // Written by backend services ONLY. Read by franchise/super admins. Immutable.
+        allow write: if false;
+        allow read: if isSuperAdmin() || isFranchiseAdmin();
+    }
+    
+    match /notifications/{notificationId} {
+      // Written by backend services ONLY. Read by super admins or relevant shop members.
+      allow write: if false;
+      allow read: if isSuperAdmin() || isShopMember(resource.data.shopId);
+    }
+    
+    match /metrics/{docId=**} {
+      // Metrics are written by backend services ONLY. Read by super admins.
+      allow read: if isSuperAdmin();
+      allow write: if false;
     }
 
-    /**
-     * USER PROFILES
-     */
+    // =================================
+    // User & Order Collections
+    // =================================
     match /users/{userId} {
-      // READ: Users can read their own profile. Super admins can read any profile.
-      // The isUserActive() check is removed to prevent recursive reads on this path.
-      allow read: if isOwner(userId) || isSuperAdmin();
-      
-      // LIST: Only super admins can list users. The isUserActive() check is not compatible with list queries.
-      allow list: if isSuperAdmin();
-
-      // CREATE:
-      // - An authenticated user can create THEIR OWN profile.
-      // - The role MUST be 'user' UNLESS it's the one-time super admin bootstrap.
-      allow create: if isOwner(userId) &&
-                     request.resource.data.status == 'active' &&
-                     (
-                       (request.resource.data.role == 'user') ||
-                       // ONE-TIME BOOTSTRAP RULE:
-                       (request.resource.data.role == 'super_admin' && request.resource.data.email == "amitsharmaanxt@gmail.com")
-                     );
-
-      // UPDATE:
-      // - A user can update their own profile, but cannot change their role or status.
-      // - A super_admin can update any field on any user profile.
+      allow read: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin();
+      allow list: if isSuperAdmin() || isFranchiseAdmin();
+      // Only an authenticated user can create their own profile, and they can only assign themselves the 'owner' role.
+      allow create: if isOwner(userId) && request.resource.data.role == 'owner' && request.resource.data.status == 'active';
+      // A user can update their own profile, but cannot change their role or status. Super admins can change anything.
       allow update: if isSuperAdmin() ||
-                    (isOwner(userId) && resource.data.status == 'active' && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])));
-
-      // DELETE: Only super admins can delete user profiles.
+                    (isOwner(userId) && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status', 'shopId'])));
       allow delete: if isSuperAdmin();
     }
+    
+    match /orders/{orderId} {
+        allow create: if isOwner(request.resource.data.userId);
+        allow read: if isSuperAdmin() || isOwner(resource.data.userId);
+        allow update, delete: if false; // Only backend can update status.
+    }
 
-    /**
-     * SHOPS and Subcollections
-     */
+    // =================================
+    // Main Multi-Tenant Shop Collections
+    // =================================
     match /shops/{shopId} {
-      // Active users can create shops, and must set themselves as owner.
-      allow create: if isUserActive() && request.auth != null && request.resource.data.owner_id == request.auth.uid;
+      // CREATE: Active users with the 'owner' role can create shops, and must set themselves as owner.
+      allow create: if isAuthenticated() && isUserActive() && userRole() == 'owner' && request.auth.uid == request.resource.data.owner_id;
 
-      // READ: The owner (whose user profile links to this shopId and is active) or a super admin can read.
-      allow read: if
-          (let userProfile = get(/databases/$(database)/documents/users/$(request.auth.uid));
-          (request.auth != null && userProfile.data.shopId == shopId && userProfile.data.status == 'active'))
-        || isSuperAdmin();
+      // READ: Super admins, franchise admins, or any active member (owner or staff) of the shop.
+      allow read: if isSuperAdmin() || isFranchiseAdmin() || isShopMember(shopId);
 
-      // UPDATE/DELETE: Only the owner of the existing document (who must be active) or a super admin can update/delete.
-      allow update, delete: if
-        (request.auth != null && resource.data.owner_id == request.auth.uid && isUserActive())
-        || isSuperAdmin();
+      // UPDATE/DELETE: Only the shop owner or a super admin. Staff and Franchise Admins cannot change shop-level details.
+      allow update, delete: if isSuperAdmin() || isShopOwner(shopId);
       
-       // All subcollections are protected by the same logic.
-      match /{subcollection}/{docId=**} {
-        // This check verifies that the person accessing the subcollection owns the parent shop.
-        // It is safe because it reads the parent document, not the document being requested.
-        let isParentShopOwner = get(/databases/$(database)/documents/shops/$(shopId)).data.owner_id == request.auth.uid;
+      // =================================
+      // Shop Subcollections
+      // =================================
+      match /customers/{customerId} {
+        // Any active shop member can perform CRUD. Franchise/Super Admins can only read.
+        allow write: if isShopMember(shopId);
+        allow read: if isShopMember(shopId) || isFranchiseAdmin() || isSuperAdmin();
+      }
+      
+      match /ledger/{ledgerId} {
+        // Any active shop member can read and create ledger entries.
+        // Franchise Admins and Super Admins can only read.
+        allow create: if isShopMember(shopId);
+        allow read: if isShopMember(shopId) || isFranchiseAdmin() || isSuperAdmin();
+        // Ledger entries are immutable to maintain a perfect audit trail.
+        allow update, delete: if false;
+      }
 
-        // Super admin has full access to all subcollections
-        if isSuperAdmin() {
-          allow read, write: if true;
-        } else {
-          // Ledger entries have special immutability rules
-          if subcollection == 'ledger' {
-            allow update, delete: if false;
-            allow read, create: if isParentShopOwner && isUserActive();
-          } else {
-            allow read, write: if isParentShopOwner && isUserActive();
-          }
-        }
+      // Default deny for any other subcollection not explicitly defined.
+      match /{subcollection}/{docId=**} {
+          allow read, write: if false;
       }
     }
   }
-}`;
+}
+`;
 
 export default function RulesViewer() {
     return (

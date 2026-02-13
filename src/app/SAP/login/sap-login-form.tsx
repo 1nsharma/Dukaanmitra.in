@@ -38,8 +38,6 @@ const resetFormSchema = z.object({
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 type ResetFormValues = z.infer<typeof resetFormSchema>;
 
-const SUPER_ADMIN_BOOTSTRAP_EMAIL = "amitsharmaanxt@gmail.com";
-
 // NOTE: This component is a copy of the main LoginForm, but redirects to the SAP dashboard.
 export default function SAPLoginForm() {
   const { toast } = useToast();
@@ -73,13 +71,13 @@ export default function SAPLoginForm() {
 
         if (isSignUp) {
           try {
-            const isSuperAdminBootstrap = values.email.toLowerCase() === SUPER_ADMIN_BOOTSTRAP_EMAIL;
-            
+            // This form should generally not be used for signup.
+            // If it is, create a standard 'owner' account. Super admin promotion is a manual DB operation.
             const profileData = {
               uid: user.uid,
               email: user.email,
               createdAt: serverTimestamp(),
-              role: isSuperAdminBootstrap ? "super_admin" : "owner",
+              role: "owner",
               status: "active",
               lastLogin: serverTimestamp(),
             };
@@ -227,12 +225,8 @@ export default function SAPLoginForm() {
         </form>
       </Form>
       <div className="flex justify-between items-center text-sm">
-        <div>
-          {authAction === "login" ? "Need to create the super admin account?" : "Already have an account?"}{" "}
-          <Button variant="link" className="p-0 h-auto" onClick={() => setAuthAction(authAction === "login" ? "signup" : "login")}>
-            {authAction === "login" ? "Sign Up" : "Sign In"}
-          </Button>
-        </div>
+        {/* Hide the signup prompt on the Super Admin login page */}
+        <div></div>
         {authAction === "login" && (
             <Button variant="link" className="p-0 h-auto text-xs text-muted-foreground" onClick={() => setAuthAction("reset")}>
                 Forgot Password?

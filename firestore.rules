@@ -6,54 +6,57 @@ service cloud.firestore {
     // =================================
     // Helper Functions
     // =================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
     function isOwner(userId) {
-      return request.auth.uid == userId;
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userExists() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    
+    function userRole() {
+      return userExists() ? userDoc().data.role : 'guest';
+    }
+
+    function isUserActive() {
+      return userExists() && userDoc().data.status == 'active';
     }
 
     function isSuperAdmin() {
-      return request.auth.token.email == "amitsharmaanxt@gmail.com";
-    }
-    
-    function isUserActive() {
-      let userDocPath = /databases/$(database)/documents/users/$(request.auth.uid);
-      return request.auth != null && (!exists(userDocPath) || get(userDocPath).data.status == 'active');
+      return isAuthenticated() && userRole() == 'super_admin';
     }
     
     // Checks if the requesting user is an active member (owner or staff) of a specific shop.
     function isShopMember(shopId) {
-        let userProfilePath = /databases/$(database)/documents/users/$(request.auth.uid);
-        if (!exists(userProfilePath)) {
-          return false;
-        }
-        let userProfile = get(userProfilePath).data;
-        return request.auth != null && 
-               userProfile.shopId == shopId &&
-               userProfile.status == 'active' &&
-               (userProfile.role == 'owner' || userProfile.role == 'staff');
+        return isAuthenticated() &&
+               userExists() &&
+               isUserActive() &&
+               userDoc().data.shopId == shopId &&
+               (userRole() == 'owner' || userRole() == 'staff');
     }
     
     // Checks if the requesting user is the owner of a specific shop.
     function isShopOwner(shopId) {
-        let userProfilePath = /databases/$(database)/documents/users/$(request.auth.uid);
-        if (!exists(userProfilePath)) {
-          return false;
-        }
-        let userProfile = get(userProfilePath).data;
-        return request.auth != null && 
-               userProfile.shopId == shopId &&
-               userProfile.status == 'active' &&
-               userProfile.role == 'owner';
+        return isAuthenticated() && 
+               userExists() &&
+               isUserActive() &&
+               userDoc().data.shopId == shopId &&
+               userRole() == 'owner';
     }
     
     function isFranchiseAdmin() {
-        let userProfilePath = /databases/$(database)/documents/users/$(request.auth.uid);
-        if (!exists(userProfilePath)) {
-          return false;
-        }
-        let userProfile = get(userProfilePath).data;
-        return request.auth != null &&
-               userProfile.status == 'active' &&
-               userProfile.role == 'franchise_admin';
+        return isAuthenticated() &&
+               userExists() &&
+               isUserActive() &&
+               userRole() == 'franchise_admin';
     }
 
 
@@ -69,7 +72,7 @@ service cloud.firestore {
 
     match /comments/{commentId} {
         allow read: if true;
-        allow create: if request.auth != null && request.resource.data.keys().hasAll(['postSlug', 'name', 'message', 'createdAt']);
+        allow create: if isAuthenticated() && request.resource.data.keys().hasAll(['postSlug', 'name', 'message', 'createdAt']);
         allow update, delete: if isSuperAdmin();
     }
     
@@ -79,30 +82,27 @@ service cloud.firestore {
     }
     
     match /interactions/{interactionId} {
-        // Written by backend services ONLY. Read by super admins for auditing.
-        allow create: if false; 
-        allow read: if isSuperAdmin();
-        allow update, delete: if false;
+      // Written by backend services ONLY. Read by super admins for auditing.
+      allow write: if false; 
+      allow read: if isSuperAdmin();
     }
 
     match /logs/{logId} {
-        // Logs are written by backend services ONLY. Read by super admins. Immutable.
-        allow create: if false;
-        allow read: if isSuperAdmin();
-        allow update, delete: if false;
+      // Written by backend services ONLY. Read by super admins. Immutable.
+      allow write: if false;
+      allow read: if isSuperAdmin();
     }
     
     match /auditLogs/{auditLogId} {
+        // Written by backend services ONLY. Read by franchise/super admins. Immutable.
+        allow write: if false;
         allow read: if isSuperAdmin() || isFranchiseAdmin();
-        allow write: if false; // Only backend can write.
     }
     
     match /notifications/{notificationId} {
-        // Notifications are written by backend services ONLY.
-        allow create: if false;
-        // Shop members can read their own shop's notifications. Super admin can read all.
-        allow read: if isSuperAdmin() || isShopMember(resource.data.shopId);
-        allow update, delete: if false;
+      // Written by backend services ONLY. Read by super admins or relevant shop members.
+      allow write: if false;
+      allow read: if isSuperAdmin() || isShopMember(resource.data.shopId);
     }
     
     match /metrics/{docId=**} {
@@ -117,30 +117,26 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin();
       allow list: if isSuperAdmin() || isFranchiseAdmin();
-      allow create: if isOwner(userId) &&
-                     request.resource.data.status == 'active' &&
-                     (
-                       (request.resource.data.role == 'owner') ||
-                       (request.resource.data.role == 'super_admin' && request.resource.data.email == "amitsharmaanxt@gmail.com")
-                     );
+      // Only an authenticated user can create their own profile, and they can only assign themselves the 'owner' role.
+      allow create: if isOwner(userId) && request.resource.data.role == 'owner' && request.resource.data.status == 'active';
+      // A user can update their own profile, but cannot change their role or status. Super admins can change anything.
       allow update: if isSuperAdmin() ||
-                    (isOwner(userId) && resource.data.status == 'active' && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])));
+                    (isOwner(userId) && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status', 'shopId'])));
       allow delete: if isSuperAdmin();
     }
     
     match /orders/{orderId} {
-        allow create: if request.auth.uid == request.resource.data.userId;
-        allow read: if isSuperAdmin() || request.auth.uid == resource.data.userId;
-        allow update, delete: if false; // Only backend can update.
+        allow create: if isOwner(request.resource.data.userId);
+        allow read: if isSuperAdmin() || isOwner(resource.data.userId);
+        allow update, delete: if false; // Only backend can update status.
     }
 
     // =================================
     // Main Multi-Tenant Shop Collections
     // =================================
     match /shops/{shopId} {
-      // CREATE: Active users can create shops, must set themselves as owner, and must have the 'owner' role.
-      allow create: if isUserActive() && request.auth.uid == request.resource.data.owner_id &&
-                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner';
+      // CREATE: Active users with the 'owner' role can create shops, and must set themselves as owner.
+      allow create: if isAuthenticated() && isUserActive() && userRole() == 'owner' && request.auth.uid == request.resource.data.owner_id;
 
       // READ: Super admins, franchise admins, or any active member (owner or staff) of the shop.
       allow read: if isSuperAdmin() || isFranchiseAdmin() || isShopMember(shopId);
@@ -152,8 +148,7 @@ service cloud.firestore {
       // Shop Subcollections
       // =================================
       match /customers/{customerId} {
-        // Any active shop member can read, write, update, delete customers.
-        // Franchise Admins and Super Admins can only read.
+        // Any active shop member can perform CRUD. Franchise/Super Admins can only read.
         allow write: if isShopMember(shopId);
         allow read: if isShopMember(shopId) || isFranchiseAdmin() || isSuperAdmin();
       }
@@ -163,7 +158,7 @@ service cloud.firestore {
         // Franchise Admins and Super Admins can only read.
         allow create: if isShopMember(shopId);
         allow read: if isShopMember(shopId) || isFranchiseAdmin() || isSuperAdmin();
-        // Ledger entries are immutable for ALL users (including owner) to maintain audit trail.
+        // Ledger entries are immutable to maintain a perfect audit trail.
         allow update, delete: if false;
       }
 
