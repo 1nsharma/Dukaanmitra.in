@@ -201,6 +201,24 @@
       },
       "required": ["id", "event", "createdAt"]
     },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "Records all significant actions taken by users and the system for security and compliance.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "actorId": { "type": "string", "description": "The UID of the user who performed the action." },
+        "actorRole": { "type": "string", "description": "The role of the user at the time of the action." },
+        "shopId": { "type": "string", "description": "The shop context, if applicable." },
+        "action": { "type": "string", "description": "The action performed, e.g., 'user:update:role'." },
+        "targetType": { "type": "string", "description": "The type of entity targeted, e.g., 'user', 'shop'." },
+        "targetId": { "type": "string", "description": "The ID of the entity targeted." },
+        "before": { "type": "object", "description": "The state of the target entity before the change." },
+        "after": { "type": "object", "description": "The state of the target entity after the change." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "actorId", "actorRole", "action", "targetType", "targetId", "createdAt"]
+    },
     "Notification": {
       "title": "Notification",
       "type": "object",
@@ -230,6 +248,7 @@
       { "path": "/contactFormSubmissions/{submissionId}", "definition": { "schema": { "$ref": "#/entities/ContactFormSubmission" } } },
       { "path": "/interactions/{interactionId}", "definition": { "schema": { "$ref": "#/entities/Interaction" } } },
       { "path": "/logs/{logId}", "definition": { "schema": { "$ref": "#/entities/Log" } } },
+      { "path": "/auditLogs/{auditLogId}", "definition": { "schema": { "$ref": "#/entities/AuditLog" } } },
       { "path": "/notifications/{notificationId}", "definition": { "schema": { "$ref": "#/entities/Notification" } } }
     ]
   }

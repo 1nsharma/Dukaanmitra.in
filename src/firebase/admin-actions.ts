@@ -7,16 +7,29 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 
-const logAdminAction = (firestore: Firestore, actorId: string, event: string, details: object) => {
+const logAudit = (firestore: Firestore, details: {
+    actorId: string;
+    actorRole: UserProfile['role'];
+    action: string;
+    target: { type: string, id: string };
+    shopId?: string;
+    changes: object;
+}) => {
     const logData = {
-        id: doc(collection(firestore, 'logs')).id,
-        event,
-        actorId,
+        id: doc(collection(firestore, 'auditLogs')).id,
+        ...details,
+        targetType: details.target.type,
+        targetId: details.target.id,
+        after: details.changes,
         createdAt: serverTimestamp(),
-        details,
     };
-    addDoc(collection(firestore, 'logs'), logData).catch(err => {
-        console.error("CRITICAL: Failed to write admin audit log:", err);
+    // Clean up the object to match the schema
+    delete (logData as any).target;
+    delete (logData as any).changes;
+
+
+    addDoc(collection(firestore, 'auditLogs'), logData).catch(err => {
+        console.error("CRITICAL: Failed to write audit log:", err);
     });
 };
 
@@ -26,15 +39,17 @@ const logAdminAction = (firestore: Firestore, actorId: string, event: string, de
  * This action is protected by security rules and should only succeed if the caller is a super_admin.
  * Throws an error on failure and emits a contextual permission error.
  */
-export const updateUserRole = async (firestore: Firestore, actorId: string, targetUid: string, role: UserProfile['role']) => {
+export const updateUserRole = async (firestore: Firestore, actor: { id: string, role: UserProfile['role'] }, targetUid: string, role: UserProfile['role']) => {
   const userRef = doc(firestore, 'users', targetUid);
   const data = { role };
   try {
     await updateDoc(userRef, data);
-    logAdminAction(firestore, actorId, 'admin_update_user_role', {
-        targetUid,
-        newRole: role,
-        message: `Admin ${actorId} changed role of user ${targetUid} to ${role}.`
+    logAudit(firestore, {
+        actorId: actor.id,
+        actorRole: actor.role,
+        action: 'user:update:role',
+        target: { type: 'user', id: targetUid },
+        changes: { role },
     });
   } catch (serverError: any) {
     if (serverError.code === 'permission-denied') {
@@ -53,15 +68,17 @@ export const updateUserRole = async (firestore: Firestore, actorId: string, targ
  * Updates a user's status in Firestore.
  * This action is protected by security rules and should only succeed if the caller is a super_admin.
  */
-export const updateUserStatus = async (firestore: Firestore, actorId: string, targetUid: string, status: UserProfile['status']) => {
+export const updateUserStatus = async (firestore: Firestore, actor: { id: string, role: UserProfile['role'] }, targetUid: string, status: UserProfile['status']) => {
   const userRef = doc(firestore, 'users', targetUid);
   const data = { status };
   try {
     await updateDoc(userRef, data);
-    logAdminAction(firestore, actorId, 'admin_update_user_status', {
-        targetUid,
-        newStatus: status,
-        message: `Admin ${actorId} changed status of user ${targetUid} to ${status}.`
+    logAudit(firestore, {
+        actorId: actor.id,
+        actorRole: actor.role,
+        action: 'user:update:status',
+        target: { type: 'user', id: targetUid },
+        changes: { status },
     });
   } catch (serverError: any) {
     if (serverError.code === 'permission-denied') {
@@ -81,15 +98,18 @@ export const updateUserStatus = async (firestore: Firestore, actorId: string, ta
  * Updates a shop's status in Firestore.
  * This action is protected by security rules and should only succeed if the caller is a super_admin.
  */
-export const updateShopStatus = async (firestore: Firestore, actorId: string, shopId: string, status: Shop['status']) => {
+export const updateShopStatus = async (firestore: Firestore, actor: { id: string, role: UserProfile['role'] }, shopId: string, status: Shop['status']) => {
     const shopRef = doc(firestore, 'shops', shopId);
     const data = { status };
     try {
         await updateDoc(shopRef, data);
-        logAdminAction(firestore, actorId, 'admin_update_shop_status', {
-            shopId,
-            newStatus: status,
-            message: `Admin ${actorId} changed status of shop ${shopId} to ${status}.`
+        logAudit(firestore, {
+            actorId: actor.id,
+            actorRole: actor.role,
+            action: 'shop:update:status',
+            target: { type: 'shop', id: shopId },
+            changes: { status },
+            shopId: shopId,
         });
     } catch (serverError: any) {
         if (serverError.code === 'permission-denied') {
@@ -108,15 +128,18 @@ export const updateShopStatus = async (firestore: Firestore, actorId: string, sh
  * Updates details for a specific shop.
  * This action is protected by security rules and should only succeed if the caller is a super_admin.
  */
-export const updateBusinessDetails = async (firestore: Firestore, actorId: string, shopId: string, data: Partial<Shop>) => {
+export const updateBusinessDetails = async (firestore: Firestore, actor: { id: string, role: UserProfile['role'] }, shopId: string, data: Partial<Shop>) => {
     const shopRef = doc(firestore, 'shops', shopId);
     const updateData = { ...data, updated_at: serverTimestamp() };
     try {
         await updateDoc(shopRef, updateData);
-        logAdminAction(firestore, actorId, 'admin_update_shop_details', {
-            shopId,
-            updatedFields: Object.keys(data),
-            message: `Admin ${actorId} updated details for shop ${shopId}.`
+        logAudit(firestore, {
+            actorId: actor.id,
+            actorRole: actor.role,
+            action: 'shop:update:details',
+            target: { type: 'shop', id: shopId },
+            changes: data,
+            shopId: shopId,
         });
     } catch (serverError: any) {
         if (serverError.code === 'permission-denied') {

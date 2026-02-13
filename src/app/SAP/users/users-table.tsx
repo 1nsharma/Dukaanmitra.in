@@ -68,7 +68,7 @@ export default function UsersTable() {
         if (!currentUser) return;
         startTransition(async () => {
             try {
-                await updateUserRole(firestore, currentUser.uid, targetUid, newRole);
+                await updateUserRole(firestore, { id: currentUser.uid, role: currentUser.role }, targetUid, newRole);
                 toast({
                     title: 'Success',
                     description: `User role has been updated to ${newRole}.`,
@@ -88,7 +88,7 @@ export default function UsersTable() {
         if (!currentUser) return;
         startTransition(async () => {
             try {
-                await updateUserStatus(firestore, currentUser.uid, targetUid, newStatus);
+                await updateUserStatus(firestore, { id: currentUser.uid, role: currentUser.role }, targetUid, newStatus);
                 toast({
                     title: 'Success',
                     description: `User status has been updated to ${newStatus}.`,

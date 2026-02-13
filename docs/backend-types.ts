@@ -18,7 +18,7 @@ export type UserProfile = {
   photoURL?: string; // "uri"
   createdAt: any;
   shopId?: string;
-  role: "user" | "admin" | "super_admin" | "staff";
+  role: "owner" | "staff" | "franchise_admin" | "super_admin";
   status: "active" | "pending" | "suspended";
   lastLogin?: any;
 };
@@ -139,6 +139,19 @@ export type Log = {
   id: string;
   event: string;
   details: object;
+  createdAt: any;
+};
+
+export type AuditLog = {
+  id: string;
+  actorId: string;
+  actorRole: string;
+  shopId?: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  before?: object;
+  after?: object;
   createdAt: any;
 };
 

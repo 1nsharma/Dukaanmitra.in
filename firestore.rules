@@ -36,6 +36,14 @@ service cloud.firestore {
                userProfile.data.status == 'active' &&
                userProfile.data.role == 'owner';
     }
+    
+    function isFranchiseAdmin() {
+        let userProfile = get(/databases/$(database)/documents/users/$(request.auth.uid));
+        return request.auth != null && 
+               userProfile.data.status == 'active' &&
+               userProfile.data.role == 'franchise_admin';
+    }
+
 
     // =================================
     // Public & System Collections
@@ -70,6 +78,11 @@ service cloud.firestore {
         allow create: if false;
         allow read: if isSuperAdmin();
         allow update, delete: if false;
+    }
+    
+    match /auditLogs/{auditLogId} {
+        allow read: if isSuperAdmin() || isFranchiseAdmin();
+        allow write: if false; // Only backend can write.
     }
     
     match /notifications/{notificationId} {
