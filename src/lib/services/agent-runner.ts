@@ -1,12 +1,10 @@
+
 import { AgentInput, anigravityAgent } from '@/ai/flows/whatsapp-agent-flow';
 import { loadShopAndContextByShopCode } from './context-loader';
 import { sendWhatsAppMessage } from './whatsapp';
 import { executeAction } from './action-engine';
-import { getDoc, doc, runTransaction, increment, serverTimestamp, collection, addDoc, updateDoc } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
-
-let firestore = getFirestore(initializeFirebase().firebaseApp);
+import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 interface NormalizedMessage {
     from: string;
@@ -42,13 +40,13 @@ function parseSimpleBill(text: string): { amount: number; items: string; type: '
  */
 export async function processMessage(message: NormalizedMessage) {
     console.log(`[Processor] Started processing message ${message.messageId} from ${message.from}`);
-    const interactionRef = doc(firestore, 'interactions', message.messageId);
+    const interactionRef = adminDb.collection('interactions').doc(message.messageId);
 
     try {
         const shopCodeMatch = message.text.match(/#(\w+)/);
         if (!shopCodeMatch) {
             await sendWhatsAppMessage(message.from, "Kripya shop code (#SHP123) ke saath bill bhejein.");
-            await updateDoc(interactionRef, { processing_status: 'failed', system_response: "No shop code found." });
+            await interactionRef.update({ processing_status: 'failed', system_response: "No shop code found." });
             return;
         }
         const shopCode = shopCodeMatch[1].toUpperCase();
@@ -57,7 +55,7 @@ export async function processMessage(message: NormalizedMessage) {
         const contextResult = await loadShopAndContextByShopCode(shopCode);
         if (!contextResult.success || !contextResult.shop || !contextResult.shopContext) {
             await sendWhatsAppMessage(message.from, contextResult.message || "Invalid shop code.");
-            await updateDoc(interactionRef, { processing_status: 'failed', system_response: contextResult.message });
+            await interactionRef.update({ processing_status: 'failed', system_response: contextResult.message });
             return;
         }
         
@@ -68,7 +66,7 @@ export async function processMessage(message: NormalizedMessage) {
                 ? "Aapka plan expire ho gaya hai. Account reactivate karne ke liye, kripya apne DukaanMitra dashboard me login karke payment complete karein."
                 : "Aapka DukaanMitra plan expire ho gaya hai. Service continue karne ke liye 'PAY' likh kar bhejein.";
             await sendWhatsAppMessage(message.from, reply);
-            await updateDoc(interactionRef, { processing_status: 'processed', system_response: reply, detected_intent: 'shop_locked_interaction' });
+            await interactionRef.update({ processing_status: 'processed', system_response: reply, detected_intent: 'shop_locked_interaction' });
             return;
         }
 
@@ -82,30 +80,30 @@ export async function processMessage(message: NormalizedMessage) {
             const customerPhone = message.from;
             let replyMessage = '';
 
-            await runTransaction(firestore, async (transaction) => {
-                const customerRef = doc(firestore, 'shops', shopCode, 'customers', customerPhone);
-                const ledgerRef = doc(collection(firestore, 'shops', shopCode, 'ledger'));
+            await adminDb.runTransaction(async (transaction) => {
+                const customerRef = adminDb.collection('shops').doc(shopCode).collection('customers').doc(customerPhone);
+                const ledgerRef = adminDb.collection('shops').doc(shopCode).collection('ledger').doc();
                 const customerDoc = await transaction.get(customerRef);
 
                 const udhaarAmount = type === 'credit' ? amount : -amount;
 
-                if (!customerDoc.exists()) {
+                if (!customerDoc.exists) {
                     replyMessage = "Shukriya! Aapka bill add ho gaya.";
                     transaction.set(customerRef, {
                         shop_id: shopCode, phone: customerPhone, name: `Customer ${customerPhone.slice(-4)}`,
                         visit_count: 1, total_spent: amount, totalUdhaar: udhaarAmount,
-                        last_visit: serverTimestamp(), lastPaymentDate: type === 'payment' ? serverTimestamp() : null,
-                        status: 'NEW', created_at: serverTimestamp(), updated_at: serverTimestamp(), reminderCount: 0,
+                        last_visit: FieldValue.serverTimestamp(), lastPaymentDate: type === 'payment' ? FieldValue.serverTimestamp() : null,
+                        status: 'NEW', created_at: FieldValue.serverTimestamp(), updated_at: FieldValue.serverTimestamp(), reminderCount: 0,
                     });
                 } else {
-                    const visitCount = customerDoc.data().visit_count || 0;
+                    const visitCount = customerDoc.data()!.visit_count || 0;
                     replyMessage = visitCount >= 5 ? "Aap hamare loyal customer hain 🙏 Dhanyavaad!" : "Dhanyavaad! Aap phir aaye 😊";
                     const updateData: any = {
-                        visit_count: increment(1), total_spent: increment(amount), totalUdhaar: increment(udhaarAmount),
-                        last_visit: serverTimestamp(), status: visitCount + 1 >= 5 ? 'LOYAL' : 'REPEAT', updated_at: serverTimestamp()
+                        visit_count: FieldValue.increment(1), total_spent: FieldValue.increment(amount), totalUdhaar: FieldValue.increment(udhaarAmount),
+                        last_visit: FieldValue.serverTimestamp(), status: visitCount + 1 >= 5 ? 'LOYAL' : 'REPEAT', updated_at: FieldValue.serverTimestamp()
                     };
                     if (type === 'payment') {
-                        updateData.lastPaymentDate = serverTimestamp();
+                        updateData.lastPaymentDate = FieldValue.serverTimestamp();
                         updateData.reminderCount = 0;
                     }
                     transaction.update(customerRef, updateData);
@@ -113,13 +111,13 @@ export async function processMessage(message: NormalizedMessage) {
 
                 transaction.set(ledgerRef, {
                     id: ledgerRef.id, shop_id: shopCode, customerPhone, amount, item: items, type,
-                    source: 'whatsapp', createdAt: serverTimestamp(), raw_text: message.text,
+                    source: 'whatsapp', createdAt: FieldValue.serverTimestamp(), raw_text: message.text,
                     source_model_version: 'deterministic_parser_v1', source_confidence: 1.0,
                 });
             });
 
             await sendWhatsAppMessage(customerPhone, replyMessage);
-            await updateDoc(interactionRef, { 
+            await interactionRef.update({ 
                 processing_status: 'processed', 
                 system_response: replyMessage, 
                 detected_intent: 'ledger_entry_simple',
@@ -141,7 +139,7 @@ export async function processMessage(message: NormalizedMessage) {
                 await sendWhatsAppMessage(message.from, agentOutput.response);
             }
             
-            await updateDoc(interactionRef, {
+            await interactionRef.update({
                 processing_status: agentOutput.escalate ? 'escalated' : 'processed',
                 system_response: agentOutput.response,
                 detected_intent: agentOutput.intent,
@@ -153,6 +151,6 @@ export async function processMessage(message: NormalizedMessage) {
     } catch (error) {
         console.error(`[Processor] Unhandled error for message ${message.messageId}:`, error);
         await sendWhatsAppMessage(message.from, "Sorry, an unexpected error occurred. Please try again later.");
-        await updateDoc(interactionRef, { processing_status: 'failed', system_response: (error as Error).message });
+        await interactionRef.update({ processing_status: 'failed', system_response: (error as Error).message });
     }
 }

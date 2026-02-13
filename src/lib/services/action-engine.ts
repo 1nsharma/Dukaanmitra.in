@@ -1,13 +1,9 @@
 
 
-import { doc, writeBatch, increment, serverTimestamp, collection, runTransaction } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { FieldValue } from 'firebase-admin/firestore';
+import { adminDb } from '@/lib/firebase-admin';
 import { AgentOutput } from '@/ai/flows/whatsapp-agent-flow';
 import type { LedgerEntry, Customer } from '@/docs/backend-types';
-
-// Initialize Firestore outside of the function to be reused.
-let firestore = getFirestore(initializeFirebase().firebaseApp);
 
 type ActionPayload = AgentOutput['action']['payload'];
 
@@ -49,14 +45,14 @@ async function handleAddLedgerEntry(payload: ActionPayload): Promise<{ success: 
   }
 
   try {
-     await runTransaction(firestore, async (tx) => {
-        const customerRef = doc(firestore, 'shops', shopId, 'customers', customer.phone);
-        const ledgerRef = doc(collection(firestore, 'shops', shopId, 'ledger'));
+     await adminDb.runTransaction(async (tx) => {
+        const customerRef = adminDb.collection('shops').doc(shopId).collection('customers').doc(customer.phone);
+        const ledgerRef = adminDb.collection('shops').doc(shopId).collection('ledger').doc();
 
         const customerDoc = await tx.get(customerRef);
         const udhaarAmount = transaction.type === 'credit' ? transaction.amount : -transaction.amount;
 
-        if (!customerDoc.exists()) {
+        if (!customerDoc.exists) {
              tx.set(customerRef, {
                 shop_id: shopId,
                 phone: customer.phone,
@@ -65,18 +61,18 @@ async function handleAddLedgerEntry(payload: ActionPayload): Promise<{ success: 
                 total_spent: transaction.amount,
                 visit_count: 1,
                 status: 'new',
-                first_visit: serverTimestamp(),
-                last_visit: serverTimestamp(),
-                created_at: serverTimestamp(),
-                updated_at: serverTimestamp(),
+                first_visit: FieldValue.serverTimestamp(),
+                last_visit: FieldValue.serverTimestamp(),
+                created_at: FieldValue.serverTimestamp(),
+                updated_at: FieldValue.serverTimestamp(),
             });
         } else {
             tx.update(customerRef, {
-                totalUdhaar: increment(udhaarAmount),
-                total_spent: increment(transaction.amount),
-                visit_count: increment(1),
-                last_visit: serverTimestamp(),
-                updated_at: serverTimestamp(),
+                totalUdhaar: FieldValue.increment(udhaarAmount),
+                total_spent: FieldValue.increment(transaction.amount),
+                visit_count: FieldValue.increment(1),
+                last_visit: FieldValue.serverTimestamp(),
+                updated_at: FieldValue.serverTimestamp(),
             });
         }
         
@@ -88,7 +84,7 @@ async function handleAddLedgerEntry(payload: ActionPayload): Promise<{ success: 
             item: transaction.items,
             type: transaction.type as 'credit' | 'payment',
             source: 'whatsapp',
-            createdAt: serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
         });
     });
 
@@ -100,4 +96,3 @@ async function handleAddLedgerEntry(payload: ActionPayload): Promise<{ success: 
     return { success: false, message: 'Failed to write to database.' };
   }
 }
-

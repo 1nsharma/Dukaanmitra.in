@@ -1,11 +1,9 @@
 
 import { processMessage } from "./agent-runner";
-import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc, updateDoc } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const { WHATSAPP_API_TOKEN, WHATSAPP_PHONE_NUMBER_ID } = process.env;
-const firestore = getFirestore(initializeFirebase().firebaseApp);
 
 /**
  * Handles the incoming WhatsApp message payload from the webhook.
@@ -25,10 +23,10 @@ export function handleWhatsAppMessage(body: any) {
                                 for (const message of change.value.messages) {
                                     
                                     const messageId = message.id;
-                                    const interactionRef = doc(firestore, 'interactions', messageId);
-                                    const interactionDoc = await getDoc(interactionRef);
+                                    const interactionRef = adminDb.collection('interactions').doc(messageId);
+                                    const interactionDoc = await interactionRef.get();
 
-                                    if (interactionDoc.exists()) {
+                                    if (interactionDoc.exists) {
                                         console.log(`[WhatsAppService] Duplicate interaction ID ${messageId} received. Ignoring.`);
                                         continue;
                                     }
@@ -52,9 +50,9 @@ export function handleWhatsAppMessage(body: any) {
                                             sender_type: 'customer',
                                             raw_message: normalizedMessage.text,
                                             processing_status: 'received',
-                                            created_at: serverTimestamp(),
+                                            created_at: FieldValue.serverTimestamp(),
                                         };
-                                        await setDoc(interactionRef, interactionData);
+                                        await interactionRef.set(interactionData);
                                         
                                         // Route to the unified message processor
                                         await processMessage(normalizedMessage);
@@ -144,7 +142,6 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
         console.error(`[WhatsAppService] CRITICAL: Failed to send message to ${to} after multiple retries.`, error);
         
         const logData = {
-            id: doc(collection(firestore, 'logs')).id,
             event: 'whatsapp_send_failure',
             level: 'CRITICAL',
             details: {
@@ -152,9 +149,9 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
                 text,
                 error: (error as Error).message,
             },
-            createdAt: serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
         };
-        addDoc(collection(firestore, 'logs'), logData).catch(logErr => {
+        adminDb.collection('logs').add(logData).catch(logErr => {
             console.error("ULTIMATE FAILURE: Could not even write to failure log.", logErr);
         });
     }

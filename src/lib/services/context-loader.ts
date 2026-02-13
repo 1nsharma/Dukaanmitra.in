@@ -1,12 +1,7 @@
 
-import { doc, getDoc } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { adminDb } from '@/lib/firebase-admin';
 import type { Shop } from '@/docs/backend-types';
 import type { ShopContext } from '@/ai/flows/whatsapp-agent-flow';
-
-// Initialize Firestore outside of functions to be reused across calls.
-let firestore = getFirestore(initializeFirebase().firebaseApp);
 
 interface LoadContextResult {
   success: boolean;
@@ -29,10 +24,10 @@ export async function loadShopAndContextByShopCode(shopCode: string): Promise<Lo
   }
 
   try {
-    const shopRef = doc(firestore, 'shops', shopCode);
-    const shopDoc = await getDoc(shopRef);
+    const shopRef = adminDb.collection('shops').doc(shopCode);
+    const shopDoc = await shopRef.get();
 
-    if (!shopDoc.exists()) {
+    if (!shopDoc.exists) {
       console.warn(`[ContextLoader] No shop found with code: ${shopCode}`);
       return { success: false, message: 'Shop not found for this code.' };
     }
