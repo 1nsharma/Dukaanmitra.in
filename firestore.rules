@@ -11,7 +11,7 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      return request.auth.token.email == "amitsharma99976@gmail.com";
+      return request.auth.token.email == "amitsharmaanxt@gmail.com";
     }
     
     function isUserActive() {
@@ -121,7 +121,7 @@ service cloud.firestore {
                      request.resource.data.status == 'active' &&
                      (
                        (request.resource.data.role == 'owner') ||
-                       (request.resource.data.role == 'super_admin' && request.resource.data.email == "amitsharma99976@gmail.com")
+                       (request.resource.data.role == 'super_admin' && request.resource.data.email == "amitsharmaanxt@gmail.com")
                      );
       allow update: if isSuperAdmin() ||
                     (isOwner(userId) && resource.data.status == 'active' && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])));

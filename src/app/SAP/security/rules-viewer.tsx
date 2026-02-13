@@ -17,7 +17,7 @@ service cloud.firestore {
 
     // This is more reliable and required for list rules.
     function isSuperAdmin() {
-      return request.auth.token.email == "amitsharma99976@gmail.com";
+      return request.auth.token.email == "amitsharmaanxt@gmail.com";
     }
 
     function isUserActive() {
@@ -69,7 +69,7 @@ service cloud.firestore {
       // The isUserActive() check is removed to prevent recursive reads on this path.
       allow read: if isOwner(userId) || isSuperAdmin();
       
-      // LIST: Only super admins can list users. The isUserActive() check is removed as it's not compatible with list queries.
+      // LIST: Only super admins can list users. The isUserActive() check is not compatible with list queries.
       allow list: if isSuperAdmin();
 
       // CREATE:
@@ -80,7 +80,7 @@ service cloud.firestore {
                      (
                        (request.resource.data.role == 'user') ||
                        // ONE-TIME BOOTSTRAP RULE:
-                       (request.resource.data.role == 'super_admin' && request.resource.data.email == "amitsharma99976@gmail.com")
+                       (request.resource.data.role == 'super_admin' && request.resource.data.email == "amitsharmaanxt@gmail.com")
                      );
 
       // UPDATE:

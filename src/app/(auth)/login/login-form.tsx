@@ -38,7 +38,7 @@ const resetFormSchema = z.object({
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 type ResetFormValues = z.infer<typeof resetFormSchema>;
 
-const SUPER_ADMIN_BOOTSTRAP_EMAIL = "amitsharma99976@gmail.com";
+const SUPER_ADMIN_BOOTSTRAP_EMAIL = "amitsharmaanxt@gmail.com";
 
 export default function LoginForm() {
   const { toast } = useToast();
