@@ -4,59 +4,53 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // =================================
-    // Helper Functions
+    // Helper Functions (Refactored)
     // =================================
     function isAuthenticated() {
       return request.auth != null;
     }
 
+    // This is the primary helper. It performs a single 'get' operation.
+    function getUserProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    
+    // Checks if the user is an owner of a specific resource (not a shop). Used for /users/{userId} writes.
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function userDoc() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid));
-    }
-
-    function userExists() {
+    // Checks if a user document exists.
+    function userProfileExists() {
       return exists(/databases/$(database)/documents/users/$(request.auth.uid));
-    }
-    
-    function userRole() {
-      return userExists() ? userDoc().data.role : 'guest';
-    }
-
-    function isUserActive() {
-      return userExists() && userDoc().data.status == 'active';
     }
 
     function isSuperAdmin() {
-      return isAuthenticated() && userRole() == 'super_admin';
-    }
-    
-    // Checks if the requesting user is an active member (owner or staff) of a specific shop.
-    function isShopMember(shopId) {
-        return isAuthenticated() &&
-               userExists() &&
-               isUserActive() &&
-               userDoc().data.shopId == shopId &&
-               (userRole() == 'owner' || userRole() == 'staff');
-    }
-    
-    // Checks if the requesting user is the owner of a specific shop.
-    function isShopOwner(shopId) {
-        return isAuthenticated() && 
-               userExists() &&
-               isUserActive() &&
-               userDoc().data.shopId == shopId &&
-               userRole() == 'owner';
+      return isAuthenticated() && userProfileExists() && getUserProfile().data.role == 'super_admin';
     }
     
     function isFranchiseAdmin() {
-        return isAuthenticated() &&
-               userExists() &&
-               isUserActive() &&
-               userRole() == 'franchise_admin';
+        return isAuthenticated() && userProfileExists() && getUserProfile().data.role == 'franchise_admin';
+    }
+
+    function isShopMember(shopId) {
+        if (!isAuthenticated() || !userProfileExists()) {
+            return false;
+        }
+        let profile = getUserProfile().data;
+        return profile.status == 'active' &&
+               profile.shopId == shopId &&
+               (profile.role == 'owner' || profile.role == 'staff');
+    }
+    
+    function isShopOwner(shopId) {
+        if (!isAuthenticated() || !userProfileExists()) {
+            return false;
+        }
+        let profile = getUserProfile().data;
+        return profile.status == 'active' &&
+               profile.shopId == shopId &&
+               profile.role == 'owner';
     }
 
 
@@ -135,8 +129,8 @@ service cloud.firestore {
     // Main Multi-Tenant Shop Collections
     // =================================
     match /shops/{shopId} {
-      // CREATE: Active users with the 'owner' role can create shops, and must set themselves as owner.
-      allow create: if isAuthenticated() && isUserActive() && userRole() == 'owner' && request.auth.uid == request.resource.data.owner_id;
+      // CREATE: Authenticated users can create shops, but only if their profile exists, is active, and has the 'owner' role.
+      allow create: if isAuthenticated() && userProfileExists() && getUserProfile().data.status == 'active' && getUserProfile().data.role == 'owner' && request.auth.uid == request.resource.data.owner_id;
 
       // READ: Super admins, franchise admins, or any active member (owner or staff) of the shop.
       allow read: if isSuperAdmin() || isFranchiseAdmin() || isShopMember(shopId);
