@@ -10,6 +10,10 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  UserCredential,
+  getAdditionalUserInfo
 } from "firebase/auth";
 import { doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 
@@ -38,6 +42,16 @@ const resetFormSchema = z.object({
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 type ResetFormValues = z.infer<typeof resetFormSchema>;
 
+const GoogleIcon = () => (
+  <svg className="w-4 h-4" viewBox="0 0 48 48">
+    <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
+    <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
+    <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
+    <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C43.021,36.251,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+  </svg>
+);
+
+
 export default function LoginForm() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -56,78 +70,89 @@ export default function LoginForm() {
     defaultValues: { email: "" },
   });
 
-  const onLoginSubmit = (values: LoginFormValues) => {
+  const handleSuccessfulLogin = async (userCredential: UserCredential) => {
+    const user = userCredential.user;
+    const additionalInfo = getAdditionalUserInfo(userCredential);
+    const userProfileRef = doc(firestore, "users", user.uid);
+    
+    if (additionalInfo?.isNewUser) {
+      try {
+        const profileData = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          createdAt: serverTimestamp(),
+          role: "owner",
+          status: "active",
+          lastLogin: serverTimestamp(),
+        };
+        await setDoc(userProfileRef, profileData, { merge: true });
+      } catch (profileError) {
+        const permissionError = new FirestorePermissionError({
+          path: `users/${user.uid}`,
+          operation: 'write',
+          requestResourceData: { uid: user.uid, email: user.email, role: 'owner', status: 'active' },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        toast({
+          title: "Profile Creation Issue",
+          description: "Your account was created, but we couldn't save your profile. Please contact support.",
+          variant: "destructive"
+        });
+        return;
+      }
+    } else {
+      const loginUpdateData = { lastLogin: serverTimestamp() };
+      updateDoc(userProfileRef, loginUpdateData).catch(err => {
+        const permissionError = new FirestorePermissionError({
+          path: userProfileRef.path,
+          operation: 'update',
+          requestResourceData: loginUpdateData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
+    }
+
+    toast({
+      title: "Success!",
+      description: additionalInfo?.isNewUser ? "Your account has been created." : "You have been logged in.",
+    });
+    router.push('/dashboard');
+  };
+
+  const onEmailSubmit = (values: LoginFormValues) => {
     startTransition(async () => {
       const isSignUp = authAction === "signup";
-      
       try {
         const userCredential = await (isSignUp
           ? createUserWithEmailAndPassword(auth, values.email, values.password)
           : signInWithEmailAndPassword(auth, values.email, values.password));
         
-        const user = userCredential.user;
-        const userProfileRef = doc(firestore, "users", user.uid);
-
-        if (isSignUp) {
-          try {
-            // On sign up, create a new user profile with the 'owner' role.
-            // The 'super_admin' role is now assigned out-of-band (manually in Firestore), not during signup.
-            const profileData = {
-              uid: user.uid,
-              email: user.email,
-              createdAt: serverTimestamp(),
-              role: "owner", // Default role for all new signups
-              status: "active",
-              lastLogin: serverTimestamp(),
-            };
-
-            // This setDoc will be validated by Firestore rules.
-            setDoc(userProfileRef, profileData, { merge: true }).catch(profileError => {
-                 const permissionError = new FirestorePermissionError({
-                      path: userProfileRef.path,
-                      operation: 'write',
-                      requestResourceData: profileData,
-                  });
-                  errorEmitter.emit('permission-error', permissionError);
-            });
-
-          } catch (profileError: any) {
-             const permissionError = new FirestorePermissionError({
-                  path: `users/${user.uid}`,
-                  operation: 'write',
-                  requestResourceData: {uid: user.uid, email: user.email, role: 'owner', status: 'active'},
-              });
-              errorEmitter.emit('permission-error', permissionError);
-              toast({
-                  title: "Profile Creation Issue",
-                  description: "Your account was created, but we couldn't save your profile. Please contact support.",
-                  variant: "destructive"
-              });
-          }
-        } else {
-            // On login, just update the lastLogin timestamp.
-            const loginUpdateData = { lastLogin: serverTimestamp() };
-            updateDoc(userProfileRef, loginUpdateData).catch(err => {
-                const permissionError = new FirestorePermissionError({
-                      path: userProfileRef.path,
-                      operation: 'update',
-                      requestResourceData: loginUpdateData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            });
-        }
-
-        toast({
-          title: "Success!",
-          description: isSignUp ? "Your account has been created." : "You have been logged in.",
-        });
-        router.push('/dashboard');
+        await handleSuccessfulLogin(userCredential);
 
       } catch (authError: any) {
         console.error(authError);
         toast({
           title: "Authentication Failed",
           description: authError.message || "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  const onGoogleSignIn = () => {
+    startTransition(async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const userCredential = await signInWithPopup(auth, provider);
+        await handleSuccessfulLogin(userCredential);
+      } catch (error: any) {
+        console.error("Google Sign-In Error:", error);
+        toast({
+          title: "Google Sign-In Failed",
+          description: error.message || "Could not sign in with Google. Please try again.",
           variant: "destructive",
         });
       }
@@ -191,8 +216,22 @@ export default function LoginForm() {
 
   return (
     <div className="space-y-4">
+      <Button variant="outline" className="w-full" onClick={onGoogleSignIn} disabled={isPending}>
+        <GoogleIcon />
+        Sign in with Google
+      </Button>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+        </div>
+      </div>
+
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onLoginSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onEmailSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="email"
