@@ -121,7 +121,7 @@ service cloud.firestore {
       allow create: if isOwner(userId) && request.resource.data.role == 'owner' && request.resource.data.status == 'active';
       // A user can update their own profile, but cannot change their role or status. Super admins can change anything.
       allow update: if isSuperAdmin() ||
-                    (isOwner(userId) && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status', 'shopId'])));
+                    (isOwner(userId) && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])));
       allow delete: if isSuperAdmin();
     }
     
