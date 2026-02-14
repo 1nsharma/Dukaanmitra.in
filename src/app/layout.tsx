@@ -9,7 +9,6 @@ import { Toaster } from "@/components/ui/toaster"
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import Mitraa from '@/components/robot';
-import StagingBanner from '@/components/layout/staging-banner';
 
 export const metadata: Metadata = {
   title: 'DukaanMitra - Aapka Digital Munim',
@@ -36,7 +35,6 @@ export default function RootLayout({
             disableTransitionOnChange
         >
             <FirebaseClientProvider>
-                <StagingBanner />
                 <Header />
                 <main className="flex-1">{children}</main>
                 <Footer />

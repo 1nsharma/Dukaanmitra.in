@@ -1,9 +1,3 @@
-const ENV = process.env.NEXT_PUBLIC_APP_ENV;
-
-// Environment Guard: Prevent production configs from running in non-production environments.
-if (ENV === "production" && process.env.NODE_ENV !== "production") {
-  throw new Error("FATAL: Production environment variables are being used in a non-production build. Aborting.");
-}
 
 const requiredEnvVars = [
   'NEXT_PUBLIC_FIREBASE_API_KEY',
