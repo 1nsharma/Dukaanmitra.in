@@ -95,7 +95,7 @@ No cross-shop data access is possible.
 - **Database**: [Google Firestore](https://firebase.google.com/docs/firestore)
 - **Authentication**: [Firebase Authentication](https://firebase.google.com/docs/auth)
 - **AI Engine**: [Google Genkit](https://firebase.google.com/docs/genkit)
-- **AI Model**: [Google Gemini](https://deepmind.google/technologies/gemini/)
+- **AI Model**: [Google Gemini](https://deepmind.google.com/technologies/gemini/)
 - **Payments**: [Razorpay](https://razorpay.com/)
 
 ## Local Development Setup
@@ -131,18 +131,9 @@ Use the HTTPS URL provided by ngrok (e.g., `https://<random-string>.ngrok-free.a
 
 ## Environment Variables
 
-You need to set the following environment variables in a `.env.local` file for the application to function correctly.
+You need to set the following environment variables in a `.env.local` file for the application to function correctly. The Firebase client-side configuration is now hardcoded in `src/firebase/config.ts`.
 
 ```plaintext
-# --- For Firebase Client SDK (Frontend) ---
-# Get these values from your Firebase project settings -> General -> Your apps -> Firebase SDK snippet -> Config.
-NEXT_PUBLIC_FIREBASE_API_KEY=""
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=""
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=""
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=""
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=""
-NEXT_PUBLIC_FIREBASE_APP_ID=""
-
 # For Google AI / Genkit (Gemini)
 # Get your key from Google AI Studio: https://aistudio.google.com/app/apikey
 GEMINI_API_KEY=""
@@ -177,7 +168,6 @@ FIREBASE_SERVICE_ACCOUNT_KEY=''
 # This is configured in your Firebase project's Auth settings, but stored here for reference.
 GOOGLE_CLIENT_ID="675229096057-tahuuv8egdlgkualt2qumcclv214fqcm.apps.googleusercontent.com"
 ```
-**Note**: The Firebase client-side configuration is loaded dynamically from environment variables in `src/firebase/config.ts`. The `NEXT_PUBLIC_` prefix is required for these to be accessible in the browser.
 
 ## Running the Application
 
