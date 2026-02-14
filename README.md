@@ -95,17 +95,19 @@ npm install
 ```
 
 ### 3. Set Up Environment Variables
-Create a `.env.local` file in the root of the project by copying the example ` .env` file:
+You will need to create separate files for each environment to ensure complete isolation. Copy the `.env` file to create your environment-specific files:
 ```bash
-cp .env .env.local
+cp .env .env.development
+cp .env .env.production
+cp .env .env.staging # If you use a staging environment
 ```
-Now, fill in the required values in your new `.env.local` file. For a production build, you will use a `.env.production` file. See the [Environment Variables](#environment-variables) section below for details.
+Now, fill in the required values in your new `.env.*` files. Use the Firebase project details for `dukaanmitra-staging` in `.env.staging` and `dukaanmitra-prod` in `.env.production`. See the [Environment Variables](#environment-variables) section below for details.
 
 ### 4. Run the Development Server
 ```bash
 npm run dev
 ```
-The application will be available at `http://localhost:3000`.
+The application will be available at `http://localhost:3000`. This command uses the `.env.development` file by default.
 
 To receive webhooks from WhatsApp and Razorpay locally, you will need to use a tunneling service like `ngrok`.
 ```bash
@@ -120,7 +122,7 @@ You need to set the following environment variables for the application to funct
 ```plaintext
 # --- For Firebase Client SDK (Frontend) ---
 # Get these values from your Firebase project settings -> General -> Your apps -> Firebase SDK snippet -> Config.
-# Use the values for your 'staging' project in .env.development and 'production' in .env.production.
+# Use the values for your 'staging' project in .env.staging and 'production' in .env.production.
 NEXT_PUBLIC_FIREBASE_API_KEY="YOUR_CLIENT_API_KEY"
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="YOUR_CLIENT_AUTH_DOMAIN"
 NEXT_PUBLIC_FIREBASE_PROJECT_ID="YOUR_CLIENT_PROJECT_ID"
@@ -158,17 +160,27 @@ RAZORPAY_WEBHOOK_SECRET="YOUR_RAZORPAY_WEBHOOK_SECRET"
 FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
 
 ```
-**Note**: The Firebase client-side configuration is loaded from environment variables in `src/firebase/config.ts`. The `NEXT_PUBLIC_` prefix is required for these to be accessible in the browser.
+**Note**: The Firebase client-side configuration is loaded dynamically from environment variables in `src/firebase/config.ts`. The `NEXT_PUBLIC_` prefix is required for these to be accessible in the browser.
 
 ## Running the Application
 
 - **Development**: `npm run dev` - Starts the Next.js app in development mode with hot-reloading.
-- **Production Build**: `npm run build` - Creates an optimized production build of the application.
-- **Start Production Server**: `npm run start` - Runs the production build.
+- **Staging Build**: `npm run build:staging` - Creates a build using `.env.staging` variables.
+- **Production Build**: `npm run build` or `npm run build:prod` - Creates an optimized production build using `.env.production`.
+- **Start Staging Server**: `npm run start:staging`
+- **Start Production Server**: `npm run start` or `npm run start:prod`
 
 ## Deployment
 
-The application is configured for easy deployment to serverless platforms that support Next.js.
+The application is configured for easy deployment to serverless platforms that support Next.js. You can use Firebase CLI aliases to manage deployments to different environments.
+```bash
+# First, add your project aliases
+firebase use --add
+
+# Then deploy to a specific environment
+firebase deploy --project staging
+firebase deploy --project production
+```
 
 ### Firebase App Hosting
 The project includes an `apphosting.yaml` file, making it ready for deployment on [Firebase App Hosting](https://firebase.google.com/docs/app-hosting).
