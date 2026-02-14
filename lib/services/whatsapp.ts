@@ -1,11 +1,9 @@
 
-import { runAgentForMessage, processBillMessage } from "./agent-runner";
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { processMessage } from "./agent-runner";
+import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const { WHATSAPP_API_TOKEN, WHATSAPP_PHONE_NUMBER_ID } = process.env;
-const firestore = getFirestore(initializeFirebase().firebaseApp);
 
 /**
  * Handles the incoming WhatsApp message payload from the webhook.
@@ -25,8 +23,8 @@ export function handleWhatsAppMessage(body: any) {
                                 for (const message of change.value.messages) {
                                     
                                     const messageId = message.id;
-                                    const interactionRef = doc(firestore, 'interactions', messageId);
-                                    const interactionDoc = await getDoc(interactionRef);
+                                    const interactionRef = adminDb.collection('interactions').doc(messageId);
+                                    const interactionDoc = await interactionRef.get();
 
                                     if (interactionDoc.exists()) {
                                         console.log(`[WhatsAppService] Duplicate interaction ID ${messageId} received. Ignoring.`);
@@ -44,7 +42,7 @@ export function handleWhatsAppMessage(body: any) {
                                         const shopCodeMatch = normalizedMessage.text.match(/#(\w+)/);
                                         const shopId = shopCodeMatch ? shopCodeMatch[1].toUpperCase() : undefined;
                                         
-                                        // Create a structured interaction log
+                                        // Create a structured interaction log. This is the first write.
                                         const interactionData = {
                                             interactionId: messageId,
                                             shop_id: shopId,
@@ -52,12 +50,12 @@ export function handleWhatsAppMessage(body: any) {
                                             sender_type: 'customer',
                                             raw_message: normalizedMessage.text,
                                             processing_status: 'received',
-                                            created_at: serverTimestamp(),
+                                            created_at: FieldValue.serverTimestamp(),
                                         };
-                                        await setDoc(interactionRef, interactionData);
+                                        await interactionRef.set(interactionData);
                                         
-                                        // Route to the deterministic bill processor
-                                        await processBillMessage(normalizedMessage);
+                                        // Route to the unified message processor
+                                        await processMessage(normalizedMessage);
                                     }
                                 }
                             }
@@ -74,7 +72,30 @@ export function handleWhatsAppMessage(body: any) {
 
 
 /**
+ * A utility function to retry an async operation with exponential backoff.
+ * @param fn The async function to retry.
+ * @param retries Number of retries.
+ * @param delayMs Initial delay in milliseconds.
+ * @param operationName A name for the operation for logging.
+ */
+async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1000, operationName = 'operation'): Promise<T> {
+  let lastError: Error | undefined;
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      console.warn(`[Retry] ${operationName} attempt ${i + 1} failed. Retrying in ${delayMs * (i + 1)}ms...`, error.message);
+      await new Promise(resolve => setTimeout(resolve, delayMs * (i + 1))); // Basic exponential backoff
+    }
+  }
+  throw new Error(`[Retry] ${operationName} failed after ${retries} attempts. Last error: ${lastError?.message}`);
+}
+
+
+/**
  * Sends a reply back to the user via the WhatsApp Business API.
+ * This has been hardened with a retry mechanism.
  * @param to - The recipient's phone number.
  * @param text - The message text to send.
  */
@@ -95,7 +116,7 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
         text: { body: text },
     };
 
-    try {
+    const sendOperation = async () => {
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -105,16 +126,33 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
             body: JSON.stringify(payload),
         });
 
-        const responseData = await response.json();
-
         if (!response.ok) {
-            console.error(`[WhatsAppService] Error sending message: ${response.status} ${response.statusText}`, responseData);
-        } else {
-            console.log('[WhatsAppService] Message sent successfully:', responseData);
+            const responseData = await response.json();
+            // Throw an error to trigger the retry mechanism
+            throw new Error(`API Error ${response.status}: ${JSON.stringify(responseData)}`);
         }
+        
+        return response.json();
+    };
+
+    try {
+        const responseData = await withRetry(sendOperation, 3, 1000, `Send WhatsApp message to ${to}`);
+        console.log('[WhatsAppService] Message sent successfully:', responseData);
     } catch (error) {
-        console.error('[WhatsAppService] Exception while sending message:', error);
+        console.error(`[WhatsAppService] CRITICAL: Failed to send message to ${to} after multiple retries.`, error);
+        
+        const logData = {
+            event: 'whatsapp_send_failure',
+            level: 'CRITICAL',
+            details: {
+                to,
+                text,
+                error: (error as Error).message,
+            },
+            createdAt: FieldValue.serverTimestamp(),
+        };
+        adminDb.collection('logs').add(logData).catch(logErr => {
+            console.error("ULTIMATE FAILURE: Could not even write to failure log.", logErr);
+        });
     }
 }
-
-    
