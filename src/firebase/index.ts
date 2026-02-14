@@ -47,11 +47,16 @@ export function getSdks(firebaseApp: FirebaseApp | null): {
   if (!firebaseApp) {
     return { firebaseApp: null, auth: null, firestore: null };
   }
-  return {
-    firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp),
-  };
+  try {
+    return {
+      firebaseApp,
+      auth: getAuth(firebaseApp),
+      firestore: getFirestore(firebaseApp),
+    };
+  } catch (e) {
+    console.error("[Firebase] Failed to get SDK instances. This is likely due to an invalid configuration (e.g., API key).", e);
+    return { firebaseApp: null, auth: null, firestore: null };
+  }
 }
 
 export * from './provider';

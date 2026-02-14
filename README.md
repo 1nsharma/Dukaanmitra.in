@@ -7,11 +7,14 @@ This repository contains the full-stack Next.js application, the Genkit AI backe
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Core Design Principles](#core-design-principles)
 - [Architecture](#architecture)
+- [Multi-Tenancy & Security](#multi-tenancy--security)
 - [Tech Stack](#tech-stack)
 - [Local Development Setup](#local-development-setup)
 - [Environment Variables](#environment-variables)
 - [Running the Application](#running-the-application)
+- [Roadmap](#roadmap)
 - [Deployment](#deployment)
 
 ---
@@ -25,6 +28,14 @@ DukaanMitra is not just a chatbot; it's a complete business management tool that
 - **Super Admin Panel**: A built-in control panel for managing users and system settings across the entire platform.
 
 The system is designed to be multi-tenant, secure, and scalable from day one.
+
+## Core Design Principles
+
+- **WhatsApp-first UX**: Zero app installs for shop owners.
+- **Multi-tenant isolation**: Every shop runs in a secure data boundary.
+- **Event-driven AI actions**: Messages → intents → verified operations.
+- **No raw AI trust**: All actions pass through policy & validation layers.
+- **Scales serverlessly**: No fixed infra cost as users grow.
 
 ## Architecture
 
@@ -65,8 +76,17 @@ The system is built on a modern, serverless architecture centered around Next.js
 ```
 
 - **Frontend**: A Next.js application serves the public website, user dashboard, and super admin panel.
-- **AI Backend**: Google Genkit flows are integrated directly into the Next.js server environment, acting as the "brain" of the AI agent. A dedicated API route (`/api/whatsapp`) serves as the secure webhook for the WhatsApp Business API.
+- **AI Backend**: Google Genkit flows are integrated directly into the Next.js server environment, acting as the "brain" of the AI agent. A dedicated API route (`/api/whatsapp`) serves as the secure webhook for the WhatsApp Business API. The AI agent never writes directly to the database. All state changes pass through the Action Engine which enforces: permission checks, data validation, duplicate prevention, and business rules. This prevents hallucinated or malicious operations.
 - **Database & Auth**: Google Firebase provides the user authentication and the scalable, secure Firestore database that powers the entire application. Data access is controlled by robust `firestore.rules`.
+
+## Multi-Tenancy & Security
+
+- Each shop is isolated by Firestore security rules.
+- AI context loads only tenant-scoped data.
+- Admin actions audited in system logs.
+- Webhooks verified using secrets.
+
+No cross-shop data access is possible.
 
 ## Tech Stack
 
@@ -164,6 +184,17 @@ GOOGLE_CLIENT_ID="675229096057-tahuuv8egdlgkualt2qumcclv214fqcm.apps.googleuserc
 - **Development**: `npm run dev` - Starts the Next.js app in development mode with hot-reloading.
 - **Production Build**: `npm run build` - Creates an optimized production build.
 - **Start Production Server**: `npm run start` - Starts the production server.
+
+## Roadmap
+
+- Voice note bill processing
+- Automated payment reminders
+- GST-ready reports
+- Inventory forecasting
+- Credit risk scoring
+- Merchant mobile app (optional)
+
+Built on the same AI action engine.
 
 ## Deployment
 

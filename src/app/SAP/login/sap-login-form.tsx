@@ -71,6 +71,7 @@ export default function SAPLoginForm() {
   });
   
   const handleSuccessfulLogin = async (userCredential: UserCredential) => {
+    if (!firestore) return;
     const user = userCredential.user;
     const additionalInfo = getAdditionalUserInfo(userCredential);
     const userProfileRef = doc(firestore, "users", user.uid);
@@ -124,6 +125,10 @@ export default function SAPLoginForm() {
 
   const onEmailSubmit = (values: LoginFormValues) => {
     startTransition(async () => {
+      if (!auth) {
+        toast({ title: "Firebase Not Configured", description: "Please check your environment variables.", variant: "destructive" });
+        return;
+      }
       try {
         // Only allow sign-in, not sign-up on this form for security.
         const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
@@ -141,6 +146,10 @@ export default function SAPLoginForm() {
 
   const onGoogleSignIn = () => {
     startTransition(async () => {
+      if (!auth) {
+        toast({ title: "Firebase Not Configured", description: "Please check your environment variables.", variant: "destructive" });
+        return;
+      }
       const provider = new GoogleAuthProvider();
       try {
         const userCredential = await signInWithPopup(auth, provider);
@@ -158,6 +167,10 @@ export default function SAPLoginForm() {
   
   const onResetSubmit = (values: ResetFormValues) => {
     startTransition(() => {
+      if (!auth) {
+        toast({ title: "Firebase Not Configured", description: "Please check your environment variables.", variant: "destructive" });
+        return;
+      }
       sendPasswordResetEmail(auth, values.email)
         .then(() => {
           toast({
@@ -196,7 +209,7 @@ export default function SAPLoginForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isPending}>
+            <Button type="submit" className="w-full" disabled={isPending || !auth}>
               {isPending ? "Sending..." : "Send Reset Link"}
             </Button>
           </form>
@@ -213,7 +226,7 @@ export default function SAPLoginForm() {
 
   return (
     <div className="space-y-4">
-      <Button variant="outline" className="w-full" onClick={onGoogleSignIn} disabled={isPending}>
+      <Button variant="outline" className="w-full" onClick={onGoogleSignIn} disabled={isPending || !auth}>
         <GoogleIcon />
         Sign in with Google
       </Button>
@@ -255,7 +268,7 @@ export default function SAPLoginForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button type="submit" className="w-full" disabled={isPending || !auth}>
             {isPending ? "Signing in..." : "Sign In"}
           </Button>
         </form>
