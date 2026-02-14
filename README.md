@@ -98,8 +98,8 @@ npm install
 You will need to create separate files for each environment to ensure complete isolation. Copy the `.env` file to create your environment-specific files:
 ```bash
 cp .env .env.development
+cp .env .env.staging
 cp .env .env.production
-cp .env .env.staging # If you use a staging environment
 ```
 Now, fill in the required values in your new `.env.*` files. Use the Firebase project details for `dukaanmitra-staging` in `.env.staging` and `dukaanmitra-prod` in `.env.production`. See the [Environment Variables](#environment-variables) section below for details.
 
@@ -120,44 +120,51 @@ Use the HTTPS URL provided by ngrok (e.g., `https://<random-string>.ngrok-free.a
 You need to set the following environment variables for the application to function correctly. Create separate `.env.development`, `.env.staging`, and `.env.production` files as needed for different environments.
 
 ```plaintext
+# --- Application Environment ---
+# Set this to 'development', 'staging', or 'production'. This is critical for safety.
+# In .env.development, set it to "development"
+# In .env.staging, set it to "staging"
+# In .env.production, set it to "production"
+NEXT_PUBLIC_APP_ENV=""
+
 # --- For Firebase Client SDK (Frontend) ---
 # Get these values from your Firebase project settings -> General -> Your apps -> Firebase SDK snippet -> Config.
 # Use the values for your 'staging' project in .env.staging and 'production' in .env.production.
-NEXT_PUBLIC_FIREBASE_API_KEY="YOUR_CLIENT_API_KEY"
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="YOUR_CLIENT_AUTH_DOMAIN"
-NEXT_PUBLIC_FIREBASE_PROJECT_ID="YOUR_CLIENT_PROJECT_ID"
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="YOUR_CLIENT_STORAGE_BUCKET"
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="YOUR_CLIENT_MESSAGING_SENDER_ID"
-NEXT_PUBLIC_FIREBASE_APP_ID="YOUR_CLIENT_APP_ID"
+NEXT_PUBLIC_FIREBASE_API_KEY=""
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=""
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=""
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=""
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=""
+NEXT_PUBLIC_FIREBASE_APP_ID=""
 
 # For Google AI / Genkit (Gemini)
 # Get your key from Google AI Studio: https://aistudio.google.com/app/apikey
-GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+GEMINI_API_KEY=""
 
 # For sending emails from the contact form
-MAILGUN_API_KEY="YOUR_MAILGUN_API_KEY"
-MAILGUN_DOMAIN="YOUR_MAILGUN_DOMAIN"
-CONTACT_EMAIL_RECIPIENT="your-support-email@example.com"
-MAILGUN_FROM_EMAIL="DukaanMitra <no-reply@yourdomain.com>"
+MAILGUN_API_KEY=""
+MAILGUN_DOMAIN=""
+CONTACT_EMAIL_RECIPIENT=""
+MAILGUN_FROM_EMAIL=""
 
 # --- For WhatsApp Business API Integration ---
-WHATSAPP_VERIFY_TOKEN="YOUR_RANDOM_VERIFY_TOKEN"
-WHATSAPP_WEBHOOK_SECRET="YOUR_META_APP_SECRET"
-WHATSAPP_API_TOKEN="YOUR_WHATSAPP_BUSINESS_API_TOKEN"
-WHATSAPP_PHONE_NUMBER_ID="YOUR_WHATSAPP_PHONE_NUMBER_ID"
+WHATSAPP_VERIFY_TOKEN=""
+WHATSAPP_WEBHOOK_SECRET=""
+WHATSAPP_API_TOKEN=""
+WHATSAPP_PHONE_NUMBER_ID=""
 
 # --- For Razorpay Payment Gateway ---
 # Get your keys from the Razorpay Dashboard under Settings -> API Keys
-RAZORPAY_KEY_ID="YOUR_RAZORPAY_KEY_ID"
-RAZORPAY_KEY_SECRET="YOUR_RAZORPAY_KEY_SECRET"
-NEXT_PUBLIC_RAZORPAY_KEY_ID="YOUR_RAZORPAY_KEY_ID" # This is also needed on the client-side for checkout
+RAZORPAY_KEY_ID=""
+RAZORPAY_KEY_SECRET=""
+NEXT_PUBLIC_RAZORPAY_KEY_ID="" # This is also needed on the client-side for checkout
 # Create a webhook in the Razorpay Dashboard (Settings -> Webhooks) and set this as the secret.
-RAZORPAY_WEBHOOK_SECRET="YOUR_RAZORPAY_WEBHOOK_SECRET"
+RAZORPAY_WEBHOOK_SECRET=""
 
 # --- For Firebase Admin SDK (Server-Side Operations) ---
 # In your Firebase project settings under "Service accounts", generate a new private key.
 # Paste the entire contents of the downloaded JSON file here as a single-line string.
-FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
+FIREBASE_SERVICE_ACCOUNT_KEY=''
 
 ```
 **Note**: The Firebase client-side configuration is loaded dynamically from environment variables in `src/firebase/config.ts`. The `NEXT_PUBLIC_` prefix is required for these to be accessible in the browser.
