@@ -152,6 +152,10 @@ RAZORPAY_WEBHOOK_SECRET=""
 # Paste the entire contents of the downloaded JSON file here as a single-line string.
 FIREBASE_SERVICE_ACCOUNT_KEY=''
 
+# --- For Google OAuth ---
+# The web client ID for Google Sign-In, obtained from Google Cloud Console.
+# This is configured in your Firebase project's Auth settings, but stored here for reference.
+GOOGLE_CLIENT_ID="675229096057-tahuuv8egdlgkualt2qumcclv214fqcm.apps.googleusercontent.com"
 ```
 **Note**: The Firebase client-side configuration is loaded dynamically from environment variables in `src/firebase/config.ts`. The `NEXT_PUBLIC_` prefix is required for these to be accessible in the browser.
 
