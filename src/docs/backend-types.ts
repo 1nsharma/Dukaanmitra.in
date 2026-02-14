@@ -163,3 +163,16 @@ export type Notification = {
   sentAt: any;
   status: "sent" | "failed" | "delivered" | "read";
 };
+
+export type GlobalMetrics = {
+  id: string;
+  mrr: number;
+  activeSubscriptions: number;
+  activeTrials: number;
+  churnedShops: number;
+  totalShops: number;
+  totalUsers: number;
+  trialToPaidConversionRate: number;
+  avgRevenuePerShop: number;
+  updatedAt: any;
+};

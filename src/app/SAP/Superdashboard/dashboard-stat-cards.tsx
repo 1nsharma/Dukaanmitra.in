@@ -25,7 +25,11 @@ export default function DashboardStatCards() {
     const firestore = useFirestore();
     
     // Read from a single, aggregated document. This is vastly more scalable and cost-effective.
-    const metricsRef = useMemoFirebase(() => doc(firestore, "metrics", "global"), [firestore]);
+    const metricsRef = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return doc(firestore, "metrics", "global");
+    }, [firestore]);
+
     const { data: metrics, isLoading } = useDoc<GlobalMetrics>(metricsRef);
 
     const defaultMetrics: GlobalMetrics = {
