@@ -95,11 +95,11 @@ npm install
 ```
 
 ### 3. Set Up Environment Variables
-Create a `.env` file in the root of the project by copying the example:
+Create a `.env.local` file in the root of the project by copying the example ` .env` file:
 ```bash
-cp .env.example .env
+cp .env .env.local
 ```
-Now, fill in the required values in your new `.env` file. See the [Environment Variables](#environment-variables) section below for details.
+Now, fill in the required values in your new `.env.local` file. For a production build, you will use a `.env.production` file. See the [Environment Variables](#environment-variables) section below for details.
 
 ### 4. Run the Development Server
 ```bash
@@ -115,9 +115,19 @@ Use the HTTPS URL provided by ngrok (e.g., `https://<random-string>.ngrok-free.a
 
 ## Environment Variables
 
-You need to set the following environment variables in your `.env` file for the application to function correctly.
+You need to set the following environment variables for the application to function correctly. Create separate `.env.development`, `.env.staging`, and `.env.production` files as needed for different environments.
 
 ```plaintext
+# --- For Firebase Client SDK (Frontend) ---
+# Get these values from your Firebase project settings -> General -> Your apps -> Firebase SDK snippet -> Config.
+# Use the values for your 'staging' project in .env.development and 'production' in .env.production.
+NEXT_PUBLIC_FIREBASE_API_KEY="YOUR_CLIENT_API_KEY"
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="YOUR_CLIENT_AUTH_DOMAIN"
+NEXT_PUBLIC_FIREBASE_PROJECT_ID="YOUR_CLIENT_PROJECT_ID"
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="YOUR_CLIENT_STORAGE_BUCKET"
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="YOUR_CLIENT_MESSAGING_SENDER_ID"
+NEXT_PUBLIC_FIREBASE_APP_ID="YOUR_CLIENT_APP_ID"
+
 # For Google AI / Genkit (Gemini)
 # Get your key from Google AI Studio: https://aistudio.google.com/app/apikey
 GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
@@ -138,6 +148,7 @@ WHATSAPP_PHONE_NUMBER_ID="YOUR_WHATSAPP_PHONE_NUMBER_ID"
 # Get your keys from the Razorpay Dashboard under Settings -> API Keys
 RAZORPAY_KEY_ID="YOUR_RAZORPAY_KEY_ID"
 RAZORPAY_KEY_SECRET="YOUR_RAZORPAY_KEY_SECRET"
+NEXT_PUBLIC_RAZORPAY_KEY_ID="YOUR_RAZORPAY_KEY_ID" # This is also needed on the client-side for checkout
 # Create a webhook in the Razorpay Dashboard (Settings -> Webhooks) and set this as the secret.
 RAZORPAY_WEBHOOK_SECRET="YOUR_RAZORPAY_WEBHOOK_SECRET"
 
@@ -147,7 +158,7 @@ RAZORPAY_WEBHOOK_SECRET="YOUR_RAZORPAY_WEBHOOK_SECRET"
 FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
 
 ```
-**Note**: The Firebase client-side configuration is hard-coded in `src/firebase/config.ts` as it contains public, non-sensitive keys.
+**Note**: The Firebase client-side configuration is loaded from environment variables in `src/firebase/config.ts`. The `NEXT_PUBLIC_` prefix is required for these to be accessible in the browser.
 
 ## Running the Application
 
