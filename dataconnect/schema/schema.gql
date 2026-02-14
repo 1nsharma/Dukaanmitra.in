@@ -1,0 +1,50 @@
+type Shop @table {
+  name: String!
+  createdAt: Timestamp!
+  phone: String
+  plan: String
+  trialEnd: Timestamp
+  isActive: Boolean
+}
+
+type User @table {
+  firebaseUid: String!
+  shop: Shop!
+  role: String!
+  createdAt: Timestamp!
+  phone: String
+}
+
+type Customer @table {
+  shop: Shop!
+  phone: String!
+  createdAt: Timestamp!
+  name: String
+  visitCount: Int
+  totalSpent: Float
+  lastVisit: Timestamp
+  segment: String
+}
+
+type Bill @table {
+  shop: Shop!
+  amount: Float!
+  createdAt: Timestamp!
+  customer: Customer
+  items: String
+  createdBy: User
+}
+
+type SubscriptionType @table {
+  shop: Shop!
+  status: String!
+  createdAt: Timestamp!
+  currentPeriodEnd: Timestamp
+}
+
+type LoyaltyReward @table {
+  shop: Shop!
+  visitThreshold: Int!
+  rewardText: String!
+  createdAt: Timestamp!
+}
