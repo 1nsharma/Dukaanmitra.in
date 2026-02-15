@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -90,18 +89,16 @@ export default function Header() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuLabel>Testing Dashboards</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => router.push('/dashboard')}>
                               <LayoutDashboard className="mr-2" />
-                              Dashboard
+                              Shopkeeper View
                             </DropdownMenuItem>
-                            {user.role === 'super_admin' && (
-                              <DropdownMenuItem onClick={() => router.push('/SAP/Superdashboard')}>
+                            <DropdownMenuItem onClick={() => router.push('/SAP/Superdashboard')}>
                                 <Shield className="mr-2" />
-                                Super Dashboard
-                              </DropdownMenuItem>
-                            )}
+                                Super Admin View
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                               <LogOut className="mr-2" />
@@ -157,10 +154,8 @@ export default function Header() {
                         <>
                         {user ? (
                             <>
-                                <Button onClick={() => {router.push('/dashboard'); setMobileMenuOpen(false);}} size="lg">Dashboard</Button>
-                                {user.role === 'super_admin' && (
-                                  <Button onClick={() => {router.push('/SAP/Superdashboard'); setMobileMenuOpen(false);}} size="lg" variant="secondary">Super Dashboard</Button>
-                                )}
+                                <Button onClick={() => {router.push('/dashboard'); setMobileMenuOpen(false);}} size="lg">Shopkeeper View</Button>
+                                <Button onClick={() => {router.push('/SAP/Superdashboard'); setMobileMenuOpen(false);}} size="lg" variant="secondary">Super Admin View</Button>
                                 <Button onClick={() => {handleSignOut(); setMobileMenuOpen(false);}} variant="outline" size="lg">Sign Out</Button>
                             </>
                         ) : (

@@ -231,6 +231,24 @@
         "status": { "type": "string", "enum": ["sent", "failed", "delivered", "read"] }
       },
       "required": ["id", "shopId", "customerPhone", "type", "sentAt", "status"]
+    },
+     "GlobalMetrics": {
+      "title": "Global Metrics",
+      "description": "A single document containing aggregated metrics for the entire platform, updated by a scheduled backend job.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Should always be 'global'." },
+        "mrr": { "type": "number", "description": "Monthly Recurring Revenue." },
+        "activeSubscriptions": { "type": "number" },
+        "activeTrials": { "type": "number" },
+        "churnedShops": { "type": "number", "description": "Shops that were once active/trial but are now cancelled or locked." },
+        "totalShops": { "type": "number" },
+        "totalUsers": { "type": "number" },
+        "trialToPaidConversionRate": { "type": "number", "description": "Percentage of trials that convert to a paid plan." },
+        "avgRevenuePerShop": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "updatedAt"]
     }
   },
   "auth": {
@@ -249,7 +267,8 @@
       { "path": "/interactions/{interactionId}", "definition": { "schema": { "$ref": "#/entities/Interaction" } } },
       { "path": "/logs/{logId}", "definition": { "schema": { "$ref": "#/entities/Log" } } },
       { "path": "/auditLogs/{auditLogId}", "definition": { "schema": { "$ref": "#/entities/AuditLog" } } },
-      { "path": "/notifications/{notificationId}", "definition": { "schema": { "$ref": "#/entities/Notification" } } }
+      { "path": "/notifications/{notificationId}", "definition": { "schema": { "$ref": "#/entities/Notification" } } },
+      { "path": "/metrics/{metricId}", "definition": { "schema": { "$ref": "#/entities/GlobalMetrics" } } }
     ]
   }
 }

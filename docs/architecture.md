@@ -12,7 +12,7 @@ The system is designed as a modular, event-driven architecture that leverages se
 
 3.  **Agent Runner (`src/lib/services/agent-runner.ts`)**: The main orchestrator. It loads the necessary context for the shop, executes the core Genkit AI agent, and routes the agent's output to the appropriate downstream service (Action Engine or WhatsApp Service).
 
-4.  **Context Loader (`src/lib/services/context-loader.ts`)**: A crucial service that fetches shop-specific data, rules, and configurations from Firestore based on the incoming WhatsApp number. This ensures the AI agent operates within the correct multi-tenant context.
+4.  **Context Loader (`src/lib/services/context-loader.ts`)**: A crucial service that fetches shop-specific data, rules, and configurations from Firestore based on the incoming WhatsApp number. This ensures the AI agent operates within the correct, multi-tenant context.
 
 5.  **Genkit AI Agent (`src/ai/flows/whatsapp-agent-flow.ts`)**: The "brain" of the system. It uses a combination of rule-based logic and LLM-powered tools (like intent detection and transaction parsing) to understand the user's message and decide on a course of action (reply, act, or escalate).
 

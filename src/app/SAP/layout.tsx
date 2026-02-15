@@ -25,18 +25,13 @@ export default function SuperAdminLayout({ children }: { children: ReactNode }) 
       // If no user is found, redirect them to the dedicated SAP login page.
       if (!user) {
         router.replace('/SAP/login');
-      } else if (user.role !== 'super_admin') {
-        // If a non-admin user tries to access, send them to their own dashboard.
-        router.replace('/dashboard');
       }
     }
   }, [user, isUserLoading, router]);
 
   // CRITICAL LOADING GUARD:
-  // While `isUserLoading` is true, or if the resolved user is not a super_admin,
-  // show a loading spinner. This prevents any unauthorized content from flickering
-  // and covers the brief moment during a redirect.
-  if (isUserLoading || !user || user.role !== 'super_admin') {
+  // While `isUserLoading` is true, or if no user is found, show a spinner.
+  if (isUserLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
