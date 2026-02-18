@@ -135,7 +135,7 @@ const interactiveAIDemoFlow = ai.defineFlow(
     outputSchema: InteractiveAIDemoOutputSchema,
   },
   async input => {
-    const {output} = await interactiveAIDemoPrompt(input);
-    return output!;
+    const result = await interactiveAIDemoPrompt(input);
+    return result.output()!;
   }
 );

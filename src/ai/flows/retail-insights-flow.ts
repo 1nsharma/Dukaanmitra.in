@@ -67,7 +67,7 @@ const retailInsightsFlow = ai.defineFlow(
     outputSchema: RetailInsightsOutputSchema,
   },
   async input => {
-    const { output } = await retailInsightsPrompt(input);
-    return output!;
+    const result = await retailInsightsPrompt(input);
+    return result.output()!;
   }
 );

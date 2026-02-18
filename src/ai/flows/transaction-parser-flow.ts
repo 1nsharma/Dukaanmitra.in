@@ -62,7 +62,7 @@ const transactionParserFlow = ai.defineFlow(
     outputSchema: TransactionParserPromptOutputSchema,
   },
   async input => {
-    const { output } = await transactionParserPrompt(input);
-    return output!;
+    const result = await transactionParserPrompt(input);
+    return result.output()!;
   }
 );
