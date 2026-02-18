@@ -13,7 +13,7 @@ import { isPast } from 'date-fns';
 const firestore = getFirestore(initializeFirebase().firebaseApp);
 
 // This flow is designed to be triggered by a scheduler (e.g., a cron job).
-export const dailySummaryFlow = ai.defineFlow(
+const dailySummaryFlow = ai.defineFlow(
   {
     name: 'dailySummaryFlow',
     inputSchema: z.void(),

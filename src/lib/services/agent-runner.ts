@@ -1,5 +1,5 @@
 
-import { AgentInput, anigravityAgent } from '@/ai/flows/whatsapp-agent-flow';
+import { AgentInput, runWhatsappAgent } from '@/ai/flows/whatsapp-agent-flow';
 import { loadShopAndContextByShopCode } from './context-loader';
 import { sendWhatsAppMessage } from './whatsapp';
 import { executeAction } from './action-engine';
@@ -129,7 +129,7 @@ export async function processMessage(message: NormalizedMessage) {
             console.log(`[Processor] Message ${message.messageId} is not a simple bill. Routing to AI Agent.`);
             
             const agentInput: AgentInput = { query: cleanedQuery, shopContext };
-            const agentOutput = await anigravityAgent(agentInput);
+            const agentOutput = await runWhatsappAgent(agentInput);
 
             if (agentOutput.action) {
                 await executeAction(agentOutput.action);

@@ -10,59 +10,25 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { parseTransaction, ParseTransactionOutputSchema, type ParseTransactionOutput } from './transaction-parser-flow';
-import { getMarketTrend, MarketTrendInputSchema, MarketTrendOutputSchema } from './market-trend-flow';
+import { parseTransaction } from './transaction-parser-flow';
+import { getMarketTrend } from './market-trend-flow';
+import { 
+    AgentInputSchema,
+    AgentOutputSchema,
+    MarketTrendInputSchema,
+    MarketTrendOutputSchema,
+    ParseTransactionOutputSchema,
+    ShopContextSchema,
+    SupportedIntentSchema,
+    type AgentInput,
+    type AgentOutput,
+    type ParseTransactionOutput,
+    type ShopContext,
+    type SupportedIntent,
+} from '@/ai/schemas';
 
 // ==================================================
-// 1. INTENT & SCHEMA DEFINITIONS
-// ==================================================
-const SupportedIntentSchema = z.enum([
-  'price_query',
-  'availability_query',
-  'payment_query',
-  'order_create',
-  'order_cancel',
-  'ledger_entry',
-  'shop_timing',
-  'trend_related_question',
-  'greeting',
-  'unknown',
-]);
-type SupportedIntent = z.infer<typeof SupportedIntentSchema>;
-
-const ShopContextSchema = z.object({
-  shop_id: z.string(),
-  name: z.string(),
-  region: z.string().default('Mumbai'),
-  paymentModes: z.array(z.string()),
-  timings: z.string(),
-  known_products_and_prices: z.string().describe("Simple string of known products and prices, e.g., 'Doodh ₹55/liter, Aata ₹40/kg'"),
-  rules: z.object({
-    credit_limit_per_transaction: z.number().default(5000),
-    allow_credit: z.boolean().default(true),
-  }),
-});
-export type ShopContext = z.infer<typeof ShopContextSchema>;
-
-export const AgentInputSchema = z.object({
-  query: z.string().describe('The raw WhatsApp message from the customer.'),
-  shopContext: ShopContextSchema.describe('The context of the specific shop receiving the message.'),
-});
-export type AgentInput = z.infer<typeof AgentInputSchema>;
-
-export const AgentOutputSchema = z.object({
-  intent: SupportedIntentSchema,
-  confidence: z.number().min(0).max(1),
-  response: z.string().optional().describe("The generated Hinglish response for the customer."),
-  action: z.any().optional().describe("A structured object for backend systems to execute."),
-  escalate: z.boolean().describe("If true, the agent is unsure and is escalating to a human."),
-  escalation_reason: z.string().optional(),
-});
-export type AgentOutput = z.infer<typeof AgentOutputSchema>;
-
-
-// ==================================================
-// 2. AGENT TOOLS
+// 1. AGENT TOOLS
 // ==================================================
 
 /**
@@ -100,7 +66,7 @@ const marketTrendTool = ai.defineTool(
 
 
 // ==================================================
-// 3. POLICY GUARD
+// 2. POLICY GUARD
 // ==================================================
 
 /**
@@ -124,7 +90,7 @@ function policyGuard(
 }
 
 // ==================================================
-// 4. THE CORE ANIGRAVITY AGENT
+// 3. THE CORE ANIGRAVITY AGENT
 // ==================================================
 
 const anigravityAgentPrompt = ai.definePrompt({
@@ -164,7 +130,7 @@ const anigravityAgentPrompt = ai.definePrompt({
 });
 
 
-export const anigravityAgent = ai.defineFlow(
+const anigravityAgent = ai.defineFlow(
   {
     name: 'anigravityAgent',
     inputSchema: AgentInputSchema,

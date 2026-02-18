@@ -11,7 +11,7 @@ import { subDays, subHours } from 'date-fns';
 
 const firestore = getFirestore(initializeFirebase().firebaseApp);
 
-export const paymentReminderFlow = ai.defineFlow(
+const paymentReminderFlow = ai.defineFlow(
   {
     name: 'paymentReminderFlow',
     inputSchema: z.void(),

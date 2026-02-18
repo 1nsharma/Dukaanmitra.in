@@ -9,17 +9,12 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const InteractiveAIDemoInputSchema = z.object({
-  query: z.string().describe('The user query for the product demo.'),
-});
-export type InteractiveAIDemoInput = z.infer<typeof InteractiveAIDemoInputSchema>;
-
-const InteractiveAIDemoOutputSchema = z.object({
-  response: z.string().describe('The AI response to the user query.'),
-});
-export type InteractiveAIDemoOutput = z.infer<typeof InteractiveAIDemoOutputSchema>;
+import {
+  InteractiveAIDemoInputSchema,
+  type InteractiveAIDemoInput,
+  InteractiveAIDemoOutputSchema,
+  type InteractiveAIDemoOutput,
+} from '@/ai/schemas';
 
 export async function interactiveAIDemo(input: InteractiveAIDemoInput): Promise<InteractiveAIDemoOutput> {
   return interactiveAIDemoFlow(input);

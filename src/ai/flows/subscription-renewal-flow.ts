@@ -11,7 +11,7 @@ import { addDays } from 'date-fns';
 
 const firestore = getFirestore(initializeFirebase().firebaseApp);
 
-export const subscriptionRenewalFlow = ai.defineFlow(
+const subscriptionRenewalFlow = ai.defineFlow(
   {
     name: 'subscriptionRenewalFlow',
     inputSchema: z.void(),

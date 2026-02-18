@@ -9,22 +9,13 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import {
+  ParseTransactionInputSchema,
+  type ParseTransactionInput,
+  TransactionParserPromptOutputSchema,
+  type ParseTransactionOutput,
+} from '@/ai/schemas';
 
-const ParseTransactionInputSchema = z.object({
-  query: z.string().describe('The natural language transaction query from the user.'),
-});
-export type ParseTransactionInput = z.infer<typeof ParseTransactionInputSchema>;
-
-const ParseTransactionOutputSchema = z.object({
-  phone: z.string().optional().describe("The customer's 10-digit phone number, if mentioned."),
-  customer_name: z.string().describe("The name of the customer. If no name is found, defaults to 'Customer'."),
-  amount: z.number().describe('The transaction amount as an integer.'),
-  items: z.string().describe('A string listing the items involved in the transaction.'),
-  type: z.enum(['credit', 'payment']).describe('The type of transaction: credit (udhaar) or payment (jama).'),
-  confidence_score: z.number().min(0).max(1).describe('The AI model\'s confidence in the accuracy of the parsed data.'),
-});
-export type ParseTransactionOutput = z.infer<typeof ParseTransactionOutputSchema>;
 
 export async function parseTransaction(input: ParseTransactionInput): Promise<ParseTransactionOutput> {
   // AI flow types are case-sensitive, so we map our lowercase to the schema's uppercase
@@ -38,15 +29,7 @@ export async function parseTransaction(input: ParseTransactionInput): Promise<Pa
 const transactionParserPrompt = ai.definePrompt({
   name: 'transactionParserPrompt',
   input: { schema: ParseTransactionInputSchema },
-  // The model seems to work better with uppercase enums, so we define it here and convert it in our wrapper.
-  output: { schema: z.object({
-    phone: z.string().optional().describe("The customer's 10-digit phone number, if mentioned."),
-    customer_name: z.string().describe("The name of the customer. If no name is found, defaults to 'Customer'."),
-    amount: z.number().describe('The transaction amount as an integer.'),
-    items: z.string().describe('A string listing the items involved in the transaction.'),
-    type: z.enum(['CREDIT', 'PAYMENT']).describe('The type of transaction: CREDIT (udhaar) or PAYMENT (jama).'),
-    confidence_score: z.number().min(0).max(1).describe('The AI model\'s confidence in the accuracy of the parsed data.'),
-  }) },
+  output: { schema: TransactionParserPromptOutputSchema },
   prompt: `Role: Indian Kirana Billing Expert.
 Task: Extract billing info from Hinglish/Local retail slang WhatsApp messages.
 
@@ -75,14 +58,7 @@ const transactionParserFlow = ai.defineFlow(
   {
     name: 'transactionParserFlow',
     inputSchema: ParseTransactionInputSchema,
-    outputSchema: z.object({
-      phone: z.string().optional(),
-      customer_name: z.string(),
-      amount: z.number(),
-      items: z.string(),
-      type: z.enum(['CREDIT', 'PAYMENT']),
-      confidence_score: z.number()
-    }),
+    outputSchema: TransactionParserPromptOutputSchema,
   },
   async input => {
     const { output } = await transactionParserPrompt(input);

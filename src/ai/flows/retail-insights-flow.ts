@@ -9,39 +9,8 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
 import type { LedgerEntry, Customer } from '@/docs/backend-types';
-
-const LedgerEntrySchema = z.object({
-    amount: z.number(),
-    createdAt: z.any().describe("Timestamp of the transaction"),
-    customerName: z.string().optional(),
-    item: z.string().optional(),
-    type: z.enum(['credit', 'payment']),
-});
-
-const CustomerSchema = z.object({
-    name: z.string().optional(),
-    visit_count: z.number().optional(),
-    total_spent: z.number().optional(),
-    last_visit: z.any().describe("Timestamp of last visit"),
-    status: z.string().optional(),
-});
-
-const RetailInsightsInputSchema = z.object({
-  ledgerEntries: z.array(LedgerEntrySchema).describe("List of transactions from the last 30 days."),
-  customers: z.array(CustomerSchema).describe("List of all customers."),
-});
-export type RetailInsightsInput = z.infer<typeof RetailInsightsInputSchema>;
-
-const RetailInsightsOutputSchema = z.object({
-  keyActionItems: z.array(z.string()).describe("A list of 3 clear, actionable items for the shop owner in simple Hinglish."),
-  customerInsights: z.string().describe("Insights about customer behavior (e.g., repeat vs one-time, churn signals). Simple Hinglish, no jargon."),
-  fastMovingItems: z.string().describe("Analysis of fast-moving items from the 'item' field. Simple Hinglish, no jargon."),
-  operationalInefficiencies: z.string().describe("Analysis of operational inefficiencies based on transaction patterns. Simple Hinglish, no jargon."),
-  revenueLeakage: z.string().describe("Analysis of potential revenue leakage (e.g., high credit to new customers). Simple Hinglish, no jargon."),
-});
-export type RetailInsightsOutput = z.infer<typeof RetailInsightsOutputSchema>;
+import { RetailInsightsInputSchema, type RetailInsightsInput, RetailInsightsOutputSchema, type RetailInsightsOutput } from '@/ai/schemas';
 
 export async function generateRetailInsights(input: { ledgerEntries: LedgerEntry[], customers: Customer[] }): Promise<RetailInsightsOutput> {
   const flowInput: RetailInsightsInput = {

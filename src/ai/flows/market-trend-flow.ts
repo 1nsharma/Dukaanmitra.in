@@ -8,27 +8,12 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
-
-export const MarketTrendInputSchema = z.object({
-  product: z.string().describe('The product to check the trend for, e.g., "Mangoes", "Umbrellas".'),
-  region: z.string().describe('The region for the trend, e.g., "Delhi", "Mumbai".'),
-});
-export type MarketTrendInput = z.infer<typeof MarketTrendInputSchema>;
-
-export const MarketTrendOutputSchema = z.object({
-  demand_score: z.number().min(0).max(100).describe('A score from 0-100 indicating current market demand.'),
-  trend_direction: z.enum(['up', 'down', 'stable']).describe('The recent direction of the demand trend.'),
-  trend_duration_days: z.number().describe('The number of days the current trend has been active.'),
-  seasonal_factor: z.number().min(0).max(1).describe('A score from 0-1 indicating how much the trend is influenced by seasonality.'),
-});
-export type MarketTrendOutput = z.infer<typeof MarketTrendOutputSchema>;
+import { MarketTrendInputSchema, type MarketTrendInput, MarketTrendOutputSchema, type MarketTrendOutput } from '@/ai/schemas';
 
 // This is the main function the agent will call.
 export async function getMarketTrend(input: MarketTrendInput): Promise<MarketTrendOutput> {
   return marketTrendFlow(input);
 }
-
 
 const marketTrendFlow = ai.defineFlow(
   {
