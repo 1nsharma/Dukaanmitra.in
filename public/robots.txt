@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /SAP/
+Disallow: /dashboard/
+Disallow: /login/
+
+Sitemap: https://dukaanmitra.in/sitemap.xml
