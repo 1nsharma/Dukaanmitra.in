@@ -1,14 +1,46 @@
+// This file reads the client-side Firebase configuration from environment variables.
+// It is the recommended approach for production applications.
 
+// A helper function to ensure that all required environment variables are present.
+function getFirebaseConfig() {
+  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+  const authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+  const messagingSenderId = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID;
+  const appId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID;
+  const measurementId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID;
 
-// This file contains the configuration for the Firebase project.
-// The values here are hardcoded as per the project requirements.
+  if (
+    apiKey &&
+    authDomain &&
+    projectId &&
+    storageBucket &&
+    messagingSenderId &&
+    appId
+  ) {
+    return {
+      apiKey,
+      authDomain,
+      projectId,
+      storageBucket,
+      messagingSenderId,
+      appId,
+      measurementId,
+    };
+  }
 
-export const firebaseConfig = {
-  apiKey: "AIzaSyBGCPV3xZYjud46ATCfEPqA_I_X0bvgMrk",
-  authDomain: "mvp1-aafa3.firebaseapp.com",
-  projectId: "mvp1-aafa3",
-  storageBucket: "mvp1-aafa3.appspot.com",
-  messagingSenderId: "675229096057",
-  appId: "1:675229096057:web:91e072c57da06d36ad9ca8",
-  measurementId: "G-REDM99K52Q"
-};
+  // If any of the required variables are missing, return a partial or empty object.
+  // The initializeFirebase function will handle this case and prevent the app from crashing.
+  return {
+    apiKey: undefined,
+    authDomain: undefined,
+    projectId: undefined,
+    storageBucket: undefined,
+    messagingSenderId: undefined,
+    appId: undefined,
+    measurementId: undefined,
+  };
+}
+
+export const firebaseConfig = getFirebaseConfig();

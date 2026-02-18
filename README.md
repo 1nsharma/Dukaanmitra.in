@@ -147,7 +147,7 @@ The project also includes an `apphosting.yaml` file, making it ready for deploym
 
 ## Environment Variables
 
-You need to set the following environment variables in a `.env.local` file for local development, or in your hosting provider's settings for production. The Firebase client-side configuration is hardcoded in `src/firebase/config.ts`.
+You need to set the following environment variables in a `.env.local` file for local development, or in your hosting provider's settings for production.
 
 ```plaintext
 # For Google AI / Genkit (Gemini)
@@ -181,8 +181,21 @@ FIREBASE_SERVICE_ACCOUNT_KEY=''
 
 # --- For Google OAuth ---
 # The web client ID for Google Sign-In, obtained from Google Cloud Console.
-# This is configured in your Firebase project's Auth settings, but stored here for reference.
 GOOGLE_CLIENT_ID="675229096057-tahuuv8egdlgkualt2qumcclv214fqcm.apps.googleusercontent.com"
+
+# ===================================================================
+# ==         CLIENT-SIDE FIREBASE CONFIGURATION (REQUIRED)         ==
+# ===================================================================
+# These variables are needed on the client-side to connect to your Firebase project.
+# Copy them from your Firebase project settings.
+
+NEXT_PUBLIC_FIREBASE_API_KEY="YOUR_API_KEY"
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="YOUR_AUTH_DOMAIN"
+NEXT_PUBLIC_FIREBASE_PROJECT_ID="YOUR_PROJECT_ID"
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="YOUR_STORAGE_BUCKET"
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="YOUR_MESSAGING_SENDER_ID"
+NEXT_PUBLIC_FIREBASE_APP_ID="YOUR_APP_ID"
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="YOUR_MEASUREMENT_ID"
 ```
 
 ## Running the Application

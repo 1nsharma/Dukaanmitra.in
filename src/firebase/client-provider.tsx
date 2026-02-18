@@ -30,7 +30,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
                 <Terminal className="h-4 w-4" />
                 <AlertTitle>Firebase Not Connected</AlertTitle>
                 <AlertDescription>
-                    Your Firebase environment variables are missing. Please create a <code>.env.local</code> file and add your Firebase project configuration to it. The app will run in a limited, demo-only mode until configured.
+                    Your client-side Firebase environment variables are missing. Please create a <code>.env.local</code> file and add your `NEXT_PUBLIC_FIREBASE_*` configuration to it. The app will run in a limited, demo-only mode until configured.
                 </AlertDescription>
             </Alert>
         </div>
