@@ -1,7 +1,9 @@
 
+'use server';
+
 import { adminDb } from '@/lib/firebase-admin';
 import type { Shop } from '@/docs/backend-types';
-import type { ShopContext } from '@/ai/flows/whatsapp-agent-flow';
+import type { ShopContext } from '@/ai/schemas';
 
 interface LoadContextResult {
   success: boolean;
