@@ -21,6 +21,18 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'dukaanmitra.in',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.dukaanmitra.in',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
