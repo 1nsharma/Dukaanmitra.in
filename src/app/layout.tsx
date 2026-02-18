@@ -11,8 +11,29 @@ import { ThemeProvider } from '@/components/theme-provider';
 import Mitraa from '@/components/robot';
 
 export const metadata: Metadata = {
-  title: 'DukaanMitra - Aapka Digital Munim',
-  description: 'Transform your Kirana shop with India\'s first AI-powered WhatsApp Munim. No app downloads. Just message and you\'re done.',
+  title: 'DukaanMitra - CRM & Business Services SaaS',
+  description: 'A robust CRM and business services SaaS solution for scaling your business with AI-driven automation.',
+  openGraph: {
+    url: 'https://dukaanmitra-in.vercel.app/',
+    type: 'website',
+    title: 'DukaanMitra - CRM & Business Services SaaS',
+    description: 'A robust CRM and business services SaaS solution for scaling your business with AI-driven automation.',
+    images: [
+        {
+            url: 'https://images.unsplash.com/photo-1620752763329-37f6d5c5b9f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraXJhbmElMjBzdG9yZSUyMG93bmVyJTIwcGhvbmV8ZW58MHx8fHwxNzcwMjE3OTM0fDA&ixlib=rb-4.1.0&q=80&w=1200&h=630',
+            width: 1200,
+            height: 630,
+            alt: 'A smiling Indian shop owner using a smartphone in his store.',
+        }
+    ],
+    siteName: 'DukaanMitra',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DukaanMitra - CRM & Business Services SaaS',
+    description: 'A robust CRM and business services SaaS solution for scaling your business with AI-driven automation.',
+    images: ['https://images.unsplash.com/photo-1620752763329-37f6d5c5b9f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraXJhbmElMjBzdG9yZSUyMG93bmVyJTIwcGhvbmV8ZW58MHx8fHwxNzcwMjE3OTM0fDA&ixlib=rb-4.1.0&q=80&w=1200&h=630'],
+  },
 };
 
 export default function RootLayout({
