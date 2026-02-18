@@ -1,6 +1,8 @@
+# See https://www.robotstxt.org/robotstxt.html for syntax
 User-agent: *
-Disallow: /SAP/
 Disallow: /dashboard/
 Disallow: /login/
+Disallow: /SAP/
+Allow: /
 
 Sitemap: https://dukaanmitra.in/sitemap.xml
