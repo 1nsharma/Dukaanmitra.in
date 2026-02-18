@@ -12,10 +12,11 @@ This repository contains the full-stack Next.js application, the Genkit AI backe
 - [Multi-Tenancy & Security](#multi-tenancy--security)
 - [Tech Stack](#tech-stack)
 - [Local Development Setup](#local-development-setup)
+- [Deployment](#deployment)
 - [Environment Variables](#environment-variables)
 - [Running the Application](#running-the-application)
 - [Roadmap](#roadmap)
-- [Deployment](#deployment)
+
 
 ---
 
@@ -129,9 +130,24 @@ ngrok http 3000
 ```
 Use the HTTPS URL provided by ngrok (e.g., `https://<random-string>.ngrok-free.app`) and set it as your webhook URL in the Meta and Razorpay dashboards, appending the correct path (`/api/whatsapp` or `/api/verify-payment`).
 
+## Deployment
+
+The application is configured for easy deployment to serverless platforms that support Next.js.
+
+### Vercel (Recommended)
+You can deploy this repository directly to [Vercel](https://vercel.com/) with zero configuration. Vercel will automatically detect the Next.js framework and set up the build pipeline.
+
+1.  Push your code to a GitHub repository.
+2.  Import the repository into Vercel.
+3.  **Crucially, you must add all the environment variables listed in `.env.local` to your Vercel project's settings under "Environment Variables".**
+4.  Once deployed, you can assign your custom domain (e.g., `dukaanmitra.in`) in the Vercel project's "Domains" tab.
+
+### Firebase App Hosting
+The project also includes an `apphosting.yaml` file, making it ready for deployment on [Firebase App Hosting](https://firebase.google.com/docs/app-hosting).
+
 ## Environment Variables
 
-You need to set the following environment variables in a `.env.local` file for the application to function correctly. The Firebase client-side configuration is now hardcoded in `src/firebase/config.ts`.
+You need to set the following environment variables in a `.env.local` file for local development, or in your hosting provider's settings for production. The Firebase client-side configuration is hardcoded in `src/firebase/config.ts`.
 
 ```plaintext
 # For Google AI / Genkit (Gemini)
@@ -185,13 +201,3 @@ GOOGLE_CLIENT_ID="675229096057-tahuuv8egdlgkualt2qumcclv214fqcm.apps.googleuserc
 - Merchant mobile app (optional)
 
 Built on the same AI action engine.
-
-## Deployment
-
-The application is configured for easy deployment to serverless platforms that support Next.js.
-
-### Firebase App Hosting
-The project includes an `apphosting.yaml` file, making it ready for deployment on [Firebase App Hosting](https://firebase.google.com/docs/app-hosting).
-
-### Vercel
-You can also deploy this repository directly to [Vercel](https://vercel.com/) with zero configuration. Vercel will automatically detect the Next.js framework and set up the build pipeline.
