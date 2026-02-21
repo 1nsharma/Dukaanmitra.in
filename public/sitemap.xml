@@ -30,9 +30,19 @@
     <lastmod>2024-07-31</lastmod>
     <priority>0.60</priority>
   </url>
-   <url>
+  <url>
     <loc>https://dukaanmitra.in/docs</loc>
     <lastmod>2024-07-31</lastmod>
     <priority>0.60</priority>
+  </url>
+    <url>
+    <loc>https://dukaanmitra.in/privacy-policy</loc>
+    <lastmod>2024-07-31</lastmod>
+    <priority>0.50</priority>
+  </url>
+  <url>
+    <loc>https://dukaanmitra.in/terms-of-service</loc>
+    <lastmod>2024-07-31</lastmod>
+    <priority>0.50</priority>
   </url>
 </urlset>
