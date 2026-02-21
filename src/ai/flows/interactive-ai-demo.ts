@@ -136,6 +136,6 @@ const interactiveAIDemoFlow = ai.defineFlow(
   },
   async input => {
     const result = await interactiveAIDemoPrompt(input);
-    return result.output()!;
+    return result.output!;
   }
 );

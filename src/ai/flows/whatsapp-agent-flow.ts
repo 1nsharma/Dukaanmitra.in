@@ -140,7 +140,7 @@ const anigravityAgent = ai.defineFlow(
 
     // 1. Execute the main agent prompt. Genkit handles the tool-calling loop automatically.
     const llmResponse = await anigravityAgentPrompt(input);
-    const agentDecision = llmResponse.output();
+    const agentDecision = llmResponse.output;
 
     if (!agentDecision) {
       return {

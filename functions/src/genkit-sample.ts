@@ -1,9 +1,3 @@
-// This file has been commented out to resolve a build issue.
-// The Genkit v1.x syntax used here was conflicting with the project's
-// legacy Genkit v0.5.x dependencies, causing the `npm install` command to fail.
-// This sample can be updated to v0.5.x syntax or removed if not needed.
-
-/*
 import {genkit, z} from "genkit";
 import {googleAI} from "@genkit-ai/google-genai";
 
@@ -11,7 +5,7 @@ import {googleAI} from "@genkit-ai/google-genai";
 // function from a Genkit action. It automatically implements streaming if your flow does.
 // The https library also has other utility methods such as hasClaim, which verifies that
 // a caller's token has a specific claim (optionally matching a specific value)
-import { onCallGenkit, hasClaim } from "firebase-functions/https";
+import { onCallGenkit, hasClaim } from "firebase-functions/v2/https";
 
 // Gemini Developer API models and Vertex Express Mode models depend on an API key.
 // API keys should be stored in Cloud Secret Manager so that access to these
@@ -47,8 +41,8 @@ const menuSuggestionFlow = ai.defineFlow({
     // Construct a request and send it to the model API.
     const prompt =
       `Suggest an item for the menu of a ${subject} themed restaurant`;
-    const { response, stream } = ai.generateStream({
-      model: googleAI.model("gemini-2.5-flash"),
+    const { stream, response } = ai.generateStream({
+      model: googleAI("gemini-1.5-flash"),
       prompt: prompt,
       config: {
         temperature: 1,
@@ -63,7 +57,8 @@ const menuSuggestionFlow = ai.defineFlow({
     // convert it to a string, but more complicated flows might coerce the
     // response into structured output or chain the response into another
     // LLM call, etc.
-    return (await response).text;
+    const finalResponse = await response;
+    return finalResponse.text;
   }
 );
 
@@ -80,4 +75,3 @@ export const menuSuggestion = onCallGenkit({
   // Grant access to the API key to this function:
   secrets: [apiKey],
 }, menuSuggestionFlow);
-*/

@@ -68,6 +68,6 @@ const retailInsightsFlow = ai.defineFlow(
   },
   async input => {
     const result = await retailInsightsPrompt(input);
-    return result.output()!;
+    return result.output!;
   }
 );
