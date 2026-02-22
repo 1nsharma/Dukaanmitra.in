@@ -2,6 +2,5 @@
 // The active dashboard page is now located at /src/app/(app)/dashboard/page.tsx.
 // This file can be safely deleted.
 
-export default function DeprecatedDashboardPage() {
-  return null;
-}
+// By removing the default export, Next.js no longer considers this a page,
+// which resolves the build error.
