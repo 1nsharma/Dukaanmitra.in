@@ -1,17 +1,11 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
-#
-# Allow all crawlers to access all public content.
+
 User-agent: *
 Allow: /
-Allow: /features
-Allow: /insights
-Allow: /pricing
-Allow: /blog
-Allow: /docs
-Allow: /contact
 
-# Disallow crawling of all application-specific and private routes.
-Disallow: /dashboard
+# Disallow application routes
 Disallow: /login
-Disallow: /SAP
-Disallow: /api
+Disallow: /dashboard/
+Disallow: /SAP/
+
+# Point to sitemap
+Sitemap: https://dukaanmitra.in/sitemap.xml

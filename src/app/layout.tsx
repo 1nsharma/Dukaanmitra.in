@@ -11,13 +11,14 @@ import { ThemeProvider } from '@/components/theme-provider';
 import Mitraa from '@/components/robot';
 
 export const metadata: Metadata = {
-  title: 'DukaanMitra - CRM & Business Services SaaS',
-  description: 'A robust CRM and business services SaaS solution for scaling your business with AI-driven automation.',
+  title: 'DukaanMitra - AI-Powered WhatsApp Munim for Kirana Stores',
+  description: 'DukaanMitra is an AI-first SaaS platform that digitizes Kirana stores using a WhatsApp-based Munim (accountant) for ledger management, sales analytics, and customer engagement.',
+  keywords: 'DukaanMitra, Kirana, WhatsApp CRM, Digital Ledger, Udhaar Management, India, SaaS, Small Business, Retail Tech, AI for Retail',
   openGraph: {
-    url: 'https://dukaanmitra-in.vercel.app/',
+    url: 'https://dukaanmitra.in',
     type: 'website',
-    title: 'DukaanMitra - CRM & Business Services SaaS',
-    description: 'A robust CRM and business services SaaS solution for scaling your business with AI-driven automation.',
+    title: 'DukaanMitra - AI-Powered WhatsApp Munim for Kirana Stores',
+    description: 'Digitize your Kirana store with an AI assistant on WhatsApp. Manage your khata, get sales insights, and grow your business.',
     images: [
         {
             url: 'https://images.unsplash.com/photo-1620752763329-37f6d5c5b9f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraXJhbmElMjBzdG9yZSUyMG93bmVyJTIwcGhvbmV8ZW58MHx8fHwxNzcwMjE3OTM0fDA&ixlib=rb-4.1.0&q=80&w=1200&h=630',
@@ -30,8 +31,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DukaanMitra - CRM & Business Services SaaS',
-    description: 'A robust CRM and business services SaaS solution for scaling your business with AI-driven automation.',
+    title: 'DukaanMitra - AI-Powered WhatsApp Munim for Kirana Stores',
+    description: 'Digitize your Kirana store with an AI assistant on WhatsApp. Manage your khata, get sales insights, and grow your business.',
     images: ['https://images.unsplash.com/photo-1620752763329-37f6d5c5b9f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraXJhbmElMjBzdG9yZSUyMG93bmVyJTIwcGhvbmV8ZW58MHx8fHwxNzcwMjE3OTM0fDA&ixlib=rb-4.1.0&q=80&w=1200&h=630'],
   },
 };
