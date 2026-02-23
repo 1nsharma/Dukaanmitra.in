@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 import SuperAdminSidebar from './components/super-admin-sidebar';
@@ -12,29 +12,20 @@ export default function SuperAdminLayout({ children }: { children: ReactNode }) 
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { resolvedTheme } = useTheme();
-  const pathname = usePathname();
-
-  // If we are on the login page, don't render the protected layout
-  if (pathname === '/SAP/login') {
-    return <>{children}</>;
-  }
 
   useEffect(() => {
     // Wait for the user's auth state to be fully resolved.
-    if (!isUserLoading) {
-      // If no user is found, redirect them to the dedicated SAP login page.
-      if (!user) {
-        router.replace('/SAP/login');
-      } else if (user.role !== 'super_admin') {
-        // If the user is logged in but is NOT a super admin, redirect them away.
-        router.replace('/dashboard');
-      }
+    if (isUserLoading) {
+      return;
+    }
+    
+    // If no user is found, or if the user is not a super admin, redirect away.
+    if (!user || user.role !== 'super_admin') {
+      router.replace('/dashboard');
     }
   }, [user, isUserLoading, router]);
 
-  // CRITICAL LOADING GUARD:
-  // While `isUserLoading` is true, or if no user is found, show a spinner.
-  // This also covers the brief moment before the redirect happens.
+  // While loading, or if the user is not a super admin (before redirect), show a spinner.
   if (isUserLoading || !user || user.role !== 'super_admin') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">

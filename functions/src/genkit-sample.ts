@@ -1,3 +1,8 @@
+// This file is part of a legacy Cloud Functions setup and is not currently used
+// by the main Next.js application. Its dependencies were causing build conflicts.
+// The code has been commented out to resolve these conflicts.
+// The primary AI logic for this project is located in /src/ai/flows/
+/*
 import {genkit, z} from "genkit";
 import {googleAI} from "@genkit-ai/google-genai";
 
@@ -75,3 +80,4 @@ export const menuSuggestion = onCallGenkit({
   // Grant access to the API key to this function:
   secrets: [apiKey],
 }, menuSuggestionFlow);
+*/

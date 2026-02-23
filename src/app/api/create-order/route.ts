@@ -5,7 +5,6 @@ import Razorpay from 'razorpay';
 import shortid from 'shortid';
 import { z } from 'zod';
 import { auth } from 'firebase-admin';
-import { addMonths } from 'date-fns';
 
 const { RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } = process.env;
 
@@ -21,7 +20,6 @@ const requestBodySchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    // Use the pre-initialized adminDb instance
     const firestore = adminDb;
     const razorpay = new Razorpay({
       key_id: RAZORPAY_KEY_ID!,
@@ -43,6 +41,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Invalid request body', errors: validation.error.errors }, { status: 400 });
     }
     const { shopId, plan } = validation.data;
+    
+    // Security Check: Ensure the authenticated user owns the shop
+    const shopDoc = await firestore.collection('shops').doc(shopId).get();
+    if (!shopDoc.exists || shopDoc.data()?.owner_id !== userId) {
+        return NextResponse.json({ message: 'Forbidden: You do not own this shop.' }, { status: 403 });
+    }
     
     const amount = planDetails[plan].amount;
     const amountInPaise = amount * 100;
