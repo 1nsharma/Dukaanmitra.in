@@ -1,13 +1,7 @@
-// This file is deprecated to resolve a routing conflict with src/app/dashboard/page.tsx.
-// Next.js does not allow two parallel pages to resolve to the same path (/dashboard).
-// The active dashboard logic is now maintained in src/app/dashboard/page.tsx.
+// This file is disabled to resolve a routing conflict with src/app/dashboard/page.tsx.
+// In Next.js, you cannot have two parallel pages that resolve to the same path.
+// The active dashboard logic is maintained in src/app/dashboard/page.tsx.
 
-export const dynamic = 'force-dynamic';
-
-/**
- * Inert component to prevent build conflicts.
- * In a production environment, this file should be deleted manually.
- */
-export default function DeprecatedDashboardPage() {
+export default function DisabledDashboardPage() {
   return null;
 }

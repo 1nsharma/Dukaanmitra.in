@@ -45,9 +45,16 @@ export default function DashboardPage() {
             Welcome, {user?.displayName || user.email}!
           </p>
         </div>
-        <Button onClick={handleSignOut} variant="destructive">
-          Sign Out
-        </Button>
+        <div className="flex gap-4">
+            {user.role === 'super_admin' && (
+                <Button asChild variant="outline">
+                    <Link href="/SAP/Superdashboard">Super Admin Panel</Link>
+                </Button>
+            )}
+            <Button onClick={handleSignOut} variant="destructive">
+                Sign Out
+            </Button>
+        </div>
       </div>
 
       {user.shopId ? (
