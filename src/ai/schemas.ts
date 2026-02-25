@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Centralized Zod schemas for all AI flows.
  * This file does NOT use 'use server' and can be safely imported by server components
@@ -15,7 +14,6 @@ export const ParseTransactionInputSchema = z.object({
 });
 export type ParseTransactionInput = z.infer<typeof ParseTransactionInputSchema>;
 
-// The schema used by the prompt for better enum handling.
 export const TransactionParserPromptOutputSchema = z.object({
     phone: z.string().optional().describe("The customer's 10-digit phone number, if mentioned."),
     customer_name: z.string().describe("The name of the customer. If no name is found, defaults to 'Customer'."),
@@ -26,13 +24,10 @@ export const TransactionParserPromptOutputSchema = z.object({
 });
 export type TransactionParserPromptOutput = z.infer<typeof TransactionParserPromptOutputSchema>;
 
-
-// The clean, lowercase output schema for the rest of the application.
 export const ParseTransactionOutputSchema = TransactionParserPromptOutputSchema.extend({
     type: z.enum(['credit', 'payment']),
 });
 export type ParseTransactionOutput = z.infer<typeof ParseTransactionOutputSchema>;
-
 
 // ==================================================
 // market-trend-flow.ts Schemas
@@ -51,6 +46,23 @@ export const MarketTrendOutputSchema = z.object({
 });
 export type MarketTrendOutput = z.infer<typeof MarketTrendOutputSchema>;
 
+// ==================================================
+// orchestrator-flow.ts Schemas
+// ==================================================
+export const OrchestratorInputSchema = z.object({
+  userId: z.string(),
+  message: z.string(),
+});
+export type OrchestratorInput = z.infer<typeof OrchestratorInputSchema>;
+
+export const OrchestratorOutputSchema = z.object({
+  final_answer: z.string().describe("The merged, final practical response for the user."),
+  action_plan: z.array(z.string()).describe("A list of 3-5 step-by-step actions."),
+  automations: z.array(z.string()).describe("Opportunities for system automation."),
+  followups: z.array(z.string()).describe("Follow-up questions or next steps."),
+  risks_and_fixes: z.string().optional().describe("Potential risks detected and their proposed fixes."),
+});
+export type OrchestratorOutput = z.infer<typeof OrchestratorOutputSchema>;
 
 // ==================================================
 // whatsapp-agent-flow.ts Schemas
@@ -99,7 +111,6 @@ export const AgentOutputSchema = z.object({
 });
 export type AgentOutput = z.infer<typeof AgentOutputSchema>;
 
-
 // ==================================================
 // retail-insights-flow.ts Schemas
 // ==================================================
@@ -133,7 +144,6 @@ export const RetailInsightsOutputSchema = z.object({
   revenueLeakage: z.string().describe("Analysis of potential revenue leakage (e.g., high credit to new customers). Simple Hinglish, no jargon."),
 });
 export type RetailInsightsOutput = z.infer<typeof RetailInsightsOutputSchema>;
-
 
 // ==================================================
 // interactive-ai-demo.ts Schemas

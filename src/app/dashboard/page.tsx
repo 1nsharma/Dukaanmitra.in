@@ -3,21 +3,49 @@
 import { useUser, useAuth } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles, History } from "lucide-react";
 import CreateShopForm from "./create-shop-form";
 import ShopDashboard from "./shop-dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { useState } from "react";
+import { orchestrateAI } from "@/ai/flows/orchestrator-flow";
+import { useToast } from "@/hooks/use-toast";
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   const handleSignOut = async () => {
     if (auth) {
         await auth.signOut();
         router.push('/');
+    }
+  };
+
+  const handleGetAiAdvice = async () => {
+    if (!user) return;
+    setIsAiLoading(true);
+    try {
+      const result = await orchestrateAI({
+        userId: user.uid,
+        message: "Analyze my recent sales and give me 3 growth tips."
+      });
+      toast({
+        title: "Munim Advice Ready!",
+        description: result.final_answer.substring(0, 100) + "...",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Could not fetch AI advice. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAiLoading(false);
     }
   };
 
@@ -36,7 +64,7 @@ export default function DashboardPage() {
 
   return (
     <div className="container py-16 md:py-24">
-      <div className="flex justify-between items-start mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
         <div>
           <h1 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">
             Shopkeeper Dashboard
@@ -45,7 +73,16 @@ export default function DashboardPage() {
             Welcome, {user?.displayName || user.email}!
           </p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-2">
+            <Button 
+              onClick={handleGetAiAdvice} 
+              disabled={isAiLoading}
+              variant="outline"
+              className="border-primary text-primary hover:bg-primary/5"
+            >
+              {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+              Get AI Munim Advice
+            </Button>
             {user.role === 'super_admin' && (
                 <Button asChild variant="outline">
                     <Link href="/SAP/Superdashboard">Super Admin Panel</Link>
