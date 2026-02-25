@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { 
     ArrowRight, BarChart3, Bell, CheckCircle, FileDown, Gauge, GitFork, Landmark, 
     LayoutDashboard, Plug, Store, User, Users, Zap, BrainCircuit, TrendingUp, Package,
-    Clock, Repeat, Gem, ShieldAlert, Megaphone, Star, Warehouse, Archive, Truck,
+    Clock, Repeat, Gem, ShieldAlert, Megaphone, Star, Archive, Truck,
     ClipboardList, Percent, CalendarCheck, RotateCw, MessageSquare, GitCompare,
-    Library, Map, History, Lock, FileClock, DatabaseBackup, Terminal, Sheet, Code,
+    Library, Map, History, Lock, FileClock, Terminal, FileSpreadsheet, Code,
     Database, Trophy, AreaChart, Briefcase, Table, DollarSign, Bot, Sparkles
 } from 'lucide-react';
 import React from 'react';
@@ -114,7 +114,7 @@ const customerIntelligence = [
 ];
 
 const inventoryInsights = [
-    { title: 'Low Stock Alerts', description: 'Out of stock hone se pehle warning', icon: <Warehouse /> },
+    { title: 'Low Stock Alerts', description: 'Out of stock hone se pehle warning', icon: <Store /> },
     { title: 'Dead Stock Detection', description: 'Jo samaan bik nahi raha uski pehchan', icon: <Archive /> },
     { title: 'Auto Reorder Suggestions', description: 'Kab aur kitna maal mangwana hai', icon: <Truck /> },
     { title: 'Supplier Performance View', description: 'Kaunsa supplier reliable hai', icon: <ClipboardList /> },
@@ -138,12 +138,12 @@ const securityTrust = [
     { title: 'Role Based Access', description: 'Owner, manager, staff ke alag rights', icon: <Users /> },
     { title: 'Secure Data Vault', description: 'Sensitive data encrypted storage', icon: <Lock /> },
     { title: 'Full Audit Trail', description: 'Har action ka history', icon: <FileClock /> },
-    { title: 'Backup & Restore', description: 'Data loss se protection', icon: <DatabaseBackup /> },
+    { title: 'Backup & Restore', description: 'Data loss se protection', icon: <Database /> },
 ];
 
 const integrationsReady = [
     { title: 'POS System Connect', description: 'Existing billing system se direct data', icon: <Terminal /> },
-    { title: 'Google Sheets Sync', description: 'Live data spreadsheet me', icon: <Sheet /> },
+    { title: 'Google Sheets Sync', description: 'Live data spreadsheet me', icon: <FileSpreadsheet /> },
     { title: 'API Access for Developers', description: 'Custom tools banane ki freedom', icon: <Code /> },
     { title: 'Cloud Database Support', description: 'Scalable real-time data storage', icon: <Database /> },
 ];
@@ -224,7 +224,7 @@ export default function InsightsPage() {
       <section>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {coreFeatures.map((feature) => (
-                <FeatureCard key={feature.title} {...feature} icon={React.cloneElement(feature.icon, { className: "w-8 h-8" })} />
+                <FeatureCard key={feature.title} {...feature} icon={React.cloneElement(feature.icon as React.ReactElement, { className: "w-8 h-8" })} />
             ))}
         </div>
       </section>

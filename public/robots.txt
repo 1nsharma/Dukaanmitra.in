@@ -1,11 +1,13 @@
-
 User-agent: *
 Allow: /
-
-# Disallow application routes
+Allow: /features
+Allow: /pricing
+Allow: /blog
+Allow: /contact
+Allow: /docs
+Disallow: /dashboard
+Disallow: /SAP
+Disallow: /api
 Disallow: /login
-Disallow: /dashboard/
-Disallow: /SAP/
 
-# Point to sitemap
 Sitemap: https://dukaanmitra.in/sitemap.xml

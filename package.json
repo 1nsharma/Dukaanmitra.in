@@ -1,15 +1,14 @@
 {
-  "name": "nextn",
-  "version": "0.1.0",
+  "name": "dukaanmitra",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
-    "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "genkit:dev": "genkit start -- tsx src/ai/dev.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.0.0",
@@ -48,12 +47,11 @@
     "googleapis": "^140.0.1",
     "lucide-react": "^0.395.0",
     "mailgun.js": "^10.2.1",
-    "next": "14.2.35",
+    "next": "14.2.4",
     "next-themes": "^0.3.0",
-    "patch-package": "^8.0.0",
-    "react": "^18",
+    "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
-    "react-dom": "^18",
+    "react-dom": "^18.3.1",
     "react-hook-form": "^7.51.5",
     "recharts": "^2.12.7",
     "razorpay": "^2.9.4",
