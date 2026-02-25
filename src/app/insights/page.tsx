@@ -1,10 +1,9 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
     ArrowRight, BarChart3, Bell, CheckCircle, FileDown, Gauge, GitFork, Landmark, 
-    LayoutDashboard, Plug, Store, User, Users, Zap, BrainCircuit, TrendingUp, Package,
+    LayoutDashboard, Plug, Store, User, Users, Zap, Brain, TrendingUp, Package,
     Clock, Repeat, Gem, ShieldAlert, Megaphone, Star, Archive, Truck,
     ClipboardList, Percent, CalendarCheck, RotateCw, MessageSquare, GitCompare,
     Library, Map, History, Lock, FileClock, Terminal, FileSpreadsheet, Code,
@@ -52,7 +51,7 @@ const howItWorks = [
     },
     {
         title: 'DukaanMitra analytics automatically run karega',
-        icon: <BrainCircuit className="w-8 h-8 text-primary" />
+        icon: <Brain className="w-8 h-8 text-primary" />
     },
     {
         title: 'Dashboard par health score aur insights dekho',
