@@ -1,47 +1,8 @@
-"use client";
-
-import { ReactNode, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useUser, useAuth } from "@/firebase";
-import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 /**
- * Main application layout for the (app) route group.
- * Handles authentication checks and account status (suspension) logic.
+ * This layout is neutralized to resolve routing conflicts.
+ * Protection logic is now at src/app/dashboard/layout.tsx.
  */
-export default function AppLayout({ children }: { children: ReactNode }) {
-  const { user, isUserLoading } = useUser();
-  const router = useRouter();
-  const { toast } = useToast();
-  const auth = useAuth();
-
-  useEffect(() => {
-    if (isUserLoading) return;
-
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
-
-    if (user.status === "suspended" && auth) {
-      auth.signOut();
-      toast({
-        title: "Account Suspended",
-        description: "Your account has been suspended. Please contact support.",
-        variant: "destructive",
-      });
-      router.replace("/login");
-    }
-  }, [user, isUserLoading, router, auth, toast]);
-
-  if (isUserLoading || !user) {
-    return (
-      <div className="flex min-h-[calc(100vh-theme(spacing.14))] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
+export default function NeutralizedLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
