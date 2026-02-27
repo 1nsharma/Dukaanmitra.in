@@ -15,7 +15,31 @@ DukaanMitra is a production-grade, multi-tenant SaaS platform designed to digiti
 
 ---
 
-## 🛠️ Local Development Setup
+## 🛠️ Vercel Deployment & Environment Variables (CRITICAL)
+
+When deploying to Vercel, you **must** add the following Environment Variables in the Vercel Dashboard (**Settings > Environment Variables**). 
+
+### **Why are these mandatory?**
+Vercel hosts your UI, but these keys connect your UI to the "Organs" of your app:
+- **Firebase Keys**: Connects your app to the Firestore database and Auth. Without these, **Login will fail**.
+- **Razorpay Keys**: Enables the subscription system. Without these, **Payments will crash**.
+- **Google AI Key**: Powers the "AI Munim". Without this, **Hinglish parsing will fail**.
+
+### **Checklist for Vercel Dashboard:**
+Copy these names and paste your actual values from the Firebase/Razorpay consoles:
+
+| Key Name | Description |
+| :--- | :--- |
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | From Firebase Console > Project Settings |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | e.g. `project-id.firebaseapp.com` |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Your unique Firebase ID |
+| `GOOGLE_GENAI_API_KEY` | From Google AI Studio (Gemini) |
+| `NEXT_PUBLIC_RAZORPAY_KEY_ID` | From Razorpay Dashboard > Settings > API Keys |
+| `RAZORPAY_KEY_SECRET` | From Razorpay Dashboard (Keep this private!) |
+
+---
+
+## 📦 Local Development Setup
 
 ### 1. Prerequisites
 - Node.js (v18+)
@@ -29,36 +53,12 @@ npm install
 ```
 
 ### 3. Environment Configuration
-Create a `.env.local` file using `.env.example` as a template. Add your Firebase and API credentials.
+Create a `.env.local` file using `.env.example` as a template. **Do not commit this file to Git.**
 
 ### 4. Running the App
 ```bash
 npm run dev
 ```
-
----
-
-## 📦 Deployment Strategy
-
-### Primary App (Vercel)
-The main application (Dashboard, Auth, API Webhooks) is deployed on Vercel. 
-- **Domain**: `dukaanmitra.in`
-- **DNS (GoDaddy)**: 
-  - A Record: `@` -> `76.76.21.21`
-  - CNAME Record: `www` -> `cname.vercel-dns.com`
-
-### Public Marketing Site (GitHub Pages)
-Public marketing pages are automatically built and deployed to GitHub Pages via GitHub Actions on every push to `main`.
-- **Workflow**: `.github/workflows/deploy.yml`
-- **Static Export**: Uses `next export` via `BUILD_STATIC=true` env variable.
-
----
-
-## 🔒 Security & Multi-Tenancy
-
-- **Data Isolation**: Every shop is isolated via robust `firestore.rules`.
-- **Route Guards**: The `(app)` route group enforces authentication and account status checks via a centralized layout.
-- **Role-Based Access**: Strict differentiation between `owner`, `staff`, and `super_admin`.
 
 ---
 
