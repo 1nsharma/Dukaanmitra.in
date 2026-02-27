@@ -443,11 +443,11 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
                                 <Input {...field} />
                             </FormControl>
                             <FormMessage />
-                            </DocumentReference>
+                            </FormItem>
                         )}
                         />
                     </div>
-                    <Button type="submit" disabled={isPending}>
+                    <Button type="submit" className="mt-6" disabled={isPending}>
                     {isPending ? "Saving..." : "Save Changes"}
                     </Button>
                 </form>

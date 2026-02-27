@@ -6,6 +6,9 @@ const nextConfig = {
   // Conditionally set the output to 'export' for static builds
   output: isStaticExport ? 'export' : undefined,
   
+  // GH Pages requires trailing slashes for clean subpage URLs
+  trailingSlash: true,
+
   images: {
     // When exporting a static site, the default Next.js image optimization is not available.
     // We must disable it for the static build to succeed.
