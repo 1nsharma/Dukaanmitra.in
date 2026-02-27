@@ -28,6 +28,11 @@ const navLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
+/**
+ * Set this to true to hide login/dashboard buttons globally.
+ */
+const IS_PUBLIC_ONLY = true;
+
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
@@ -74,7 +79,7 @@ export default function Header() {
 
         <div className="flex items-center gap-2">
             <div className="hidden lg:flex items-center gap-4">
-                {!isUserLoading && (
+                {!IS_PUBLIC_ONLY && !isUserLoading && (
                     <>
                     {user ? (
                         <DropdownMenu>
@@ -152,7 +157,7 @@ export default function Header() {
                   {navLinks.map((link) => <NavLink key={link.href} {...link} />)}
                 </nav>
                 <div className="mt-auto flex flex-col gap-4 border-t border-border pt-6">
-                    {!isUserLoading && (
+                    {!IS_PUBLIC_ONLY && !isUserLoading && (
                         <>
                         {user ? (
                             <>

@@ -1,28 +1,28 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// 1. Specify protected and public paths
-const protectedPaths = ['/dashboard', '/SAP']
-const publicPaths = ['/login', '/'] 
+/**
+ * STRICT PUBLIC MODE: 
+ * Set this to 'true' to disable all app functionality (Dashboard, Login, APIs)
+ * and only show the marketing site.
+ */
+const PUBLIC_ONLY_MODE = 'true';
+
+const protectedPaths = ['/dashboard', '/SAP', '/login', '/api']
 
 export function middleware(request: NextRequest) {
-  // 2. Check for "public only" mode
-  if (process.env.PUBLIC_ONLY_MODE === 'true') {
-    const path = request.nextUrl.pathname
-    
-    // If the request is for an API route or a protected application page, block it.
-    if (path.startsWith('/api/') || protectedPaths.some(p => path.startsWith(p))) {
-      // Redirect to the homepage. This is a "soft" block.
-      // Alternatively, for a hard 404, you could use: return new Response('Not Found', { status: 404 })
+  const path = request.nextUrl.pathname
+
+  if (PUBLIC_ONLY_MODE === 'true') {
+    // If trying to access any protected or functional path, redirect to home
+    if (protectedPaths.some(p => path.startsWith(p))) {
       return NextResponse.redirect(new URL('/', request.url))
     }
   }
 
-  // 3. Continue processing the request as normal
   return NextResponse.next()
 }
 
-// 4. Configure the matcher to run the middleware on specific paths
 export const config = {
   matcher: [
     /*
