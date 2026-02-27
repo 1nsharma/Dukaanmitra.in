@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useUser, useAuth } from "@/firebase";
@@ -15,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 
 /**
  * The consolidated Dashboard entry point.
+ * This resolves the "parallel pages" build collision.
  */
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
