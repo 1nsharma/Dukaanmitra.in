@@ -1,6 +1,6 @@
 # DukaanMitra - AI-Powered WhatsApp Munim
 
-DukaanMitra is a production-grade, multi-tenant SaaS platform designed to digitize India's Kirana stores. It leverages a "WhatsApp-first" approach, allowing shop owners to manage their business using natural language commands, powered by a sophisticated AI agent built with Google's Genkit.
+DukaanMitra is a production-grade, multi-tenant SaaS platform designed to digitize India's Kirana stores. It leverages a "WhatsApp-first" approach, allowing shop owners to manage their business using natural language commands, powered by a sophisticated AI agent.
 
 ---
 
@@ -26,11 +26,6 @@ DukaanMitra is a production-grade, multi-tenant SaaS platform designed to digiti
 [Firestore (Data)] <---------------------- [Firebase Auth]
 ```
 
-- **Frontend**: Next.js (App Router) with ShadCN UI and Tailwind.
-- **AI Backend**: Google Genkit flows integrated directly into the Next.js environment.
-- **Database & Auth**: Google Firebase (Firestore & Authentication).
-- **Payments**: Razorpay Integration.
-
 ---
 
 ## 🛠️ Local Development Setup
@@ -47,18 +42,11 @@ npm install
 ```
 
 ### 3. Environment Configuration
-Copy `.env.example` to `.env.local` and fill in your credentials.
-```bash
-cp .env.example .env.local
-```
+Create a `.env.local` file and add your Firebase and API credentials. See `.env.example` for required keys.
 
 ### 4. Running the App
 ```bash
-# Start Next.js
 npm run dev
-
-# Start Genkit Developer UI
-npm run genkit:dev
 ```
 
 ---
@@ -66,12 +54,16 @@ npm run genkit:dev
 ## 📦 Deployment
 
 ### Production (Vercel)
-The main application is designed to be deployed on Vercel. 
-- Ensure all environment variables from `.env.local` are added to your Vercel project.
-- **Public-Only Mode**: Set `PUBLIC_ONLY_MODE=true` to hide the application backend and only show the marketing site.
+The main application is deployed on Vercel. 
+- Ensure all environment variables are added to your Vercel project settings.
+- **DNS (GoDaddy)**: 
+  - A Record: `@` -> `76.76.21.21`
+  - CNAME Record: `www` -> `cname.vercel-dns.com`
 
 ### Static Marketing Site (GitHub Pages)
-The marketing pages are automatically deployed to GitHub Pages via GitHub Actions on every push to `main`. This is handled by `.github/workflows/deploy.yml`.
+The marketing pages are automatically deployed to GitHub Pages via GitHub Actions on every push to `main`. 
+- **Domain**: `dukaanmitra.in`
+- **Workflow**: `.github/workflows/deploy.yml`
 
 ---
 
@@ -79,7 +71,7 @@ The marketing pages are automatically deployed to GitHub Pages via GitHub Action
 
 - **Data Isolation**: Every shop is isolated via robust `firestore.rules`.
 - **Role-Based Access**: Strict differentiation between `owner`, `staff`, and `super_admin`.
-- **Policy Guard**: AI actions are validated against shop-specific business rules before execution.
+- **Route Guard**: The `(app)` route group enforces authentication and account status checks.
 
 ---
 
