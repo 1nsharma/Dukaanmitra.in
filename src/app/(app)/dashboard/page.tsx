@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useUser, useAuth } from "@/firebase";
@@ -66,7 +67,7 @@ export default function DashboardPage() {
     <div className="container py-16 md:py-24">
       <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
         <div>
-          <h1 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl">
+          <h1 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl uppercase">
             Shopkeeper Dashboard
           </h1>
           <p className="text-muted-foreground">
@@ -78,17 +79,17 @@ export default function DashboardPage() {
               onClick={handleGetAiAdvice} 
               disabled={isAiLoading}
               variant="outline"
-              className="border-primary text-primary hover:bg-primary/5"
+              className="border-primary text-primary hover:bg-primary/5 rounded-full"
             >
               {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
               Get AI Munim Advice
             </Button>
             {user.role === 'super_admin' && (
-                <Button asChild variant="outline">
+                <Button asChild variant="outline" className="rounded-full">
                     <Link href="/SAP/Superdashboard">Super Admin Panel</Link>
                 </Button>
             )}
-            <Button onClick={handleSignOut} variant="destructive">
+            <Button onClick={handleSignOut} variant="destructive" className="rounded-full">
                 Sign Out
             </Button>
         </div>
@@ -99,15 +100,15 @@ export default function DashboardPage() {
       ) : user.role === 'super_admin' ? (
          <Card className="max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle>Super Admin Test Mode</CardTitle>
+            <CardTitle>Super Admin Mode</CardTitle>
             <CardDescription>
-              This is the dashboard for shop owners.
+              This is the view for shop owners.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">As a Super Admin, you don't have a default shop assigned. To test this view for a specific shop, you can temporarily add a `shopId` field to your user document in Firestore.</p>
+            <p className="text-muted-foreground">As a Super Admin, you can visit the main panel to manage all shops.</p>
              <div className="mt-4">
-                <Button asChild>
+                <Button asChild className="rounded-full">
                     <Link href="/SAP/Superdashboard">Go to Super Admin Dashboard</Link>
                 </Button>
             </div>
