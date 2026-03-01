@@ -5,12 +5,10 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { format } from 'date-fns';
 
 /**
  * Platform-wide metrics aggregator.
  * Calculates MRR, shop counts, and conversion rates.
- * Writes to /metrics/global for use by SAP dashboard.
  */
 const metricsAggregatorFlow = ai.defineFlow(
   {
@@ -22,17 +20,15 @@ const metricsAggregatorFlow = ai.defineFlow(
     }),
   },
   async () => {
-    console.log('[MetricsAggregator] Starting global aggregation...');
+    console.log('[MetricsAggregator] Starting aggregation...');
     
     const shopsSnapshot = await adminDb.collection('shops').get();
-    const usersSnapshot = await adminDb.collection('users').get();
     
     let totalMrr = 0;
     let activeSubscriptions = 0;
     let activeTrials = 0;
     let churnedShops = 0;
     let totalShops = shopsSnapshot.size;
-    let totalUsers = usersSnapshot.size;
 
     shopsSnapshot.forEach(doc => {
       const data = doc.data();
@@ -46,23 +42,20 @@ const metricsAggregatorFlow = ai.defineFlow(
         ? (activeSubscriptions / (activeSubscriptions + activeTrials)) * 100 
         : 0;
 
-    const avgRevenue = activeSubscriptions > 0 ? totalMrr / activeSubscriptions : 0;
-
     const metricsDoc = adminDb.collection('metrics').doc('global');
     await metricsDoc.set({
       id: 'global',
+      version: 1, // Schema versioning
       mrr: totalMrr,
       activeSubscriptions,
       activeTrials,
       churnedShops,
       totalShops,
-      totalUsers,
       trialToPaidConversionRate: conversionRate,
-      avgRevenuePerShop: avgRevenue,
       updatedAt: FieldValue.serverTimestamp(),
+      calculatedAt: FieldValue.serverTimestamp(),
     });
 
-    console.log(`[MetricsAggregator] Aggregation complete. MRR: ₹${totalMrr}`);
     return { success: true, shopsProcessed: totalShops };
   }
 );

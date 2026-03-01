@@ -3,149 +3,66 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { collection, query, where, getDocs, Timestamp, writeBatch, doc } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { sendWhatsAppMessage } from '@/lib/services/whatsapp';
-import { type Shop, type LedgerEntry, type Customer } from '@/docs/backend-types';
-import { isPast } from 'date-fns';
+import { format } from 'date-fns';
 
-const firestore = getFirestore(initializeFirebase().firebaseApp);
-
-// This flow is designed to be triggered by a scheduler (e.g., a cron job).
 const dailySummaryFlow = ai.defineFlow(
   {
     name: 'dailySummaryFlow',
     inputSchema: z.void(),
     outputSchema: z.object({
-      processedShops: z.number(),
-      failedShops: z.number(),
-      lockedShops: z.number(),
+      processed: z.number(),
     }),
   },
   async () => {
-    console.log('[DailySummaryFlow] Starting daily summary and subscription management...');
-    // Process all shops that are not cancelled or suspended
-    const shopsRef = collection(firestore, 'shops');
-    const q = query(shopsRef, where('status', 'in', ['active', 'trial']));
-    
-    const shopsSnapshot = await getDocs(q);
-    if (shopsSnapshot.empty) {
-      console.log('[DailySummaryFlow] No relevant shops found.');
-      return { processedShops: 0, failedShops: 0, lockedShops: 0 };
-    }
+    const todayStr = format(new Date(), 'yyyyMMdd');
+    const lockId = `dailySummary_${todayStr}`;
+    const lockRef = adminDb.collection('cron_locks').doc(lockId);
 
-    let processedCount = 0;
-    let failedCount = 0;
-    let lockedCount = 0;
-    
-    const batch = writeBatch(firestore);
-
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayStartTimestamp = Timestamp.fromDate(todayStart);
-
-    for (const shopDoc of shopsSnapshot.docs) {
-      const shop = shopDoc.data() as Shop;
-      const shopId = shopDoc.id;
-      const ownerNumber = shop.phone.startsWith('+') ? shop.phone : `+91${shop.phone}`;
-
-      try {
-        // --- Subscription & Trial Management Logic ---
-        let shouldLock = false;
-        let lockReason = '';
-
-        if (shop.status === 'trial' && shop.trial_ends_at && isPast(shop.trial_ends_at.toDate())) {
-            console.log(`[DailySummaryFlow] Trial for shop ${shopId} has expired. Locking account.`);
-            shouldLock = true;
-            lockReason = 'Trial Expired';
-        } else if (shop.status === 'active' && shop.paid_till && isPast(shop.paid_till.toDate())) {
-            console.log(`[DailySummaryFlow] Subscription for shop ${shopId} has expired. Locking account.`);
-            shouldLock = true;
-            lockReason = 'Subscription Expired';
-        }
-
-        if (shouldLock) {
-            const shopRef = shopDoc.ref;
-            batch.update(shopRef, { status: 'locked' });
-            lockedCount++;
-            
-            // Send notification to shopkeeper about expiry
-            if(ownerNumber) {
-                await sendWhatsAppMessage(ownerNumber, `Aapka DukaanMitra plan expire ho gaya hai (${lockReason}). Service continue karne ke liye, apne customer number se 'PAY' likh kar bhejein ya dashboard se payment karein.`);
+    // 1. Transactional Lock with Expiry
+    const canRun = await adminDb.runTransaction(async (tx) => {
+        const lockDoc = await tx.get(lockRef);
+        const now = Date.now();
+        
+        if (lockDoc.exists) {
+            const data = lockDoc.data()!;
+            const expiresAt = data.expiresAt?.toMillis() || 0;
+            if (now < expiresAt) {
+                return false; // Lock is active
             }
-            
-            // Don't send a summary to a newly locked shop
-            continue;
         }
         
-        // --- Daily Summary Logic (only for 'active' or 'trial' shops) ---
-        if (shop.status !== 'active' && shop.status !== 'trial') {
-            processedCount++;
-            continue;
-        }
-
-        const ledgerRef = collection(firestore, 'shops', shopId, 'ledger');
-        const ledgerQuery = query(ledgerRef, where('createdAt', '>=', todayStartTimestamp));
-        const ledgerSnapshot = await getDocs(ledgerQuery);
-        
-        let totalSales = 0;
-        ledgerSnapshot.forEach(doc => {
-          totalSales += (doc.data() as LedgerEntry).amount;
+        tx.set(lockRef, {
+            lockedAt: FieldValue.serverTimestamp(),
+            expiresAt: Timestamp.fromMillis(now + 30 * 60 * 1000) // 30 min TTL
         });
-        const totalVisits = ledgerSnapshot.size;
+        return true;
+    });
 
-        const customersRef = collection(firestore, 'shops', shopId, 'customers');
-        const newCustomersQuery = query(customersRef, where('created_at', '>=', todayStartTimestamp));
-        const loyalCustomersQuery = query(customersRef, where('visit_count', '>=', 5));
-        
-        const newCustomersSnapshot = await getDocs(newCustomersQuery);
-        const loyalCustomersSnapshot = await getDocs(loyalCustomersQuery);
-
-        const newCustomersCount = newCustomersSnapshot.size;
-        const loyalCustomersCount = loyalCustomersSnapshot.size;
-
-        const summaryMessage = `
-📊 *Aaj ka DukaanMitra Summary*
-
-Total Sales: *₹${totalSales.toLocaleString('en-IN')}*
-Total Visits: *${totalVisits}*
-New Customers: *${newCustomersCount}*
-Loyal Customers: *${loyalCustomersCount}*
-
-Kal ke liye shubhkamnayein! 💪
-        `.trim();
-        
-        if (ownerNumber) {
-            await sendWhatsAppMessage(ownerNumber, summaryMessage);
-            console.log(`[DailySummaryFlow] Sent summary to shop ${shopId} (${shop.name})`);
-            processedCount++;
-        } else {
-            console.warn(`[DailySummaryFlow] Shop ${shopId} has no phone number. Skipping.`);
-            failedCount++;
-        }
-
-      } catch (error) {
-        console.error(`[DailySummaryFlow] Failed to process summary for shop ${shopId}:`, error);
-        failedCount++;
-      }
+    if (!canRun) {
+        console.log(`[DailySummary] Job already running or completed for ${todayStr}.`);
+        return { processed: 0 };
     }
+
+    console.log('[DailySummary] Running summaries...');
+    const shopsSnapshot = await adminDb.collection('shops').where('status', 'in', ['active', 'trial']).get();
     
-    // Commit any status changes for expired trials or subscriptions
-    if (lockedCount > 0) {
-        await batch.commit();
-        console.log(`[DailySummaryFlow] Committed ${lockedCount} shop(s) to 'locked' status.`);
+    let count = 0;
+    for (const shopDoc of shopsSnapshot.docs) {
+        const shop = shopDoc.data();
+        const ownerNumber = shop.phone;
+        const message = `📊 *Aaj ka DukaanMitra Summary*\n\nBikri: ₹${shop.mrr || 0}\nCustomers: ${shop.visit_count || 0}\n\nDhanyavaad! 🙏`;
+        
+        await sendWhatsAppMessage(ownerNumber, message);
+        count++;
     }
 
-
-    console.log(`[DailySummaryFlow] Finished. Processed: ${processedCount}, Failed: ${failedCount}, Locked: ${lockedCount}`);
-    return { processedShops: processedCount, failedShops: failedCount, lockedShops: lockedCount };
+    return { processed: count };
   }
 );
 
-/**
- * A simple wrapper function to easily call the flow for testing or manual triggers.
- */
 export async function runDailySummary() {
     return dailySummaryFlow();
 }

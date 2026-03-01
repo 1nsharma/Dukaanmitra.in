@@ -132,6 +132,8 @@
         "extracted_entities": { "type": "object" },
         "system_response": { "type": "string" },
         "response_time_ms": { "type": "number" },
+        "queue_delay_ms": { "type": "number", "description": "Time spent in processing queue." },
+        "decision_confidence": { "type": "number", "description": "Confidence of the classification or extraction (0-1)." },
         "processing_status": { "type": "string", "enum": ["received", "processing", "processed", "failed", "escalated"] },
         "processing_path": {
           "type": "string",
@@ -148,6 +150,7 @@
       "type": "object",
       "properties": {
         "id": { "type": "string" },
+        "version": { "type": "number" },
         "mrr": { "type": "number" },
         "activeSubscriptions": { "type": "number" },
         "activeTrials": { "type": "number" },
@@ -156,9 +159,26 @@
         "totalUsers": { "type": "number" },
         "trialToPaidConversionRate": { "type": "number" },
         "avgRevenuePerShop": { "type": "number" },
-        "updatedAt": { "type": "string", "format": "date-time" }
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "calculatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "updatedAt"]
+    },
+    "ShopInsight": {
+      "title": "Shop Insight",
+      "description": "Operator Intelligence Feed item.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["SALES_DROP", "GROWTH_TIP", "RISK_ALERT", "SUCCESS"] },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "action_label": { "type": "string" },
+        "action_link": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isRead": { "type": "boolean" }
+      },
+      "required": ["id", "type", "title", "message", "createdAt"]
     }
   },
   "auth": {
@@ -170,10 +190,11 @@
       { "path": "/shops/{shopId}", "definition": { "schema": { "$ref": "#/entities/Shop" } } },
       { "path": "/shops/{shopId}/customers/{customerPhone}", "definition": { "schema": { "$ref": "#/entities/Customer" } } },
       { "path": "/shops/{shopId}/ledger/{ledgerId}", "definition": { "schema": { "$ref": "#/entities/LedgerEntry" } } },
+      { "path": "/shops/{shopId}/insights/{insightId}", "definition": { "schema": { "$ref": "#/entities/ShopInsight" } } },
       { "path": "/contactFormSubmissions/{submissionId}", "definition": { "schema": { "$ref": "#/entities/ContactFormSubmission" } } },
       { "path": "/interactions/{interactionId}", "definition": { "schema": { "$ref": "#/entities/Interaction" } } },
       { "path": "/metrics/{metricId}", "definition": { "schema": { "$ref": "#/entities/GlobalMetrics" } } },
-      { "path": "/cron_locks/{lockId}", "definition": { "description": "Locks to prevent double cron execution", "schema": { "type": "object", "properties": { "lockedAt": { "type": "string", "format": "date-time" } } } } }
+      { "path": "/cron_locks/{lockId}", "definition": { "description": "Locks to prevent double cron execution", "schema": { "type": "object", "properties": { "lockedAt": { "type": "string", "format": "date-time" }, "expiresAt": { "type": "string", "format": "date-time" } } } } }
     ]
   }
 }
