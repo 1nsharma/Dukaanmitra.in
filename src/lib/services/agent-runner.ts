@@ -17,10 +17,10 @@ interface NormalizedMessage {
 }
 
 /**
- * Deterministic parser for simple bill entries.
- * Returns null if the query is complex or needs AI reasoning.
+ * Deterministic parser for high-confidence billing.
+ * Confidence = 1.0 (Zero training needed).
  */
-function parseSimpleBill(text: string): { amount: number; items: string; type: 'credit' | 'payment' } | null {
+function parseSimpleBill(text: string) {
     const paymentKeywords = /\b(paid|jama|diya|received|naga)\b/i;
     const isPayment = paymentKeywords.test(text);
     const cleanText = text.replace(paymentKeywords, '').trim();
@@ -28,108 +28,106 @@ function parseSimpleBill(text: string): { amount: number; items: string; type: '
     
     if (match) {
         const amount = parseFloat(match[1].match(/\d/) ? match[1] : match[2]);
-        const items = (match[1].match(/\d/) ? match[2] : match[1]).trim() || (isPayment ? 'Payment Received' : 'Bill Entry');
+        const items = (match[1].match(/\d/) ? match[2] : match[1]).trim() || (isPayment ? 'Payment' : 'Bill');
         return { amount, items, type: isPayment ? 'payment' : 'credit' };
     }
     return null;
 }
 
 /**
- * The Data Flywheel Message Processor.
- * Logs rich metadata for future Vertical LLM training.
+ * Stage-5 Data Flywheel Message Processor.
+ * Captures decision outcomes for future Vertical LLM training.
  */
 export async function processMessage(message: NormalizedMessage) {
     const startTime = Date.now();
-    const queueDelay = startTime - message.receivedAt;
     const interactionRef = adminDb.collection('interactions').doc(message.messageId);
 
     try {
         const shopCodeMatch = message.text.match(/#(\w+)/);
         if (!shopCodeMatch) {
-            const reply = "Kripya shop code (#SHP123) ke saath bill bhejein. 🙏";
-            await sendWhatsAppMessage(message.from, reply);
-            await interactionRef.update({ processing_status: 'failed', system_response: "Missing shop code." });
+            await sendWhatsAppMessage(message.from, "Shop code (#SHP123) ke saath bill bhejein. 🙏");
             return;
         }
         
         const shopCode = shopCodeMatch[1].toUpperCase();
         const cleanedQuery = message.text.replace(/#\w+\s*/, '').trim();
 
-        const contextResult = await loadShopAndContextByShopCode(shopCode);
-        if (!contextResult.success || !contextResult.shop || !contextResult.shopContext) {
-            await sendWhatsAppMessage(message.from, contextResult.message || "Invalid shop code.");
-            await interactionRef.update({ processing_status: 'failed', system_response: contextResult.message });
+        const { shop, shopContext, success, message: err } = await loadShopAndContextByShopCode(shopCode);
+        if (!success || !shop || !shopContext) {
+            await sendWhatsAppMessage(message.from, err || "Invalid shop code.");
             return;
         }
-        
-        const { shop, shopContext } = contextResult;
 
-        // --- SUBSCRIPTION BOUNDARY ---
         if (shop.status === 'locked' || shop.status === 'suspended') {
-            const reply = "Aapka DukaanMitra plan expire ho gaya hai. Service continue karne ke liye dashboard se payment karein. 💳";
-            await sendWhatsAppMessage(message.from, reply);
-            await interactionRef.update({ 
-                processing_status: 'processed', 
-                system_response: reply, 
-                detected_intent: 'subscription_lock' 
-            });
+            await sendWhatsAppMessage(message.from, "Aapka account locked hai. Dashboard se payment karein. 💳");
             return;
         }
 
-        // --- PATH 1: DETERMINISTIC (Data Flywheel: Confidence = 1.0) ---
         const simpleBill = parseSimpleBill(cleanedQuery);
 
+        // --- PATH 1: DETERMINISTIC ---
         if (simpleBill) {
             const { amount, items, type } = simpleBill;
-            const customerPhone = message.from;
-            let replyMessage = "Bill add ho gaya! ✅";
-
             await adminDb.runTransaction(async (transaction) => {
-                const customerRef = adminDb.collection('shops').doc(shopCode).collection('customers').doc(customerPhone);
+                const customerRef = adminDb.collection('shops').doc(shopCode).collection('customers').doc(message.from);
                 const ledgerRef = adminDb.collection('shops').doc(shopCode).collection('ledger').doc();
-                const udhaarAmount = type === 'credit' ? amount : -amount;
+                const udhaarImpact = type === 'credit' ? amount : -amount;
 
                 const customerDoc = await transaction.get(customerRef);
                 if (!customerDoc.exists) {
                     transaction.set(customerRef, {
-                        shop_id: shopCode, phone: customerPhone, name: `Customer ${customerPhone.slice(-4)}`,
-                        visit_count: 1, total_spent: amount, totalUdhaar: udhaarAmount,
-                        last_visit: FieldValue.serverTimestamp(), status: 'NEW', created_at: FieldValue.serverTimestamp(), updated_at: FieldValue.serverTimestamp(), reminderCount: 0,
+                        shop_id: shopCode, phone: message.from, name: `Customer ${message.from.slice(-4)}`,
+                        totalUdhaar: udhaarImpact, total_spent: amount, visit_count: 1,
+                        status: 'NEW', created_at: FieldValue.serverTimestamp(),
                     });
                 } else {
                     transaction.update(customerRef, {
-                        visit_count: FieldValue.increment(1), total_spent: FieldValue.increment(amount), totalUdhaar: FieldValue.increment(udhaarAmount),
-                        last_visit: FieldValue.serverTimestamp(), updated_at: FieldValue.serverTimestamp()
+                        totalUdhaar: FieldValue.increment(udhaarImpact),
+                        total_spent: FieldValue.increment(amount),
+                        visit_count: FieldValue.increment(1),
+                        last_visit: FieldValue.serverTimestamp(),
                     });
                 }
-
                 transaction.set(ledgerRef, {
-                    id: ledgerRef.id, shop_id: shopCode, customerPhone, amount, item: items, type,
-                    source: 'whatsapp', createdAt: FieldValue.serverTimestamp(), raw_text: message.text,
+                    id: ledgerRef.id, shop_id: shopCode, customerPhone: message.from,
+                    amount, item: items, type, source: 'whatsapp', createdAt: FieldValue.serverTimestamp(),
                 });
             });
 
-            await sendWhatsAppMessage(customerPhone, replyMessage);
-            await interactionRef.update({ 
-                processing_status: 'processed', 
-                system_response: replyMessage, 
-                detected_intent: 'ledger_entry',
+            const reply = "Entry confirmed! ✅";
+            await sendWhatsAppMessage(message.from, reply);
+            
+            // Log Flywheel Metadata
+            await interactionRef.update({
+                processing_status: 'processed',
+                system_response: reply,
                 processing_path: 'deterministic',
                 decision_confidence: 1.0,
-                response_time_ms: Date.now() - startTime,
-                queue_delay_ms: queueDelay
+                response_time_ms: Date.now() - startTime
             });
         
         } else {
-            // --- PATH 2: AI AGENT (Data Flywheel: Capture Reasoning Data) ---
-            const agentInput: AgentInput = { query: cleanedQuery, shopContext };
-            const agentOutput = await anigravityAgent(agentInput);
+            // --- PATH 2: AI AGENT (Confidence Gate) ---
+            const agentOutput = await anigravityAgent({ query: cleanedQuery, shopContext });
+
+            // Boundary 3: Confidence Gate (0.75)
+            if (agentOutput.confidence < 0.75 || agentOutput.escalate) {
+                const reply = "Iske liye main shopkeeper se confirm karke bataunga. 🙂";
+                await sendWhatsAppMessage(message.from, reply);
+                await interactionRef.update({
+                    processing_status: 'escalated',
+                    system_response: reply,
+                    decision_confidence: agentOutput.confidence,
+                    processing_path: 'ai_fallback',
+                    shop_context_snapshot: shopContext
+                });
+                return;
+            }
 
             if (agentOutput.action) {
-                // Actions are routed through the ActionEngine for Boundary Safety
                 const actionResult = await executeAction(agentOutput.action);
                 if (!actionResult.success) {
-                    agentOutput.response = actionResult.message || "Maaf kijiye, hum yeh entry nahi kar sakte.";
+                    agentOutput.response = actionResult.message;
                 }
             }
 
@@ -138,22 +136,17 @@ export async function processMessage(message: NormalizedMessage) {
             }
             
             await interactionRef.update({
-                processing_status: agentOutput.escalate ? 'escalated' : 'processed',
+                processing_status: 'processed',
                 system_response: agentOutput.response,
                 detected_intent: agentOutput.intent,
                 processing_path: 'ai_fallback',
                 decision_confidence: agentOutput.confidence,
                 response_time_ms: Date.now() - startTime,
-                queue_delay_ms: queueDelay,
-                shop_context_snapshot: shopContext // Snapshot for future training
+                shop_context_snapshot: shopContext // Training gold
             });
         }
     } catch (error) {
-        console.error(`[Processor] CRITICAL FAILURE:`, error);
-        await interactionRef.update({ 
-            processing_status: 'failed', 
-            system_response: (error as Error).message,
-            error_details: JSON.stringify(error) 
-        });
+        console.error(`[Flywheel] Critical error:`, error);
+        await interactionRef.update({ processing_status: 'failed', error_details: JSON.stringify(error) });
     }
 }

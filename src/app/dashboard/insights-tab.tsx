@@ -5,8 +5,9 @@ import { collection, query, orderBy, limit } from "firebase/firestore";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, TrendingDown, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, TrendingDown, TrendingUp, AlertCircle, CheckCircle2, Lightbulb, Zap } from "lucide-react";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
 
 interface InsightsTabProps {
   shopId: string;
@@ -44,7 +45,7 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h2 className="text-2xl font-bold font-headline uppercase">Owner Co-Pilot</h2>
-        <p className="text-muted-foreground">Automated business intelligence for your shop.</p>
+        <p className="text-muted-foreground">Autonomous business intelligence for your shop.</p>
       </div>
 
       {!insights?.length ? (
@@ -52,13 +53,16 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
           <CardContent className="flex flex-col items-center justify-center p-12 text-center">
             <Lightbulb className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="font-bold">No Insights Yet</h3>
-            <p className="text-sm text-muted-foreground max-w-xs">Record more transactions on WhatsApp to receive automated business advice.</p>
+            <p className="text-sm text-muted-foreground max-w-xs">Record more transactions on WhatsApp to activate autonomous intelligence.</p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4">
           {insights.map((insight) => (
-            <Card key={insight.id} className="transition-all hover:border-primary/50">
+            <Card key={insight.id} className="transition-all hover:border-primary/50 relative overflow-hidden">
+              {/* Risk Boundary Visual */}
+              <div className={`absolute top-0 left-0 w-1 h-full ${insight.type === 'RISK_ALERT' ? 'bg-destructive' : 'bg-primary'}`} />
+              
               <CardHeader className="flex flex-row items-start gap-4 pb-2">
                 <div className="mt-1 p-2 bg-muted rounded-full">
                   {renderIcon(insight.type)}
@@ -71,7 +75,7 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
                     </span>
                   </div>
                   <Badge variant="outline" className="mt-1 text-[10px] uppercase tracking-wider">
-                    {insight.type.replace('_', ' ')}
+                    Layer 1: Assisted Intelligence
                   </Badge>
                 </div>
               </CardHeader>
@@ -79,11 +83,16 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   {insight.message}
                 </p>
+                
+                {/* Guided Automation (Layer 2) */}
                 {insight.action_label && (
-                    <div className="mt-4 flex justify-end">
-                        <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
+                    <div className="mt-4 pt-4 border-t border-dashed flex items-center justify-between">
+                        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Zap size={10} className="text-primary"/> Guided Action Ready
+                        </p>
+                        <Button size="sm" className="h-8 rounded-full text-xs font-bold">
                             {insight.action_label} →
-                        </Badge>
+                        </Button>
                     </div>
                 )}
               </CardContent>
@@ -94,5 +103,3 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
     </div>
   );
 }
-
-import { Lightbulb } from "lucide-react";
