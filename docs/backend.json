@@ -118,54 +118,6 @@
       },
       "required": ["id", "shop_id", "amount", "type", "customerPhone"]
     },
-    "Order": {
-        "title": "Order",
-        "description": "Represents a payment order for a subscription.",
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "shopId": { "type": "string" },
-          "userId": { "type": "string" },
-          "plan": { "type": "string" },
-          "amount": { "type": "number" },
-          "currency": { "type": "string" },
-          "razorpayOrderId": { "type": "string" },
-          "razorpayPaymentId": { "type": "string" },
-          "status": { "type": "string", "enum": ["created", "paid", "failed"] },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "paidAt": { "type": "string", "format": "date-time" }
-        },
-        "required": ["id", "shopId", "userId", "plan", "amount", "razorpayOrderId", "status", "createdAt"]
-    },
-    "Post": {
-      "title": "Post",
-      "description": "Represents a blog post.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "title": { "type": "string" },
-        "slug": { "type": "string" },
-        "category": { "type": "string" },
-        "excerpt": { "type": "string" },
-        "content": { "type": "string" },
-        "author": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "title", "slug", "category", "excerpt", "content", "author", "createdAt"]
-    },
-    "Comment": {
-      "title": "Comment",
-      "description": "Represents a comment on a blog post.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "postSlug": { "type": "string" },
-        "name": { "type": "string" },
-        "message": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "postSlug", "name", "message", "createdAt"]
-    },
     "Interaction": {
       "title": "Interaction Log",
       "description": "Stores every raw incoming message and the system's reaction, for auditing and AI training.",
@@ -180,7 +132,7 @@
         "extracted_entities": { "type": "object" },
         "system_response": { "type": "string" },
         "response_time_ms": { "type": "number" },
-        "processing_status": { "type": "string", "enum": ["received", "processing", "processed", "failed"] },
+        "processing_status": { "type": "string", "enum": ["received", "processing", "processed", "failed", "escalated"] },
         "processing_path": {
           "type": "string",
           "enum": ["deterministic", "ai_fallback"],
@@ -190,65 +142,31 @@
       },
       "required": ["interactionId", "sender_phone", "created_at"]
     },
-    "Log": {
-      "title": "Log Entry",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "event": { "type": "string" },
-        "details": { "type": "object" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "event", "createdAt"]
-    },
-    "AuditLog": {
-      "title": "Audit Log",
-      "description": "Records all significant actions taken by users and the system for security and compliance.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "actorId": { "type": "string", "description": "The UID of the user who performed the action." },
-        "actorRole": { "type": "string", "description": "The role of the user at the time of the action." },
-        "shopId": { "type": "string", "description": "The shop context, if applicable." },
-        "action": { "type": "string", "description": "The action performed, e.g., 'user:update:role'." },
-        "targetType": { "type": "string", "description": "The type of entity targeted, e.g., 'user', 'shop'." },
-        "targetId": { "type": "string", "description": "The ID of the entity targeted." },
-        "before": { "type": "object", "description": "The state of the target entity before the change." },
-        "after": { "type": "object", "description": "The state of the target entity after the change." },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "actorId", "actorRole", "action", "targetType", "targetId", "createdAt"]
-    },
-    "Notification": {
-      "title": "Notification",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "shopId": { "type": "string" },
-        "customerPhone": { "type": "string" },
-        "type": { "type": "string", "enum": ["PAYMENT_REMINDER", "DAILY_SUMMARY", "SUBSCRIPTION_REMINDER"] },
-        "sentAt": { "type": "string", "format": "date-time" },
-        "status": { "type": "string", "enum": ["sent", "failed", "delivered", "read"] }
-      },
-      "required": ["id", "shopId", "customerPhone", "type", "sentAt", "status"]
-    },
-     "GlobalMetrics": {
+    "GlobalMetrics": {
       "title": "Global Metrics",
-      "description": "A single document containing aggregated metrics for the entire platform, updated by a scheduled backend job.",
+      "description": "Aggregated platform metrics.",
       "type": "object",
       "properties": {
-        "id": { "type": "string", "description": "Should always be 'global'." },
-        "mrr": { "type": "number", "description": "Monthly Recurring Revenue." },
-        "activeSubscriptions": { "type": "number" },
-        "activeTrials": { "type": "number" },
-        "churnedShops": { "type": "number", "description": "Shops that were once active/trial but are now cancelled or locked." },
-        "totalShops": { "type": "number" },
-        "totalUsers": { "type": "number" },
-        "trialToPaidConversionRate": { "type": "number", "description": "Percentage of trials that convert to a paid plan." },
-        "avgRevenuePerShop": { "type": "number" },
+        "id": { "type": "string" },
+        "totalSales": { "type": "number" },
+        "totalVisits": { "type": "number" },
+        "activeShops": { "type": "number" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "updatedAt"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Shop inventory item.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "stock": { "type": "number" },
+        "lowStockThreshold": { "type": "number" }
+      },
+      "required": ["id", "name", "price"]
     }
   },
   "auth": {
@@ -260,14 +178,9 @@
       { "path": "/shops/{shopId}", "definition": { "schema": { "$ref": "#/entities/Shop" } } },
       { "path": "/shops/{shopId}/customers/{customerPhone}", "definition": { "schema": { "$ref": "#/entities/Customer" } } },
       { "path": "/shops/{shopId}/ledger/{ledgerId}", "definition": { "schema": { "$ref": "#/entities/LedgerEntry" } } },
-      { "path": "/orders/{orderId}", "definition": { "schema": { "$ref": "#/entities/Order" } } },
-      { "path": "/posts/{postId}", "definition": { "schema": { "$ref": "#/entities/Post" } } },
-      { "path": "/comments/{commentId}", "definition": { "schema": { "$ref": "#/entities/Comment" } } },
+      { "path": "/shops/{shopId}/products/{productId}", "definition": { "schema": { "$ref": "#/entities/Product" } } },
       { "path": "/contactFormSubmissions/{submissionId}", "definition": { "schema": { "$ref": "#/entities/ContactFormSubmission" } } },
       { "path": "/interactions/{interactionId}", "definition": { "schema": { "$ref": "#/entities/Interaction" } } },
-      { "path": "/logs/{logId}", "definition": { "schema": { "$ref": "#/entities/Log" } } },
-      { "path": "/auditLogs/{auditLogId}", "definition": { "schema": { "$ref": "#/entities/AuditLog" } } },
-      { "path": "/notifications/{notificationId}", "definition": { "schema": { "$ref": "#/entities/Notification" } } },
       { "path": "/metrics/{metricId}", "definition": { "schema": { "$ref": "#/entities/GlobalMetrics" } } }
     ]
   }

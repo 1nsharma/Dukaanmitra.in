@@ -1,36 +1,30 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
- * STRICT PUBLIC MODE: 
- * Set this to 'true' to disable all app functionality (Dashboard, Login, APIs)
- * and only show the marketing site.
+ * DukaanMitra Routing Guard
+ * Vercel -> Public Marketing Only
+ * Firebase/Local -> Full App
  */
-const PUBLIC_ONLY_MODE = 'true';
-
-const protectedPaths = ['/dashboard', '/SAP', '/login', '/api']
-
 export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname
+  const url = request.nextUrl.clone();
+  const host = request.headers.get('host') || '';
+  
+  // Is this the public-facing Vercel deployment?
+  const isPublicFrontend = host.includes('vercel.app') || host === 'dukaanmitra.in' || host === 'www.dukaanmitra.in';
+  
+  const protectedPaths = ['/dashboard', '/SAP', '/admin', '/api/verify-payment', '/api/create-order'];
+  const isProtected = protectedPaths.some(path => url.pathname.startsWith(path));
 
-  if (PUBLIC_ONLY_MODE === 'true') {
-    // If trying to access any protected or functional path, redirect to home
-    if (protectedPaths.some(p => path.startsWith(p))) {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
+  if (isPublicFrontend && isProtected) {
+    // Force redirect Vercel users to homepage if they try to access internal app routes
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
-  return NextResponse.next()
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
-}
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+};
