@@ -1,13 +1,16 @@
 
 "use client";
 
-import { collection, query, orderBy, limit } from "firebase/firestore";
+import { collection, query, orderBy, limit, doc, deleteDoc } from "firebase/firestore";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, TrendingDown, TrendingUp, AlertCircle, CheckCircle2, Lightbulb, Zap } from "lucide-react";
+import { Loader2, TrendingDown, TrendingUp, AlertCircle, CheckCircle2, Lightbulb, Zap, Check } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { useState, useTransition } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { executeAction } from "@/lib/services/action-engine";
 
 interface InsightsTabProps {
   shopId: string;
@@ -19,23 +22,46 @@ const renderIcon = (type: string) => {
         case 'GROWTH_TIP': return <TrendingUp className="text-primary h-5 w-5" />;
         case 'RISK_ALERT': return <AlertCircle className="text-warning h-5 w-5" />;
         case 'SUCCESS': return <CheckCircle2 className="text-success h-5 w-5" />;
+        case 'ACTION_REQUIRED': return <Zap className="text-accent h-5 w-5" />;
         default: return <AlertCircle className="h-5 w-5" />;
     }
 }
 
 export default function InsightsTab({ shopId }: InsightsTabProps) {
   const firestore = useFirestore();
+  const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
 
   const insightsQuery = useMemoFirebase(() => {
     if (!shopId) return null;
     return query(
       collection(firestore, "shops", shopId, "insights"),
       orderBy("createdAt", "desc"),
-      limit(10)
+      limit(15)
     );
   }, [firestore, shopId]);
 
   const { data: insights, isLoading } = useCollection(insightsQuery);
+
+  const handleAction = (insight: any) => {
+      startTransition(async () => {
+          try {
+              const result = await executeAction({
+                  type: insight.action_type,
+                  payload: insight.action_payload
+              }, 'owner');
+
+              if (result.success) {
+                  toast({ title: "Action Executed", description: "Ledger entry updated successfully." });
+                  await deleteDoc(doc(firestore, "shops", shopId, "insights", insight.id));
+              } else {
+                  toast({ title: "Execution Failed", description: result.message, variant: "destructive" });
+              }
+          } catch (e) {
+              toast({ title: "Error", description: "Failed to process action.", variant: "destructive" });
+          }
+      });
+  }
 
   if (isLoading) {
     return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
@@ -60,8 +86,7 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
         <div className="grid gap-4">
           {insights.map((insight) => (
             <Card key={insight.id} className="transition-all hover:border-primary/50 relative overflow-hidden">
-              {/* Risk Boundary Visual */}
-              <div className={`absolute top-0 left-0 w-1 h-full ${insight.type === 'RISK_ALERT' ? 'bg-destructive' : 'bg-primary'}`} />
+              <div className={`absolute top-0 left-0 w-1 h-full ${insight.type === 'ACTION_REQUIRED' ? 'bg-accent' : insight.type === 'RISK_ALERT' ? 'bg-destructive' : 'bg-primary'}`} />
               
               <CardHeader className="flex flex-row items-start gap-4 pb-2">
                 <div className="mt-1 p-2 bg-muted rounded-full">
@@ -75,7 +100,7 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
                     </span>
                   </div>
                   <Badge variant="outline" className="mt-1 text-[10px] uppercase tracking-wider">
-                    Layer 1: Assisted Intelligence
+                    {insight.type === 'ACTION_REQUIRED' ? 'Layer 2: Guided Automation' : 'Layer 1: Assisted Intelligence'}
                   </Badge>
                 </div>
               </CardHeader>
@@ -84,14 +109,19 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
                   {insight.message}
                 </p>
                 
-                {/* Guided Automation (Layer 2) */}
                 {insight.action_label && (
                     <div className="mt-4 pt-4 border-t border-dashed flex items-center justify-between">
                         <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                            <Zap size={10} className="text-primary"/> Guided Action Ready
+                            <Zap size={10} className="text-accent"/> Action Policy: Requires Owner Confirmation
                         </p>
-                        <Button size="sm" className="h-8 rounded-full text-xs font-bold">
-                            {insight.action_label} →
+                        <Button 
+                            size="sm" 
+                            className="h-8 rounded-full text-xs font-bold bg-accent hover:bg-accent/90"
+                            onClick={() => handleAction(insight)}
+                            disabled={isPending}
+                        >
+                            {isPending ? <Loader2 className="animate-spin h-3 w-3 mr-1"/> : <Check className="h-3 w-3 mr-1"/>}
+                            {insight.action_label}
                         </Button>
                     </div>
                 )}

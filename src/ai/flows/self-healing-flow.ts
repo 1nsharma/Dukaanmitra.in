@@ -9,35 +9,36 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 /**
  * Autonomous Self-Healing Flow.
  * Recovery Engine for Stage-5 Architecture.
+ * Fixes "Stuck" interactions and retries failed messaging ops.
  */
-export const selfHealingFlow = ai.defineFlow(
+const selfHealingFlow = ai.defineFlow(
   {
     name: 'selfHealingFlow',
     inputSchema: z.void(),
     outputSchema: z.object({
-      healed: z.number(),
-      escalated: z.number(),
+      healedInteractions: z.number(),
+      healedOutbox: z.number(),
     }),
   },
   async () => {
-    console.log('[SelfHealing] Starting recovery job...');
+    console.log('[SelfHealing] Starting autonomous recovery job...');
     
-    // 1. Recovery: Stuck interactions (> 1 hour)
+    // 1. Recovery: Stuck interactions (> 1 hour in 'received' or 'processing')
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const stuckInteractions = await adminDb.collection('interactions')
-        .where('processing_status', '==', 'received')
+        .where('processing_status', 'in', ['received', 'processing'])
         .where('created_at', '<', Timestamp.fromDate(oneHourAgo))
         .limit(50)
         .get();
 
-    let escalatedCount = 0;
+    let healedInteractions = 0;
     for (const doc of stuckInteractions.docs) {
         await doc.ref.update({
-            processing_status: 'escalated',
-            escalation_reason: 'Auto-escalated: Stuck process detected.',
+            processing_status: 'failed',
+            error_details: 'Auto-escalated: Stuck process detected during self-healing.',
             updated_at: FieldValue.serverTimestamp()
         });
-        escalatedCount++;
+        healedInteractions++;
     }
 
     // 2. Recovery: Failed WhatsApp Outbox (Retry up to 3 times)
@@ -46,7 +47,7 @@ export const selfHealingFlow = ai.defineFlow(
         .limit(20)
         .get();
 
-    let healedCount = 0;
+    let healedOutbox = 0;
     for (const doc of failedOutbox.docs) {
         const data = doc.data();
         if ((data.retryCount || 0) < 3) {
@@ -55,11 +56,11 @@ export const selfHealingFlow = ai.defineFlow(
                 retryCount: FieldValue.increment(1),
                 updated_at: FieldValue.serverTimestamp()
             });
-            healedCount++;
+            healedOutbox++;
         }
     }
 
-    return { healed: healedCount, escalated: escalatedCount };
+    return { healedInteractions, healedOutbox };
   }
 );
 

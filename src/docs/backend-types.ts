@@ -80,44 +80,11 @@ export type LedgerEntry = {
   amount: number;
   item?: string;
   type: "credit" | "payment";
-  source?: "whatsapp" | "app" | "manual" | "app-ai";
+  source?: "whatsapp" | "app" | "manual" | "app-ai" | "whatsapp-ai";
   createdAt: any;
   raw_text?: string;
   source_model_version?: string;
   source_confidence?: number;
-};
-
-export type Order = {
-  id: string;
-  shopId: string;
-  userId: string;
-  plan: string;
-  amount: number;
-  currency: string;
-  razorpayOrderId: string;
-  razorpayPaymentId?: string;
-  status: "created" | "paid" | "failed";
-  createdAt: any;
-  paidAt?: any;
-};
-
-export type Post = {
-  id: string;
-  title: string;
-  slug: string;
-  category: string;
-  excerpt: string;
-  content: string;
-  author: string;
-  createdAt: any;
-};
-
-export type Comment = {
-  id: string;
-  postSlug: string;
-  name: string;
-  message: string;
-  createdAt: any;
 };
 
 export type Interaction = {
@@ -130,49 +97,33 @@ export type Interaction = {
   extracted_entities?: object;
   system_response?: string;
   response_time_ms?: number;
-  processing_status?: "received" | "processing" | "processed" | "failed";
+  queue_delay_ms?: number;
+  decision_confidence?: number;
+  processing_status?: "received" | "processing" | "processed" | "failed" | "escalated";
   processing_path?: "deterministic" | "ai_fallback";
+  shop_context_snapshot?: object;
   created_at: any;
 };
 
-export type Log = {
+export type ShopInsight = {
   id: string;
-  event: string;
-  details: object;
+  type: "SALES_DROP" | "GROWTH_TIP" | "RISK_ALERT" | "SUCCESS" | "ACTION_REQUIRED";
+  title: string;
+  message: string;
+  action_label?: string;
+  action_type?: string;
+  action_payload?: object;
   createdAt: any;
-};
-
-export type AuditLog = {
-  id: string;
-  actorId: string;
-  actorRole: string;
-  shopId?: string;
-  action: string;
-  targetType: string;
-  targetId: string;
-  before?: object;
-  after?: object;
-  createdAt: any;
-};
-
-export type Notification = {
-  id: string;
-  shopId: string;
-  customerPhone: string;
-  type: "PAYMENT_REMINDER" | "DAILY_SUMMARY" | "SUBSCRIPTION_REMINDER";
-  sentAt: any;
-  status: "sent" | "failed" | "delivered" | "read";
+  isRead: boolean;
 };
 
 export type GlobalMetrics = {
   id: string;
+  version: number;
   mrr: number;
   activeSubscriptions: number;
   activeTrials: number;
   churnedShops: number;
   totalShops: number;
-  totalUsers: number;
-  trialToPaidConversionRate: number;
-  avgRevenuePerShop: number;
   updatedAt: any;
 };
