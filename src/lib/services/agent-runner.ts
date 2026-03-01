@@ -16,33 +16,42 @@ interface NormalizedMessage {
     receivedAt: number;
 }
 
+/**
+ * Deterministic parser for simple bill entries.
+ * Returns null if the query is complex or needs AI reasoning.
+ */
 function parseSimpleBill(text: string): { amount: number; items: string; type: 'credit' | 'payment' } | null {
-    const paymentKeywords = /\b(paid|jama|diya)\b/i;
+    const paymentKeywords = /\b(paid|jama|diya|received|naga)\b/i;
     const isPayment = paymentKeywords.test(text);
     const cleanText = text.replace(paymentKeywords, '').trim();
-    const match = cleanText.match(/(\d+\.?\d*)\s*(.*)/);
+    const match = cleanText.match(/^(\d+\.?\d*)\s*(.*)$/) || cleanText.match(/^(.*)\s+(\d+\.?\d*)$/);
+    
     if (match) {
-        const amount = parseFloat(match[1]);
-        const items = match[2].trim() || (isPayment ? 'Payment Received' : 'Bill Entry');
+        const amount = parseFloat(match[1].match(/\d/) ? match[1] : match[2]);
+        const items = (match[1].match(/\d/) ? match[2] : match[1]).trim() || (isPayment ? 'Payment Received' : 'Bill Entry');
         return { amount, items, type: isPayment ? 'payment' : 'credit' };
     }
     return null;
 }
 
+/**
+ * The Data Flywheel Message Processor.
+ * Logs rich metadata for future Vertical LLM training.
+ */
 export async function processMessage(message: NormalizedMessage) {
     const startTime = Date.now();
     const queueDelay = startTime - message.receivedAt;
-    console.log(`[Processor] Processing ${message.messageId}. Queue Delay: ${queueDelay}ms`);
-
     const interactionRef = adminDb.collection('interactions').doc(message.messageId);
 
     try {
         const shopCodeMatch = message.text.match(/#(\w+)/);
         if (!shopCodeMatch) {
-            await sendWhatsAppMessage(message.from, "Kripya shop code (#SHP123) ke saath bill bhejein.");
-            await interactionRef.update({ processing_status: 'failed', system_response: "No shop code found." });
+            const reply = "Kripya shop code (#SHP123) ke saath bill bhejein. 🙏";
+            await sendWhatsAppMessage(message.from, reply);
+            await interactionRef.update({ processing_status: 'failed', system_response: "Missing shop code." });
             return;
         }
+        
         const shopCode = shopCodeMatch[1].toUpperCase();
         const cleanedQuery = message.text.replace(/#\w+\s*/, '').trim();
 
@@ -55,13 +64,19 @@ export async function processMessage(message: NormalizedMessage) {
         
         const { shop, shopContext } = contextResult;
 
+        // --- SUBSCRIPTION BOUNDARY ---
         if (shop.status === 'locked' || shop.status === 'suspended') {
-            const reply = "Aapka DukaanMitra plan expire ho gaya hai. Service continue karne ke liye dashboard se payment karein.";
+            const reply = "Aapka DukaanMitra plan expire ho gaya hai. Service continue karne ke liye dashboard se payment karein. 💳";
             await sendWhatsAppMessage(message.from, reply);
-            await interactionRef.update({ processing_status: 'processed', system_response: reply, detected_intent: 'shop_locked' });
+            await interactionRef.update({ 
+                processing_status: 'processed', 
+                system_response: reply, 
+                detected_intent: 'subscription_lock' 
+            });
             return;
         }
 
+        // --- PATH 1: DETERMINISTIC (Data Flywheel: Confidence = 1.0) ---
         const simpleBill = parseSimpleBill(cleanedQuery);
 
         if (simpleBill) {
@@ -72,9 +87,9 @@ export async function processMessage(message: NormalizedMessage) {
             await adminDb.runTransaction(async (transaction) => {
                 const customerRef = adminDb.collection('shops').doc(shopCode).collection('customers').doc(customerPhone);
                 const ledgerRef = adminDb.collection('shops').doc(shopCode).collection('ledger').doc();
-                const customerDoc = await transaction.get(customerRef);
                 const udhaarAmount = type === 'credit' ? amount : -amount;
 
+                const customerDoc = await transaction.get(customerRef);
                 if (!customerDoc.exists) {
                     transaction.set(customerRef, {
                         shop_id: shopCode, phone: customerPhone, name: `Customer ${customerPhone.slice(-4)}`,
@@ -98,7 +113,7 @@ export async function processMessage(message: NormalizedMessage) {
             await interactionRef.update({ 
                 processing_status: 'processed', 
                 system_response: replyMessage, 
-                detected_intent: 'ledger_entry_simple',
+                detected_intent: 'ledger_entry',
                 processing_path: 'deterministic',
                 decision_confidence: 1.0,
                 response_time_ms: Date.now() - startTime,
@@ -106,11 +121,16 @@ export async function processMessage(message: NormalizedMessage) {
             });
         
         } else {
+            // --- PATH 2: AI AGENT (Data Flywheel: Capture Reasoning Data) ---
             const agentInput: AgentInput = { query: cleanedQuery, shopContext };
             const agentOutput = await anigravityAgent(agentInput);
 
             if (agentOutput.action) {
-                await executeAction(agentOutput.action);
+                // Actions are routed through the ActionEngine for Boundary Safety
+                const actionResult = await executeAction(agentOutput.action);
+                if (!actionResult.success) {
+                    agentOutput.response = actionResult.message || "Maaf kijiye, hum yeh entry nahi kar sakte.";
+                }
             }
 
             if (agentOutput.response) {
@@ -124,11 +144,16 @@ export async function processMessage(message: NormalizedMessage) {
                 processing_path: 'ai_fallback',
                 decision_confidence: agentOutput.confidence,
                 response_time_ms: Date.now() - startTime,
-                queue_delay_ms: queueDelay
+                queue_delay_ms: queueDelay,
+                shop_context_snapshot: shopContext // Snapshot for future training
             });
         }
     } catch (error) {
-        console.error(`[Processor] Error:`, error);
-        await interactionRef.update({ processing_status: 'failed', system_response: (error as Error).message });
+        console.error(`[Processor] CRITICAL FAILURE:`, error);
+        await interactionRef.update({ 
+            processing_status: 'failed', 
+            system_response: (error as Error).message,
+            error_details: JSON.stringify(error) 
+        });
     }
 }

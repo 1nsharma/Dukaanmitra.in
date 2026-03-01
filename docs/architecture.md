@@ -1,25 +1,35 @@
 
-# DukaanMitra Production Architecture
+# DukaanMitra Data Flywheel & Autonomous Layers
 
-## 1. Fast Webhook Pattern
-The WhatsApp Webhook (`/api/whatsapp`) is designed for extreme speed (< 300ms).
-1. **Receipt**: Meta sends POST.
-2. **Idempotency**: Check `interactions` collection for `messageId`.
-3. **Acknowledgment**: Return `200 OK` immediately.
-4. **Processing**: Trigger `agent-runner` asynchronously.
+This document outlines the Stage 5 architecture that enables DukaanMitra to transition from a generic AI wrapper to a Vertical LLM company.
 
-## 2. Data Consistency
-All agent-initiated database changes pass through the **Action Engine**.
-- Uses **Firestore Transactions** to ensure that customer totals always match the sum of ledger entries.
-- Ledger entries are **immutable** for audit reliability.
+## 1. The Data Flywheel
+We don't need to retrain models early. We need to collect "Ground Truth" data.
 
-## 3. Automation Agents
-Built using Genkit Flows, these agents run on schedules or business rules:
-- **Daily Summary**: Runs at 9PM IST. Aggregates shop performance.
-- **Payment Reminders**: Scans `totalUdhaar > 0` and sends polite nudges with anti-spam cooling.
-- **Shop Guard**: Subscription enforcement logic.
+### Data Collection Loop:
+1. **The Request**: A Hinglish message arrives via WhatsApp.
+2. **The Decision**: The system processes it either via **Deterministic Parser** (Confidence = 1.0) or **Genkit AI** (Confidence < 1.0).
+3. **The Logging**: Every interaction is stored in `/interactions` with:
+   - `raw_message`
+   - `shop_context_snapshot` (What the AI saw)
+   - `extracted_entities` (What the AI produced)
+   - `decision_confidence`
+4. **The Correction**: When a shopkeeper corrects a ledger entry in the Dashboard, we link that correction back to the original `interactionId`.
+5. **The Dataset**: This creates a perfectly labeled dataset for fine-tuning a future "Kirana-1" model that understands retail slang better than GPT-4.
 
-## 4. Multi-Tenant Isolation
-Every query is scoped by `shopId`.
-- No global collection scans in processing.
-- `context-loader` fetches shop-specific rules before the AI agent runs.
+## 2. Safety Boundaries (ActionEngine)
+The AI is a *proposer*, not an *executor*. The `ActionEngine` serves as the final boundary:
+- **Revenue Leakage Guard**: Blocks high-value credit for unknown customers.
+- **Limit Enforcement**: Strictly follows shop-defined credit limits.
+- **Multi-Tenant Jail**: Every transaction is wrapped in a Firestore Transaction that enforces `shopId` isolation.
+
+## 3. Autonomous Layers
+The platform heals itself without human intervention:
+- **Self-Healing Job**: A scheduled job that identifies messages stuck in "received" state (likely crashes) and moves them to "escalated" for visibility.
+- **Message Retry**: Automatically retries failed WhatsApp API calls with exponential backoff and idempotency protection.
+- **Proactive Insights**: Not a chat agent, but a "Co-Pilot" that pushes alerts to the dashboard based on sales patterns (e.g., "Sales dropped 20% this week").
+
+## 4. Performance Goals
+- **Webhook ACK**: < 100ms.
+- **Total Processing**: < 2s.
+- **Zero Collision**: Guaranteed by idempotency hashes.

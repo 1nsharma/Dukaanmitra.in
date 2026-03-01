@@ -140,6 +140,7 @@
           "enum": ["deterministic", "ai_fallback"],
           "description": "The processing path taken: 'deterministic' for fast parsing, 'ai_fallback' for the full AI agent."
         },
+        "shop_context_snapshot": { "type": "object", "description": "What the AI saw when making this decision. Vital for RLHF." },
         "created_at": { "type": "string", "format": "date-time" }
       },
       "required": ["interactionId", "sender_phone", "created_at"]
