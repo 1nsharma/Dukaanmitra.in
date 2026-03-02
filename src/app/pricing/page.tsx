@@ -1,4 +1,4 @@
-import { Check, ShieldCheck, Zap, HelpCircle } from 'lucide-react';
+import { Check, ShieldCheck, Zap, HelpCircle, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -9,17 +9,17 @@ const plans = [
     title: 'Free Trial',
     price: '₹0',
     period: '/ 14 days',
-    description: 'Get a feel for our platform.',
-    features: ['Basic WhatsApp Integration', 'Mobile App Access', '1 Admin User', 'Basic Analytics', '100 Customers Limit'],
+    description: 'Perfect to explore the power of AI Munim.',
+    features: ['WhatsApp Integration', 'Basic Ledger', '1 Shop Admin', 'Daily Summaries', 'Up to 100 Customers'],
     isRecommended: false,
-    cta: 'Start Trial',
+    cta: 'Start Free Trial',
   },
   {
     title: 'Basic',
     price: '₹1999',
     period: '/ month',
-    description: 'Perfect for small stores just getting started.',
-    features: ['Full WhatsApp Integration', 'Mobile App Access', '2 Admin Users', 'Standard Analytics & Reports', '1,000 Customers'],
+    description: 'Ideal for small retail stores.',
+    features: ['Full WhatsApp Automation', 'Udhaar Recovery Reminders', '2 Admin Users', 'Standard Analytics', '1,000 Customers'],
     isRecommended: false,
     cta: 'Choose Basic',
   },
@@ -27,8 +27,8 @@ const plans = [
     title: 'Pro',
     price: '₹4999',
     period: '/ month',
-    description: 'For growing businesses that need more power.',
-    features: ['All Basic features', 'AI-Powered Tools', '5 Admin Users', 'Advanced Analytics & Reports', 'Unlimited Customers'],
+    description: 'For growing businesses with multiple staff.',
+    features: ['Everything in Basic', 'AI Growth Insights', '5 Admin Users', 'Inventory Alerts', 'Unlimited Customers'],
     isRecommended: true,
     cta: 'Choose Pro',
   },
@@ -36,10 +36,10 @@ const plans = [
     title: 'Enterprise',
     price: 'Custom',
     period: '',
-    description: 'Tailored solutions for large-scale operations.',
-    features: ['All Pro features', 'Dedicated API Access', 'Unlimited Users', 'Dedicated Onboarding & Support', 'Custom Integrations'],
+    description: 'For chains and franchise operations.',
+    features: ['Multi-Branch Dashboard', 'Custom AI Agents', 'Unlimited Admin Users', 'Priority Support', 'API Access'],
     isRecommended: false,
-    cta: 'Contact Us',
+    cta: 'Contact Sales',
   },
 ];
 
@@ -49,12 +49,12 @@ export default function PricingPage() {
       <div className="container py-24 sm:py-32">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
           <h1 className="font-headline text-5xl md:text-7xl font-black uppercase tracking-tighter">
-            Transparent <span className="text-primary">Pricing.</span>
+            No Surprises. <span className="text-primary">Just Value.</span>
           </h1>
-          <p className="text-lg text-muted-foreground">No hidden fees. No long-term contracts. Cancel anytime.</p>
-          <div className="flex justify-center items-center gap-4 text-xs font-bold uppercase tracking-widest text-muted-foreground pt-4">
-              <span className="flex items-center gap-1"><ShieldCheck size={14}/> Secure Payments</span>
-              <span className="flex items-center gap-1"><Zap size={14}/> Instant Activation</span>
+          <p className="text-lg text-muted-foreground">Start with a 14-day free trial. No credit card required. Cancel any time with one click.</p>
+          <div className="flex justify-center items-center gap-6 text-xs font-bold uppercase tracking-widest text-muted-foreground pt-4">
+              <span className="flex items-center gap-1.5"><BadgeCheck size={14} className="text-primary"/> No Credit Card</span>
+              <span className="flex items-center gap-1.5"><Zap size={14} className="text-primary"/> Instant Setup</span>
           </div>
         </div>
         
@@ -69,7 +69,7 @@ export default function PricingPage() {
             >
               <CardHeader className="items-center text-center pb-8">
                   <div className="h-8 mb-4">
-                    {plan.isRecommended && <span className="bg-primary text-primary-foreground text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Most Popular</span>}
+                    {plan.isRecommended && <span className="bg-primary text-primary-foreground text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Best for Growth</span>}
                   </div>
                   <CardTitle className="font-headline text-2xl font-black uppercase tracking-tight">{plan.title}</CardTitle>
                   <div className="flex items-baseline mt-4">
@@ -90,7 +90,7 @@ export default function PricingPage() {
               </CardContent>
               <CardFooter className="p-8">
                   <Button asChild className={cn('w-full rounded-full font-black text-lg py-7 uppercase tracking-widest')} variant={plan.isRecommended ? "default" : "secondary"}>
-                  <Link href={plan.cta === 'Contact Us' ? '/contact' : '/login?register=true'}>{plan.cta}</Link>
+                  <Link href="/login">{plan.cta}</Link>
                   </Button>
               </CardFooter>
             </Card>
@@ -99,26 +99,26 @@ export default function PricingPage() {
 
         <div className="mt-24 max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center bg-secondary/30 p-12 rounded-[40px] border border-border">
             <div className="space-y-4">
-                <h3 className="font-headline text-3xl font-black uppercase tracking-tighter">Decision <span className="text-primary">Tension?</span></h3>
-                <p className="text-muted-foreground font-medium">“Agar 14 din me value na mile to cancel, no questions asked.” Hum jaante hain aapka business kitna important hai.</p>
+                <h3 className="font-headline text-3xl font-black uppercase tracking-tighter">Still got <span className="text-primary">Questions?</span></h3>
+                <p className="text-muted-foreground font-medium">"Humein pata hai aapka business kitna important hai." Our team is ready to help you set up your shop on a 15-min call.</p>
                 <div className="pt-4">
                     <Button variant="outline" className="rounded-full font-bold h-12 px-6" asChild>
-                        <Link href="/contact"><HelpCircle className="mr-2 h-4 w-4"/> Talk to Sales</Link>
+                        <Link href="/contact"><HelpCircle className="mr-2 h-4 w-4"/> Chat with Support</Link>
                     </Button>
                 </div>
             </div>
             <div className="space-y-6">
                 <div className="flex gap-4">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0"><Check size={20}/></div>
-                    <p className="text-sm font-bold uppercase tracking-tight">Free Setup Help on Call/WhatsApp</p>
+                    <p className="text-sm font-bold uppercase tracking-tight">Free Onboarding Assistance</p>
                 </div>
                 <div className="flex gap-4">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0"><Check size={20}/></div>
-                    <p className="text-sm font-bold uppercase tracking-tight">GST-Ready Exports Included</p>
+                    <p className="text-sm font-bold uppercase tracking-tight">GST-Ready Reports Included</p>
                 </div>
                 <div className="flex gap-4">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0"><Check size={20}/></div>
-                    <p className="text-sm font-bold uppercase tracking-tight">No Hidden Transaction Fees</p>
+                    <p className="text-sm font-bold uppercase tracking-tight">Secure & Private Data Vault</p>
                 </div>
             </div>
         </div>

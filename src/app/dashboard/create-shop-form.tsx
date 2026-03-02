@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -20,19 +19,16 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useUser, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { Sparkles, ArrowRight } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Shop name must be at least 2 characters."),
-  phone: z.string().min(10, "Please enter a valid phone number."),
+  phone: z.string().min(10, "Please enter a valid 10-digit phone number."),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface CreateShopFormProps {
-  onShopCreated: (shopId: string) => void;
-}
-
-export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
+export default function CreateShopForm({ onShopCreated }: { onShopCreated: (id: string) => void }) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const firestore = useFirestore();
@@ -76,7 +72,7 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
 
         try {
              await batch.commit();
-             toast({ title: "Shop Created!", description: "Digital storefront is ready." });
+             toast({ title: "Shop Ready!", description: "Let's activate your WhatsApp Munim." });
              onShopCreated(shopId);
         } catch(serverError) {
              const permissionError = new FirestorePermissionError({
@@ -85,27 +81,33 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
                  requestResourceData: {shop: shopData},
              });
              errorEmitter.emit('permission-error', permissionError);
-             toast({ title: "Error", description: "Could not create shop.", variant: "destructive" });
+             toast({ title: "Error", description: "Could not create shop. Try again.", variant: "destructive" });
         }
     });
   };
 
   return (
-    <Card className="max-w-2xl mx-auto">
+    <Card className="max-w-md mx-auto border-2 border-primary/20 shadow-xl overflow-hidden">
+      <div className="bg-primary/10 p-4 flex items-center justify-center gap-2 border-b border-primary/10">
+        <Sparkles className="text-primary h-5 w-5" />
+        <span className="font-bold text-primary uppercase tracking-widest text-xs">Set Up Your Digital Shop</span>
+      </div>
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Create Your Shop</CardTitle>
-        <CardDescription>Digitize your dukaan in seconds.</CardDescription>
+        <CardTitle className="font-headline text-2xl text-center">Welcome, Boss!</CardTitle>
+        <CardDescription className="text-center">
+          Just 2 details to get started with your Digital Munim.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Shop Name</FormLabel>
-                  <FormControl><Input placeholder="e.g., Gupta Store" {...field} /></FormControl>
+                  <FormLabel className="font-bold uppercase text-[10px] tracking-wider text-muted-foreground">Shop Name</FormLabel>
+                  <FormControl><Input placeholder="e.g., Gupta Store" className="h-12 text-lg" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -115,14 +117,15 @@ export default function CreateShopForm({ onShopCreated }: CreateShopFormProps) {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl><Input placeholder="Business number" {...field} /></FormControl>
+                  <FormLabel className="font-bold uppercase text-[10px] tracking-wider text-muted-foreground">Your Phone Number</FormLabel>
+                  <FormControl><Input placeholder="10-digit mobile number" className="h-12 text-lg" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "Creating..." : "Create Shop"}
+            <Button type="submit" className="w-full h-14 text-lg font-black uppercase tracking-widest rounded-xl shadow-lg" disabled={isPending}>
+              {isPending ? "Setting up..." : "Create My Shop"}
+              <ArrowRight className="ml-2" />
             </Button>
           </form>
         </Form>
