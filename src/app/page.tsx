@@ -7,7 +7,7 @@ import {
   Cpu, Shield, TrendingUp, Users, ArrowRight, Zap, Bot, 
   Smartphone, Lock, CheckCircle2, Star, MessageCircle,
   BarChart3, BadgeCheck, XCircle, GraduationCap, MonitorOff,
-  History, Send, Check, Cloud, Database, EyeOff, Scale
+  History, Send, Check, Cloud, Database, EyeOff, Scale, ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
