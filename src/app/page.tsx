@@ -7,7 +7,7 @@ import {
   Cpu, Shield, TrendingUp, Users, ArrowRight, Zap, Bot, 
   Smartphone, Lock, CheckCircle2, Star, MessageCircle,
   BarChart3, BadgeCheck, XCircle, GraduationCap, MonitorOff,
-  History, Send, Check, Cloud, Database, EyeOff
+  History, Send, Check, Cloud, Database, EyeOff, Scale
 } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,14 +23,16 @@ const StepCard = ({ number, title, description }: { number: string, title: strin
   </div>
 );
 
-const WhatsAppBubble = ({ side, text, time, type = 'text' }: { side: 'left' | 'right', text: string, time: string, type?: 'text' | 'summary' }) => (
+const WhatsAppBubble = ({ side, text, time, type = 'text' }: { side: 'left' | 'right', text: string, time: string, type?: 'text' | 'summary' | 'alert' }) => (
   <div className={cn("flex flex-col mb-4", side === 'right' ? "items-end" : "items-start")}>
     <div className={cn(
       "max-w-[85%] p-3 rounded-2xl text-sm shadow-sm",
       side === 'right' ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-muted text-foreground rounded-tl-none",
-      type === 'summary' && "border-2 border-primary/20 bg-card text-foreground"
+      type === 'summary' && "border-2 border-primary/20 bg-card text-foreground",
+      type === 'alert' && "border-2 border-accent/20 bg-accent/5 text-foreground"
     )}>
       {type === 'summary' && <div className="font-bold text-[10px] uppercase tracking-widest text-primary mb-1">Daily Report</div>}
+      {type === 'alert' && <div className="font-bold text-[10px] uppercase tracking-widest text-accent mb-1">Munim Verification</div>}
       <p className="whitespace-pre-line">{text}</p>
       <div className={cn("text-[10px] mt-1 text-right opacity-70")}>{time}</div>
     </div>
@@ -46,14 +48,14 @@ export default function LandingPage() {
           <div className="max-w-4xl mx-auto lg:mx-0 space-y-8">
             <div className="inline-flex items-center space-x-3 bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
               <Cpu size={14} className="text-primary animate-pulse" />
-              <span className="text-xs font-bold text-primary uppercase tracking-widest">MitraOS: The AI Operating System</span>
+              <span className="text-xs font-bold text-primary uppercase tracking-widest">MitraOS: Deterministic Intelligence</span>
             </div>
             <h1 className="font-headline text-5xl md:text-8xl font-black leading-none tracking-tighter uppercase">
               The Digital <br/>
               <span className="text-primary text-outline">Manual Book</span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl font-medium leading-relaxed mx-auto lg:mx-0">
-              Replace manual registers with the smartest <strong className="text-foreground">digital khata</strong> and <strong className="text-foreground">udhaar app</strong> on WhatsApp. Built for the busy Indian shopkeeper.
+              Replace manual registers with the smartest <strong className="text-foreground">digital khata</strong>. Reliable accounting on WhatsApp with <strong className="text-primary uppercase">Boss Control</strong>.
             </p>
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
               <Button
@@ -69,7 +71,7 @@ export default function LandingPage() {
                 className="h-16 px-10 rounded-full font-black text-xl uppercase tracking-tight"
                 asChild
               >
-                <Link href="/features">How it works</Link>
+                <Link href="/features">Safety Protocol</Link>
               </Button>
             </div>
 
@@ -79,25 +81,25 @@ export default function LandingPage() {
                     <div className="p-2 bg-success/10 rounded-lg group-hover:bg-success/20 transition-colors">
                         <Lock size={16} className="text-success"/>
                     </div>
-                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">100% Private Data</span>
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">100% Deterministic</span>
                 </div>
                 <div className="flex items-center gap-2 group cursor-default">
                     <div className="p-2 bg-success/10 rounded-lg group-hover:bg-success/20 transition-colors">
-                        <Cloud size={16} className="text-success"/>
+                        <Scale size={16} className="text-success"/>
                     </div>
-                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">Indian Cloud Secure</span>
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">Owner Verified Writes</span>
                 </div>
                 <div className="flex items-center gap-2 group cursor-default">
                     <div className="p-2 bg-success/10 rounded-lg group-hover:bg-success/20 transition-colors">
                         <EyeOff size={16} className="text-success"/>
                     </div>
-                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">No Data Selling</span>
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">Zero Data Leakage</span>
                 </div>
                 <div className="flex items-center gap-2 group cursor-default">
                     <div className="p-2 bg-success/10 rounded-lg group-hover:bg-success/20 transition-colors">
                         <BadgeCheck size={16} className="text-success"/>
                     </div>
-                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">GST-Ready Reports</span>
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">Bank-Grade Safety</span>
                 </div>
             </div>
           </div>
@@ -108,69 +110,69 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Zero Learning Curve Section */}
+      {/* Boss Control Proof */}
       <section className="py-24 border-b border-border">
         <div className="container">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter">Built for <span className="text-primary">Real Reality</span></h2>
-            <p className="text-lg text-muted-foreground">The most intuitive <strong className="text-primary">kirana software</strong> designed for busy Indian retailers. No apps to learn.</p>
+            <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter">AI Sirf Help Karega, <span className="text-primary">Boss Aap Hi Hain</span></h2>
+            <p className="text-lg text-muted-foreground">MitraOS follows a <strong>Human-in-the-loop</strong> philosophy. AI never takes a financial decision without your guidance.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center text-primary border border-border shadow-subtle">
-                <Smartphone size={32} />
+                <Scale size={32} />
               </div>
               <div>
-                <h4 className="font-bold uppercase text-xs tracking-widest mb-1">No New App</h4>
-                <p className="text-sm text-muted-foreground">Everything stays on WhatsApp.</p>
+                <h4 className="font-bold uppercase text-xs tracking-widest mb-1">Guided Actions</h4>
+                <p className="text-sm text-muted-foreground">AI suggests, you approve.</p>
               </div>
             </div>
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center text-destructive border border-border shadow-subtle">
-                <MonitorOff size={32} />
+                <Lock size={32} />
               </div>
               <div>
-                <h4 className="font-bold uppercase text-xs tracking-widest mb-1">No Computer</h4>
-                <p className="text-sm text-muted-foreground">No extra hardware needed.</p>
+                <h4 className="font-bold uppercase text-xs tracking-widest mb-1">Financial Guardrails</h4>
+                <p className="text-sm text-muted-foreground">Zero autonomous writes.</p>
               </div>
             </div>
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center text-primary border border-border shadow-subtle">
-                <GraduationCap size={32} />
+                <Shield size={32} />
               </div>
               <div>
-                <h4 className="font-bold uppercase text-xs tracking-widest mb-1">No Training</h4>
-                <p className="text-sm text-muted-foreground">If you can chat, you can bill.</p>
+                <h4 className="font-bold uppercase text-xs tracking-widest mb-1">Deterministic Core</h4>
+                <p className="text-sm text-muted-foreground">Logic > Machine Learning.</p>
               </div>
             </div>
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center text-success border border-border shadow-subtle">
-                <Zap size={32} />
+                <History size={32} />
               </div>
               <div>
-                <h4 className="font-bold uppercase text-xs tracking-widest mb-1">Instant Start</h4>
-                <p className="text-sm text-muted-foreground">Connected in under 2 minutes.</p>
+                <h4 className="font-bold uppercase text-xs tracking-widest mb-1">Full Audit Trail</h4>
+                <p className="text-sm text-muted-foreground">Every click is recorded.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 1 Day Usage Story */}
+      {/* WhatsApp Experience Story */}
       <section className="py-24 bg-secondary/10 border-b border-border">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
               <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">
-                Experience the Magic <br/> of <span className="text-primary">WhatsApp Munim</span>
+                Safe & Reliable <br/> <span className="text-primary text-outline">Digital Partner</span>
               </h2>
-              <p className="text-xl text-muted-foreground">See how MitraOS automates a typical day in your shop.</p>
+              <p className="text-xl text-muted-foreground">See how MitraOS keeps you in total control while automating the hard work.</p>
               
               <div className="space-y-6">
                 {[
-                  { time: "09:30 AM", title: "Easy Billing", desc: "Just type 'Ravi 500 udhaar'. AI records it instantly." },
-                  { time: "04:00 PM", title: "Auto Recovery", desc: "System prepares polite reminders for pending udhaar." },
-                  { time: "09:00 PM", title: "Daily Summary", desc: "Get a full sales report on WhatsApp before you sleep." }
+                  { time: "09:30 AM", title: "Smart Billing", desc: "Type 'Ravi 500 udhaar'. AI parses the intent instantly." },
+                  { time: "11:00 AM", title: "High-Value Check", desc: "For large amounts, AI asks for your verification first." },
+                  { time: "09:00 PM", title: "Verified Summary", desc: "All owner-approved entries summarized accurately." }
                 ].map((item, i) => (
                   <div key={i} className="flex gap-4 p-4 rounded-2xl hover:bg-background transition-colors border border-transparent hover:border-border group">
                     <div className="text-primary font-black text-sm pt-1 whitespace-nowrap">{item.time}</div>
@@ -191,25 +193,28 @@ export default function LandingPage() {
                     <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center font-bold">M</div>
                     <div>
                       <div className="text-xs font-bold">DukaanMitra AI</div>
-                      <div className="text-[8px] opacity-80 uppercase tracking-widest font-black">Digital Munim</div>
+                      <div className="text-[8px] opacity-80 uppercase tracking-widest font-black">Co-Pilot</div>
                     </div>
                   </div>
                   <MessageCircle size={18} />
                 </div>
                 <div className="p-4 h-[450px] overflow-y-auto bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat bg-contain">
-                  <WhatsAppBubble side="right" text="#SHP123 Ravi 500 udhaar" time="09:30 AM" />
-                  <WhatsAppBubble side="left" text="Ji Namaste 🙏\n\nRavi Kumar ke liye ₹500 Udhaar add kar diya gaya hai.\n\nTotal Udhaar: ₹1,450" time="09:31 AM" />
+                  <WhatsAppBubble side="right" text="#SHP123 Ravi 5000 udhaar" time="11:00 AM" />
                   
-                  <WhatsAppBubble side="left" text="🔔 *Munim Alert*\n\nSunita ji ka payment 7 din se pending hai. Reminder bhejein?" time="04:00 PM" />
-                  <WhatsAppBubble side="right" text="Bhej do" time="04:02 PM" />
-                  <WhatsAppBubble side="left" text="Done! Polite reminder Sunita ji ko bhej diya gaya hai. 👍" time="04:02 PM" />
-
                   <WhatsAppBubble 
                     side="left" 
-                    type="summary"
-                    text="📊 *Aaj ki Summary*\n\nBikri: ₹12,450\nNew Customers: 4\nUdhaar Recovery: ₹2,100\n\nShubh Ratri! 🌙" 
-                    time="09:00 PM" 
+                    type="alert"
+                    text="⚠️ *Verification Alert*\n\nHigh-value entry detect hui hai: ₹5,000 for Ravi.\n\nVerify karke Approve karein?" 
+                    time="11:01 AM" 
                   />
+                  
+                  <WhatsAppBubble side="right" text="Approve" time="11:02 AM" />
+                  
+                  <WhatsAppBubble side="left" text="Ji Namaste 🙏\n\nEntry verified aur record kar di gayi hai.\n\nTotal Udhaar: ₹6,450" time="11:02 AM" />
+                  
+                  <WhatsAppBubble side="left" text="🔔 *Munim Insight*\n\nSunita ji ka payment due hai. Reminder propose karun?" time="04:00 PM" />
+                  <WhatsAppBubble side="right" text="Ha bhej do" time="04:02 PM" />
+                  <WhatsAppBubble side="left" text="Done! Polite reminder Sunita ji ko bhej diya gaya hai. 👍" time="04:02 PM" />
                 </div>
               </Card>
             </div>
@@ -221,23 +226,23 @@ export default function LandingPage() {
       <section className="py-24 border-b border-border">
         <div className="container">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter">Ab Register Ki <span className="text-primary">Tension Chhodo</span></h2>
-            <p className="text-lg text-muted-foreground">Upgrade your store with the most powerful <strong className="text-primary">udhaar app</strong> in India.</p>
+            <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter">Hisaab ki <span className="text-primary text-outline">Digital Power</span></h2>
+            <p className="text-lg text-muted-foreground">AI Intelligence + Human Control = The ultimate store management.</p>
           </div>
           
           <div className="grid md:grid-cols-2 gap-8">
             <Card className="border-2 border-destructive/20 bg-destructive/5 rounded-[40px] overflow-hidden">
               <div className="bg-destructive/10 p-6 border-b border-destructive/10 flex items-center justify-between">
-                <h3 className="font-black uppercase tracking-widest text-destructive">Purana Tarika</h3>
+                <h3 className="font-black uppercase tracking-widest text-destructive">Bina Co-Pilot Ke</h3>
                 <XCircle className="text-destructive" />
               </div>
               <CardContent className="p-8 space-y-6">
                 {[
-                  "Diary me hisaab likhna (Jo kabhi bhi kho sakti hai)",
-                  "Customer ko phone karke udhaar mangne me sharam",
-                  "Pata hi nahi chalta kaunsa maal bik raha hai",
-                  "Raat ko 1 ghanta baith kar hisaab joddna",
-                  "Staff ki entry me galtiyan"
+                  "Calculation errors (Human mistake)",
+                  "Important udhaar bhool jaana",
+                  "Data loss (Diary gum ho sakti hai)",
+                  "Staff ki akele manmaani entries",
+                  "Report banene me hours lagte hain"
                 ].map((text, i) => (
                   <div key={i} className="flex items-start gap-3 text-muted-foreground">
                     <XCircle className="shrink-0 w-5 h-5 text-destructive/40 mt-0.5" />
@@ -254,11 +259,11 @@ export default function LandingPage() {
               </div>
               <CardContent className="p-8 space-y-6">
                 {[
-                  "WhatsApp par 1 second me entry (100% Secure)",
-                  "AI automatically polite reminders bhejta hai",
-                  "Smart phone par analytics (Top selling items)",
-                  "Automatic daily report (No manual work)",
-                  "Deterministic logic (Zero calculation error)"
+                  "100% Deterministic math (Zero error)",
+                  "AI guided reminders (No loss)",
+                  "Cloud security (100% Safe)",
+                  "Owner approval system (Total control)",
+                  "Instant real-time reports (Zero effort)"
                 ].map((text, i) => (
                   <div key={i} className="flex items-start gap-3 text-foreground">
                     <CheckCircle2 className="shrink-0 w-5 h-5 text-primary mt-0.5" />
@@ -271,79 +276,18 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Trust Section */}
-      <section className="py-24 bg-primary/5">
-        <div className="container">
-            <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-                <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter">Bharosa Hi <span className="text-primary">Dhanda Hai</span></h2>
-                <p className="text-lg text-muted-foreground">Your shop's data is your property. We protect it like a bank.</p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-                <div className="p-8 bg-background rounded-3xl border-2 border-border hover:border-primary transition-all space-y-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                        <Database size={24}/>
-                    </div>
-                    <h4 className="font-black uppercase tracking-tight">Your Data, Your Property</h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed">Aapki shop ka sara data aapka hai. Hum sirf usay manage karne me aapki help karte hain. Aap jab chahein export kar sakte hain.</p>
-                </div>
-                <div className="p-8 bg-background rounded-3xl border-2 border-border hover:border-primary transition-all space-y-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                        <Shield size={24}/>
-                    </div>
-                    <h4 className="font-black uppercase tracking-tight">Strict No Data-Selling</h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed">Hum aapka sales data ya customer list kisi ko nahi bechte. Hamara business model subscriptions par hai, data trading par nahi.</p>
-                </div>
-                <div className="p-8 bg-background rounded-3xl border-2 border-border hover:border-primary transition-all space-y-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                        <Cloud size={24}/>
-                    </div>
-                    <h4 className="font-black uppercase tracking-tight">Indian Cloud Secure</h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed">All data is stored on secure servers with bank-grade encryption. Aapka hisaab-kitaab physically aur digitally safe hai.</p>
-                </div>
-            </div>
-        </div>
-      </section>
-
-      {/* Activation Preview */}
-      <section className="py-24 border-b border-border bg-secondary/10">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter">Automate in <span className="text-primary">3 Steps</span></h2>
-            <p className="text-lg text-muted-foreground">Simple enough for your staff, powerful enough for your business.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <StepCard 
-              number="1"
-              title="Create Account"
-              description="Sign up in 30 seconds with your email or Google account. No complex forms."
-            />
-            <StepCard 
-              number="2"
-              title="Connect WhatsApp"
-              description="Submit your business number. Our system connects to your WhatsApp instantly."
-            />
-            <StepCard 
-              number="3"
-              title="Type & Record"
-              description="Type 'Ravi 500 udhaar' on WhatsApp. AI records it and updates your ledger automatically."
-            />
-          </div>
-        </div>
-      </section>
-
       {/* Final CTA */}
       <section className="py-32 text-center">
         <div className="container max-w-3xl space-y-8">
-          <MessageCircle size={48} className="mx-auto text-primary mb-2 animate-bounce" />
-          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">Start Your <span className="text-primary">14-Day Free Trial</span></h2>
-          <p className="text-xl text-muted-foreground">No credit card required. Connect your shop in 2 minutes and see the power of MitraOS.</p>
+          <ShieldCheck size={48} className="mx-auto text-primary mb-2 animate-bounce" />
+          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">Launch Your <span className="text-primary">Co-Pilot Store</span></h2>
+          <p className="text-xl text-muted-foreground">Join the elite club of Indian retailers using deterministic AI to scale safely.</p>
           <div className="pt-4">
             <Button size="lg" className="h-20 px-12 rounded-full font-black text-2xl uppercase tracking-widest shadow-heavy shadow-primary/20" asChild>
-              <Link href="/login">Launch MitraOS Now</Link>
+              <Link href="/login">Launch Co-Pilot Now</Link>
             </Button>
           </div>
-          <p className="text-muted-foreground font-bold uppercase text-xs tracking-widest pt-4">Zero Risk. Cancel Anytime.</p>
+          <p className="text-muted-foreground font-bold uppercase text-xs tracking-widest pt-4">Safety First • Control Always</p>
         </div>
       </section>
     </div>

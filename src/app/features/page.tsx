@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
     ArrowRight, MessageSquare, Shield, TrendingUp, Users, Zap, CheckCircle2, 
-    Lock, BarChart3, BellRing, Smartphone, Scale 
+    Lock, BarChart3, BellRing, Smartphone, Scale, Cpu, ShieldCheck
 } from 'lucide-react';
 import React from 'react';
 import Link from 'next/link';
@@ -12,36 +12,36 @@ const modules = [
     name: "Munim AI",
     positioning: "Paise ka hisaab, ab bina kisi galti ke",
     icon: <Shield />,
-    tagline: "100% Accurate",
+    tagline: "Deterministic Accuracy",
     features: [
-      { title: "Pen aur Register chhodo", description: "Bas WhatsApp par 'Ravi 500 udhaar' likho. Munim AI usey turant sahi jagah record kar lega." },
-      { title: "Professional Digital Bill", description: "Customer ko turant WhatsApp par bill bhejein. Shop ka trust aur naam badhayein." },
-      { title: "Automatic Udhaar Recovery", description: "AI khud pehchanega kiska udhaar baaki hai aur aapke liye polite reminder taiyaar karega." },
-      { title: "CA-Ready Reports", description: "Tax aur Audit ki tension khatam. Ek click me pure mahine ki report download karein." }
+      { title: "Pen aur Register chhodo", description: "WhatsApp par entry bhejein. Munim AI usey rule-based logic se 100% sahi jagah record karega." },
+      { title: "Guided Billing", description: "Badi entries par AI aapse confirmation maangega. System kabhi akele paise ka faisla nahi leta." },
+      { title: "Automatic Udhaar Recovery", description: "AI patterns pehchan kar aapko batayega kisse paise maangne hain. Action aap lenge." },
+      { title: "CA-Ready Audit Logs", description: "Har transaction ka deterministic record. Tax aur audit ke liye 100% bharosemand data." }
     ]
   },
   {
     name: "Vyapar AI",
-    positioning: "Sales badhao aur stock sahi rakho",
+    positioning: "Data se sales badhao, guess-work se nahi",
     icon: <TrendingUp />,
-    tagline: "Proactive Growth",
+    tagline: "Proactive Signals",
     features: [
-      { title: "Sales Drop Alert", description: "Agar is hafte bikri kam hui toh AI aapko pehle hi bata dega taki aap action le sakein." },
-      { title: "Sabse zyada bikne wala saaman", description: "Jaanein kaunsa saaman hero hai aur kaunsa slow mover. Sahi stock rakhein." },
-      { title: "Area ki Demand", description: "Aapke area me kya trend chal raha hai? Jaanein aur wahi saaman mangwayein jo bike." },
-      { title: "Raat 9 baje ki Summary", description: "Din bhar ka saara hisaab raat ko aapke WhatsApp par. Sukoon ki neend soyein." }
+      { title: "Sales Drop Alerts", description: "Agar kisi product ki demand giri, toh system aapko signal dega taki aap stock adjust kar sakein." },
+      { title: "Smart Inventory Tips", description: "AI batayega kaunsa saaman slow mover hai. Stock clear karne ke liye offers suggest karega." },
+      { title: "Area Demand Signals", description: "Aapke region ke trends ke hisaab se naye products mangwane ki intelligence." },
+      { title: "Raat 9 baje ki Summary", description: "Din bhar ki performance ka accurate snapshot. Agle din ki strategy banne me madad." }
     ]
   },
   {
     name: "Grahak AI",
-    positioning: "Customers ko wapas bulao aur loyal banao",
+    positioning: "Customer relationship ko automate karein",
     icon: <Users />,
-    tagline: "Customer Retention",
+    tagline: "Retention Engine",
     features: [
-      { title: "VIP Customer ki pehchan", description: "Kaunse customer sabse valuable hain? Unhe pehchanein aur special offers dein." },
-      { title: "Purane Grahak wapas", description: "Jo grahak kaafi din se nahi aaye, unhe AI automatic discount bhej kar wapas bulayega." },
-      { title: "24/7 AI Salesman", description: "Aap so rahe ho tab bhi AI grahako ke sawalon ka jawab WhatsApp par deta rahega." },
-      { title: "Google Rating badhao", description: "Happy customers se automatic review maangein aur apni shop ki rating badhayein." }
+      { title: "VIP Identification", description: "High-value customers ki list taiyaar. Unhe special feel karane ke liye action points." },
+      { title: "Churn Risk Detection", description: "Jo grahak kaafi din se nahi aaye, unke liye win-back campaigns propose honge." },
+      { title: "24/7 Response Assistant", description: "Grahako ke sawalon ke automated replies (Hinglish). Complex sawal aapke paas aayenge." },
+      { title: "Review Nudges", description: "Happy customers ko digital bill ke saath review link suggest karna. Reputation builder." }
     ]
   }
 ];
@@ -52,57 +52,84 @@ export default function FeaturesPage() {
       {/* Hero Section */}
       <section className="text-center max-w-4xl mx-auto">
         <h1 className="font-headline text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none">
-          APKE BUSINESS KE LIYE <br/> <span className="text-primary">3 SMART AGENTS</span>
+          AI AGENTS JO <br/> <span className="text-primary text-outline">APKE LIYE</span> KAAM KAREIN
         </h1>
         <p className="mt-6 text-lg md:text-xl text-muted-foreground">
-          Ab manual register aur mushkil apps ki zarurat nahi. MitraOS ke AI agents milkar aapki dukaan sambhalenge.
+          DukaanMitra AI apka salesman aur accountant hai, lekin <strong>Boss aap hi hain</strong>. AI propose karega, aap approve karenge.
         </p>
       </section>
 
-      {/* Safety Boundary Explanation */}
-      <section className="bg-secondary/30 p-8 md:p-12 rounded-[40px] border border-border relative overflow-hidden">
+      {/* Stage-5 Safety Architecture Section */}
+      <section className="bg-primary/5 p-8 md:p-16 rounded-[40px] border-2 border-primary/20 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+            <Cpu size={200} className="text-primary" />
+        </div>
+        
         <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 bg-primary/10 px-3 py-1 rounded-full text-primary text-xs font-bold uppercase">
-              <Scale size={14}/> Human-In-The-Loop
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full text-primary text-xs font-bold uppercase tracking-widest border border-primary/20">
+              <ShieldCheck size={14}/> Layered Safety Architecture
             </div>
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter">AI sirf help karega, <span className="text-primary">Boss aap hi hain</span></h2>
+            <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">AI Proposes, <br/> <span className="text-primary text-outline">Owner Disposes</span></h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Hum paise ke maamle me AI par bharosa nahi karte. <strong>Munim AI</strong> calculation karta hai, lekin koi bhi bada badlav karne se pehle aapki permission maangta hai.
+              Humne MitraOS ko <strong>Risk-Gated Architecture</strong> par banaya hai. Hum paise ke maamle me AI ko "khud se" faisla nahi lene dete.
             </p>
-            <ul className="space-y-3">
-              {[
-                "AI bataiga, Aap faisla lenge.",
-                "Hisaab-kitaab me zero galti.",
-                "Fraud aur Risk se hamesha suraksha."
-              ].map(t => (
-                <li key={t} className="flex items-center gap-2 font-bold uppercase text-sm">
-                  <CheckCircle2 size={18} className="text-primary" /> {t}
-                </li>
-              ))}
-            </ul>
+            
+            <div className="space-y-4">
+                <div className="flex gap-4 p-4 bg-background rounded-2xl border border-border">
+                    <div className="w-10 h-10 bg-success/10 rounded-xl flex items-center justify-center text-success shrink-0"><Zap size={20}/></div>
+                    <div>
+                        <h4 className="font-bold text-sm uppercase">Low Risk (Automated)</h4>
+                        <p className="text-xs text-muted-foreground mt-1">Greetings aur simple information queries AI khud handle karta hai.</p>
+                    </div>
+                </div>
+                <div className="flex gap-4 p-4 bg-background rounded-2xl border border-border border-l-4 border-l-accent">
+                    <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center text-accent shrink-0"><Scale size={20}/></div>
+                    <div>
+                        <h4 className="font-bold text-sm uppercase">Medium Risk (Guided)</h4>
+                        <p className="text-xs text-muted-foreground mt-1">Payment reminders aur offers AI suggest karta hai, aap click karke approve karte hain.</p>
+                    </div>
+                </div>
+                <div className="flex gap-4 p-4 bg-background rounded-2xl border border-border border-l-4 border-l-destructive">
+                    <div className="w-10 h-10 bg-destructive/10 rounded-xl flex items-center justify-center text-destructive shrink-0"><Lock size={20}/></div>
+                    <div>
+                        <h4 className="font-bold text-sm uppercase">High Risk (Deterministic)</h4>
+                        <p className="text-xs text-muted-foreground mt-1">Financial writes aur ledger updates sirf strict mathematical rules se hote hain.</p>
+                    </div>
+                </div>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-6 bg-background rounded-3xl border border-border space-y-2">
-              <Lock className="text-primary" />
-              <h4 className="font-bold text-sm uppercase">Financial Guardrail</h4>
-              <p className="text-xs text-muted-foreground">Aapki permission ke bina balances nahi badlenge.</p>
-            </div>
-            <div className="p-6 bg-background rounded-3xl border border-border space-y-2">
-              <BellRing className="text-primary" />
-              <h4 className="font-bold text-sm uppercase">Smart Alerts</h4>
-              <p className="text-xs text-muted-foreground">Zaruri cheezon ka notification turant WhatsApp par.</p>
-            </div>
-            <div className="p-6 bg-background rounded-3xl border border-border space-y-2">
-              <Smartphone className="text-primary" />
-              <h4 className="font-bold text-sm uppercase">WhatsApp Native</h4>
-              <p className="text-xs text-muted-foreground">Staff ko kuch naya sikhane ki zarurat nahi.</p>
-            </div>
-            <div className="p-6 bg-background rounded-3xl border border-border space-y-2">
-              <BarChart3 className="text-primary" />
-              <h4 className="font-bold text-sm uppercase">Live Audit</h4>
-              <p className="text-xs text-muted-foreground">Har decision ka pura record dashboard par.</p>
-            </div>
+          
+          <div className="relative group">
+             <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
+             <Card className="relative rounded-[40px] border-4 border-primary/20 bg-card p-8 shadow-heavy">
+                <h3 className="font-headline text-2xl font-black uppercase mb-6 flex items-center gap-2">
+                    <BarChart3 className="text-primary"/>
+                    Safety Dashboard
+                </h3>
+                <div className="space-y-6">
+                    <div className="p-4 bg-secondary/50 rounded-2xl border border-border">
+                        <div className="flex justify-between items-center mb-2">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">AI Observation</span>
+                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px]">VERIFY</Badge>
+                        </div>
+                        <p className="text-sm font-bold">"Ravi ne ₹2,500 ka udhaar liya hai. Bill confirm karein?"</p>
+                        <div className="flex gap-2 mt-4">
+                            <Button size="sm" className="rounded-full text-[10px] font-black px-4 uppercase">Approve Bill</Button>
+                            <Button size="sm" variant="outline" className="rounded-full text-[10px] font-black px-4 uppercase">Edit</Button>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-primary w-[88%]" />
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] font-bold uppercase text-muted-foreground">
+                            <span>System Reliability</span>
+                            <span className="text-primary">88/100 (Stage-5 Ready)</span>
+                        </div>
+                    </div>
+                </div>
+             </Card>
           </div>
         </div>
       </section>
@@ -138,12 +165,12 @@ export default function FeaturesPage() {
       ))}
 
       {/* Call to Action */}
-      <section className="text-center py-16 bg-primary/5 rounded-[40px] border-2 border-primary/20">
-        <h2 className="text-3xl font-black uppercase tracking-tighter mb-4">Aaj hi apni dukaan digital karein</h2>
-        <p className="text-muted-foreground mb-8 max-w-xl mx-auto">Hazaro retailers MitraOS use kar rahe hain. 14-day free trial se shuru karein.</p>
+      <section className="text-center py-16 bg-card rounded-[40px] border-2 border-border shadow-subtle">
+        <h2 className="text-3xl font-black uppercase tracking-tighter mb-4">Dukaan apka asset hai, <span className="text-primary">usey secure rakhein</span></h2>
+        <p className="text-muted-foreground mb-8 max-w-xl mx-auto">MitraOS ke saath 100% accuracy aur 100% control paiye. Trial shuru karein.</p>
         <Button size="lg" className="px-12 h-14 text-xl font-black uppercase tracking-widest rounded-full shadow-lg" asChild>
-            <Link href="/login?register=true">
-              Shuru Karein
+            <Link href="/login">
+              Approve & Start
               <ArrowRight className="ml-2"/>
             </Link>
         </Button>
