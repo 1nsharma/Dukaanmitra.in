@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Twitter, Github, Linkedin, MessageSquare } from 'lucide-react';
+import { Twitter, Github, Linkedin, MessageSquare, ShieldCheck, Zap } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -18,7 +18,7 @@ export default function Footer() {
     <footer className="bg-card border-t border-border">
       <div className="container py-12 md:py-20">
         <div className="grid grid-cols-2 md:grid-cols-12 gap-10">
-          <div className="col-span-2 md:col-span-4 space-y-4">
+          <div className="col-span-2 md:col-span-4 space-y-6">
               <Link href="/" className="flex items-center gap-3 cursor-pointer mb-4 w-fit">
                 <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-primary-foreground text-2xl font-black">D</span>
@@ -28,6 +28,10 @@ export default function Footer() {
               <p className="text-muted-foreground text-sm max-w-sm">
                 AI-first company dedicated to empowering local businesses in India with simple, powerful digital tools.
               </p>
+              <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  <span className="flex items-center gap-1.5"><ShieldCheck size={14} className="text-primary"/> 100% Secure</span>
+                  <span className="flex items-center gap-1.5"><Zap size={14} className="text-primary"/> Built in India</span>
+              </div>
               <div className="space-y-2 pt-2">
                 <h4 className="font-semibold text-foreground tracking-wider">Follow us</h4>
                 <div className="flex items-center gap-1">
@@ -46,9 +50,9 @@ export default function Footer() {
           
           <div className="md:col-span-2">
             <h4 className="font-bold text-foreground mb-4 uppercase tracking-wider">Product</h4>
-            <ul className="space-y-3 text-muted-foreground">
-              <li><Link href="/features" className="hover:text-primary transition-colors">Features</Link></li>
-              <li><Link href="/insights" className="hover:text-primary transition-colors">Insights</Link></li>
+            <ul className="space-y-3 text-muted-foreground text-sm font-medium">
+              <li><Link href="/features" className="hover:text-primary transition-colors">AI Modules</Link></li>
+              <li><Link href="/insights" className="hover:text-primary transition-colors">Intelligence</Link></li>
               <li><Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
               <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
             </ul>
@@ -56,15 +60,16 @@ export default function Footer() {
 
           <div className="md:col-span-2">
             <h4 className="font-bold text-foreground mb-4 uppercase tracking-wider">Resources</h4>
-            <ul className="space-y-3 text-muted-foreground">
+            <ul className="space-y-3 text-muted-foreground text-sm font-medium">
               <li><Link href="/docs" className="hover:text-primary transition-colors">Docs</Link></li>
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+              <li><Link href="/manifesto" className="hover:text-primary transition-colors">Manifesto</Link></li>
             </ul>
           </div>
            
            <div className="md:col-span-2">
             <h4 className="font-bold text-foreground mb-4 uppercase tracking-wider">Legal</h4>
-            <ul className="space-y-3 text-muted-foreground">
+            <ul className="space-y-3 text-muted-foreground text-sm font-medium">
               <li><Link href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms-of-service" className="hover:text-primary transition-colors">Terms of Service</Link></li>
             </ul>
@@ -72,10 +77,9 @@ export default function Footer() {
 
            <div className="md:col-span-2">
             <h4 className="font-bold text-foreground mb-4 uppercase tracking-wider">Support</h4>
-            <ul className="space-y-3 text-muted-foreground">
-              <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Form</Link></li>
+            <ul className="space-y-3 text-muted-foreground text-sm font-medium">
               <li className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
+                <MessageSquare className="w-4 h-4 text-primary" />
                 <span>+91 12345 67890</span>
               </li>
                <li className="flex items-center gap-2">
@@ -84,7 +88,7 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-12 md:mt-16 border-t border-border pt-8 text-center text-sm text-muted-foreground">
+        <div className="mt-12 md:mt-16 border-t border-border pt-8 text-center text-sm text-muted-foreground font-medium">
           <p>&copy; {year} DukaanMitra Technologies Pvt. Ltd. Built with ❤️ in India.</p>
         </div>
       </div>

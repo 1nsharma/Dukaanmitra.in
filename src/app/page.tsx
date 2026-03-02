@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { 
   Cpu, Shield, TrendingUp, Users, ArrowRight, Zap, Bot, 
-  MessageSquare, Store, ShoppingBasket, Stethoscope, Hammer 
+  MessageSquare, Store, ShoppingBasket, Stethoscope, Hammer,
+  Lock, CheckCircle2, Star
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -57,6 +58,11 @@ export default function LandingPage() {
                 <Link href="/manifesto">The Manifesto 📜</Link>
               </Button>
             </div>
+            <div className="flex items-center gap-6 pt-4 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="flex items-center gap-2"><Lock size={16} className="text-success"/> 100% Private</span>
+                <span className="flex items-center gap-2"><Zap size={16} className="text-success"/> Zero Setup Fee</span>
+                <span className="flex items-center gap-2"><CheckCircle2 size={16} className="text-success"/> Made In India</span>
+            </div>
           </div>
         </div>
         
@@ -97,54 +103,69 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Trust & Accuracy Section */}
+      <section className="py-24 bg-secondary/20">
+        <div className="container grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+                <h2 className="font-headline text-4xl font-black uppercase tracking-tighter">Aapka Data, <span className="text-primary">Aapka Control</span></h2>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                    "Software should empower the owner, not own the data." MitraOS is built on strict financial guardrails. We use <strong>deterministic logic</strong> for money, and <strong>AI</strong> for growth.
+                </p>
+                <ul className="space-y-4">
+                    {[
+                        "Zero Data Selling: Your customers stay your customers.",
+                        "Atomic Integrity: Every entry is verified and logged.",
+                        "Human-in-the-loop: AI proposes, You dispose.",
+                        "End-to-End Encryption: Bank-level security for every shop."
+                    ].map((item, i) => (
+                        <li key={i} className="flex items-center gap-3 font-bold text-sm uppercase">
+                            <Shield className="text-primary shrink-0" size={20} />
+                            {item}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div className="bg-background border border-border p-8 rounded-[40px] shadow-heavy relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4">
+                    <Star className="text-primary animate-spin-slow" />
+                </div>
+                <h3 className="font-headline text-2xl font-black uppercase mb-4 tracking-tighter">Trusted by 5,000+ Retailers</h3>
+                <p className="text-muted-foreground italic mb-6">"DukaanMitra ne mera udhaar recovery 40% badha diya hai bina kisi tension ke. Sab kuch WhatsApp par hi ho jata hai."</p>
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-muted rounded-full overflow-hidden" />
+                    <div>
+                        <p className="font-bold uppercase text-xs tracking-widest">Rajesh Gupta</p>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Gupta General Store, Delhi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </section>
+
       {/* AI Modules Section */}
-      <section className="py-24 bg-card/50">
+      <section className="py-24">
         <div className="container">
           <div className="grid lg:grid-cols-3 gap-8">
-            <div className="p-8 bg-background rounded-3xl border border-border space-y-4">
+            <div className="p-8 bg-background rounded-3xl border border-border space-y-4 hover:border-primary transition-all">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                 <Shield size={24} />
               </div>
               <h3 className="text-2xl font-black uppercase tracking-tighter">Munim AI</h3>
               <p className="text-muted-foreground">Deterministic accounting. Your AI Accountant for GST, Billing, and Udhaar recovery via WhatsApp. 100% accurate, 0% errors.</p>
             </div>
-            <div className="p-8 bg-background rounded-3xl border border-border space-y-4">
+            <div className="p-8 bg-background rounded-3xl border border-border space-y-4 hover:border-accent transition-all">
               <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center text-accent">
                 <TrendingUp size={24} />
               </div>
               <h3 className="text-2xl font-black uppercase tracking-tighter text-accent">Vyapar AI</h3>
-              <p className="text-muted-foreground">The AI Salesman. Proactive inventory predictions and revenue growth analytics sent directly to your phone.</p>
+              <p className="text-muted-foreground">The AI Salesman. Proactive inventory predictions and revenue growth analytics sent directly to your phone every evening.</p>
             </div>
-            <div className="p-8 bg-background rounded-3xl border border-border space-y-4">
+            <div className="p-8 bg-background rounded-3xl border border-border space-y-4 hover:border-success transition-all">
               <div className="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center text-success">
                 <Users size={24} />
               </div>
               <h3 className="text-2xl font-black uppercase tracking-tighter text-success">Grahak AI</h3>
-              <p className="text-muted-foreground">Loyalty automation. Segment customers, send personalized festival offers, and bring back inactive buyers.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Section */}
-      <section className="py-24 border-y border-border">
-        <div className="container text-center max-w-4xl mx-auto space-y-12">
-          <div className="space-y-4">
-            <h2 className="font-headline text-4xl font-black uppercase tracking-tighter">Aapka Data, <span className="text-primary">Aapka Control</span></h2>
-            <p className="text-xl text-muted-foreground italic">"We believe small business data belongs to the business owner, not the software provider."</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8 text-left">
-            <div className="space-y-2">
-              <h4 className="font-bold flex items-center gap-2"><Shield className="text-primary" size={18}/> Zero Data Selling</h4>
-              <p className="text-sm text-muted-foreground">We never share your customer or sales data with third parties. Your business is your own.</p>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-bold flex items-center gap-2"><Zap className="text-primary" size={18}/> 100% Accuracy</h4>
-              <p className="text-sm text-muted-foreground">Our deterministic engine ensures your ledger balance is always correct to the last paisa.</p>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-bold flex items-center gap-2"><MessageSquare className="text-primary" size={18}/> WhatsApp Native</h4>
-              <p className="text-sm text-muted-foreground">No new apps to install. If you can use WhatsApp, you can use DukaanMitra.</p>
+              <p className="text-muted-foreground">Loyalty automation. Segment customers, send personalized festival offers, and bring back inactive buyers automatically.</p>
             </div>
           </div>
         </div>
@@ -155,10 +176,10 @@ export default function LandingPage() {
         <div className="container">
           <Zap size={48} className="mx-auto text-primary mb-6 animate-bounce" />
           <h2 className="text-5xl font-black uppercase tracking-tighter mb-8">Ready to evolve your shop?</h2>
-          <Button size="lg" className="h-16 px-12 rounded-full font-black text-2xl uppercase tracking-widest" asChild>
+          <Button size="lg" className="h-16 px-12 rounded-full font-black text-2xl uppercase tracking-widest shadow-heavy shadow-primary/20" asChild>
             <Link href="/pricing">Join MitraOS</Link>
           </Button>
-          <p className="mt-6 text-muted-foreground">No credit card required. 14-day free trial.</p>
+          <p className="mt-6 text-muted-foreground font-bold uppercase text-xs tracking-widest">No credit card required. 14-day free trial.</p>
         </div>
       </section>
     </div>
