@@ -105,6 +105,18 @@ export type Interaction = {
   created_at: any;
 };
 
+export type GlobalMetrics = {
+  id: string;
+  version: number;
+  mrr: number;
+  activeSubscriptions: number;
+  activeTrials: number;
+  churnedShops: number;
+  totalShops: number;
+  trialToPaidConversionRate: number;
+  updatedAt: any;
+};
+
 export type ShopInsight = {
   id: string;
   type: "SALES_DROP" | "GROWTH_TIP" | "RISK_ALERT" | "SUCCESS" | "ACTION_REQUIRED";
@@ -115,15 +127,4 @@ export type ShopInsight = {
   action_payload?: object;
   createdAt: any;
   isRead: boolean;
-};
-
-export type GlobalMetrics = {
-  id: string;
-  version: number;
-  mrr: number;
-  activeSubscriptions: number;
-  activeTrials: number;
-  churnedShops: number;
-  totalShops: number;
-  updatedAt: any;
 };

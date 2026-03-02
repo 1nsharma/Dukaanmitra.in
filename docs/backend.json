@@ -110,17 +110,17 @@
         "amount": { "type": "number" },
         "item": { "type": "string" },
         "type": { "type": "string", "enum": ["credit", "payment"] },
-        "source": { "type": "string", "enum": ["whatsapp", "app", "manual", "app-ai"] },
+        "source": { "type": "string", "enum": ["whatsapp", "app", "manual", "app-ai", "whatsapp-ai"] },
         "createdAt": { "type": "string", "format": "date-time" },
-        "raw_text": { "type": "string", "description": "The original, unmodified message text that triggered this entry." },
-        "source_model_version": { "type": "string", "description": "The version of the model or parser that created this entry." },
-        "source_confidence": { "type": "number", "description": "The confidence score (0-1) of the parser that created this entry." }
+        "raw_text": { "type": "string", "description": "The original unmodified message text." },
+        "source_model_version": { "type": "string" },
+        "source_confidence": { "type": "number" }
       },
       "required": ["id", "shop_id", "amount", "type", "customerPhone"]
     },
     "Interaction": {
       "title": "Interaction Log",
-      "description": "Stores every raw incoming message and the system's reaction, for auditing and AI training.",
+      "description": "Stores every raw incoming message and the system's reaction for auditing and AI training (Data Flywheel).",
       "type": "object",
       "properties": {
         "interactionId": { "type": "string" },
@@ -132,12 +132,15 @@
         "extracted_entities": { "type": "object" },
         "system_response": { "type": "string" },
         "response_time_ms": { "type": "number" },
+        "queue_delay_ms": { "type": "number" },
+        "decision_confidence": { "type": "number" },
         "processing_status": { "type": "string", "enum": ["received", "processing", "processed", "failed", "escalated"] },
         "processing_path": {
           "type": "string",
           "enum": ["deterministic", "ai_fallback"],
-          "description": "The processing path taken: 'deterministic' for fast parsing, 'ai_fallback' for the full AI agent."
+          "description": "The processing path taken."
         },
+        "shop_context_snapshot": { "type": "object", "description": "What the AI saw during inference." },
         "created_at": { "type": "string", "format": "date-time" }
       },
       "required": ["interactionId", "sender_phone", "created_at"]
@@ -148,25 +151,33 @@
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "totalSales": { "type": "number" },
-        "totalVisits": { "type": "number" },
-        "activeShops": { "type": "number" },
+        "version": { "type": "number" },
+        "mrr": { "type": "number" },
+        "activeSubscriptions": { "type": "number" },
+        "activeTrials": { "type": "number" },
+        "churnedShops": { "type": "number" },
+        "totalShops": { "type": "number" },
+        "trialToPaidConversionRate": { "type": "number" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "updatedAt"]
     },
-    "Product": {
-      "title": "Product",
-      "description": "Shop inventory item.",
+    "ShopInsight": {
+      "title": "Shop Insight",
+      "description": "Operator Intelligence Feed item.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "name": { "type": "string" },
-        "price": { "type": "number" },
-        "stock": { "type": "number" },
-        "lowStockThreshold": { "type": "number" }
+        "type": { "type": "string", "enum": ["SALES_DROP", "GROWTH_TIP", "RISK_ALERT", "SUCCESS", "ACTION_REQUIRED"] },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "action_label": { "type": "string" },
+        "action_type": { "type": "string" },
+        "action_payload": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isRead": { "type": "boolean" }
       },
-      "required": ["id", "name", "price"]
+      "required": ["id", "type", "title", "message", "createdAt"]
     }
   },
   "auth": {
@@ -178,10 +189,12 @@
       { "path": "/shops/{shopId}", "definition": { "schema": { "$ref": "#/entities/Shop" } } },
       { "path": "/shops/{shopId}/customers/{customerPhone}", "definition": { "schema": { "$ref": "#/entities/Customer" } } },
       { "path": "/shops/{shopId}/ledger/{ledgerId}", "definition": { "schema": { "$ref": "#/entities/LedgerEntry" } } },
-      { "path": "/shops/{shopId}/products/{productId}", "definition": { "schema": { "$ref": "#/entities/Product" } } },
+      { "path": "/shops/{shopId}/insights/{insightId}", "definition": { "schema": { "$ref": "#/entities/ShopInsight" } } },
       { "path": "/contactFormSubmissions/{submissionId}", "definition": { "schema": { "$ref": "#/entities/ContactFormSubmission" } } },
       { "path": "/interactions/{interactionId}", "definition": { "schema": { "$ref": "#/entities/Interaction" } } },
-      { "path": "/metrics/{metricId}", "definition": { "schema": { "$ref": "#/entities/GlobalMetrics" } } }
+      { "path": "/metrics/{metricId}", "definition": { "schema": { "$ref": "#/entities/GlobalMetrics" } } },
+      { "path": "/cron_locks/{lockId}", "definition": { "schema": { "type": "object" } } },
+      { "path": "/whatsapp_outbox/{hash}", "definition": { "schema": { "type": "object" } } }
     ]
   }
 }

@@ -9,6 +9,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 /**
  * Platform-wide metrics aggregator.
  * Calculates MRR, shop counts, and conversion rates.
+ * Optimized for O(1) reads by the Super Admin Panel.
  */
 const metricsAggregatorFlow = ai.defineFlow(
   {
@@ -20,7 +21,7 @@ const metricsAggregatorFlow = ai.defineFlow(
     }),
   },
   async () => {
-    console.log('[MetricsAggregator] Starting aggregation...');
+    console.log('[MetricsAggregator] Starting global platform aggregation...');
     
     const shopsSnapshot = await adminDb.collection('shops').get();
     
@@ -38,14 +39,15 @@ const metricsAggregatorFlow = ai.defineFlow(
       if (data.mrr) totalMrr += data.mrr;
     });
 
-    const conversionRate = activeSubscriptions > 0 
-        ? (activeSubscriptions / (activeSubscriptions + activeTrials)) * 100 
+    // Calculate trial-to-paid conversion rate (simplified)
+    const conversionRate = (activeSubscriptions + churnedShops) > 0 
+        ? (activeSubscriptions / (activeSubscriptions + activeTrials + churnedShops)) * 100 
         : 0;
 
     const metricsDoc = adminDb.collection('metrics').doc('global');
     await metricsDoc.set({
       id: 'global',
-      version: 1, // Schema versioning
+      version: 1,
       mrr: totalMrr,
       activeSubscriptions,
       activeTrials,
@@ -53,9 +55,9 @@ const metricsAggregatorFlow = ai.defineFlow(
       totalShops,
       trialToPaidConversionRate: conversionRate,
       updatedAt: FieldValue.serverTimestamp(),
-      calculatedAt: FieldValue.serverTimestamp(),
     });
 
+    console.log(`[MetricsAggregator] Completed. MRR: ₹${totalMrr}, Active: ${activeSubscriptions}`);
     return { success: true, shopsProcessed: totalShops };
   }
 );
