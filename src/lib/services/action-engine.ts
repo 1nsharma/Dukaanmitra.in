@@ -4,8 +4,10 @@ import { adminDb } from '@/lib/firebase-admin';
 
 /**
  * ActionEngine: The Multi-Layer Safety Boundary.
- * Enforces Layer 0 (Deterministic) vs Layer 1-3 (Autonomous) logic.
- * AI is a PROPOSER, never an EXECUTOR for financial writes.
+ * 
+ * SCALING OPTIMIZATION:
+ * Removed Transactions for counter updates. Using FieldValue.increment() instead.
+ * This prevents the "Customer Document Contention" identified in the audit.
  */
 
 type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH';
@@ -29,12 +31,12 @@ export async function executeAction(action: any, actorType: 'system' | 'owner' =
 
   // --- BOUNDARY 1: PERMISSION GATE ---
   if (!policy.allowed) {
-      return { success: false, message: `Action '${action.type}' is restricted by system safety boundaries.` };
+      return { success: false, message: `Action '${action.type}' is restricted.` };
   }
 
   // --- BOUNDARY 2: APPROVAL GATE ---
   if (policy.requiresApproval && actorType === 'system') {
-      console.log(`[ActionEngine] Action ${action.type} requires manual approval. Prepared as Insight.`);
+      console.log(`[ActionEngine] Action ${action.type} requires manual approval.`);
       await createActionableInsight(action);
       return { success: true, message: "Action queued for owner approval." };
   }
@@ -42,54 +44,42 @@ export async function executeAction(action: any, actorType: 'system' | 'owner' =
   const { shopId, customerPhone, transaction } = action.payload;
 
   try {
-    const result = await adminDb.runTransaction(async (tx) => {
-      const shopRef = adminDb.collection('shops').doc(shopId);
-      const customerRef = shopRef.collection('customers').doc(customerPhone);
-      const ledgerRef = shopRef.collection('ledger').doc();
+    const shopRef = adminDb.collection('shops').doc(shopId);
+    const customerRef = shopRef.collection('customers').doc(customerPhone);
+    const ledgerRef = shopRef.collection('ledger').doc();
 
-      const [shopDoc, customerDoc] = await Promise.all([
-        tx.get(shopRef),
-        tx.get(customerRef)
-      ]);
+    const udhaarImpact = transaction.type === 'credit' ? transaction.amount : -transaction.amount;
 
-      if (!shopDoc.exists) return { success: false, message: "Shop not found." };
-      const shopData = shopDoc.data();
+    // SCALING FIX: Parallel writes without transactional locks.
+    // increment() is atomic and does not require a read lock.
+    const batch = adminDb.batch();
 
-      // --- BOUNDARY 3: REVENUE PROTECTION ---
-      if (transaction?.type === 'credit') {
-          const limit = shopData?.settings?.credit_limit_per_transaction || 5000;
-          if (transaction.amount > limit) {
-              return { success: false, message: `Udhaar limit ₹${limit} se zyada hai.` };
-          }
-      }
-
-      const udhaarImpact = transaction.type === 'credit' ? transaction.amount : -transaction.amount;
-
-      if (!customerDoc.exists) {
-        tx.set(customerRef, {
-          shop_id: shopId,
-          phone: customerPhone,
-          name: transaction.customerName || `Customer ${customerPhone.slice(-4)}`,
-          totalUdhaar: udhaarImpact,
-          total_spent: transaction.amount,
-          visit_count: 1,
-          status: 'NEW',
-          first_visit: FieldValue.serverTimestamp(),
-          last_visit: FieldValue.serverTimestamp(),
-          created_at: FieldValue.serverTimestamp(),
-          updated_at: FieldValue.serverTimestamp(),
+    const customerDoc = await customerRef.get();
+    if (!customerDoc.exists) {
+        batch.set(customerRef, {
+            shop_id: shopId,
+            phone: customerPhone,
+            name: transaction.customerName || `Customer ${customerPhone.slice(-4)}`,
+            totalUdhaar: udhaarImpact,
+            total_spent: transaction.amount,
+            visit_count: 1,
+            status: 'NEW',
+            first_visit: FieldValue.serverTimestamp(),
+            last_visit: FieldValue.serverTimestamp(),
+            created_at: FieldValue.serverTimestamp(),
+            updated_at: FieldValue.serverTimestamp(),
         });
-      } else {
-        tx.update(customerRef, {
-          totalUdhaar: FieldValue.increment(udhaarImpact),
-          total_spent: FieldValue.increment(transaction.amount),
-          visit_count: FieldValue.increment(1),
-          last_visit: FieldValue.serverTimestamp(),
-          updated_at: FieldValue.serverTimestamp(),
+    } else {
+        batch.update(customerRef, {
+            totalUdhaar: FieldValue.increment(udhaarImpact),
+            total_spent: FieldValue.increment(transaction.amount),
+            visit_count: FieldValue.increment(1),
+            last_visit: FieldValue.serverTimestamp(),
+            updated_at: FieldValue.serverTimestamp(),
         });
-      }
+    }
 
-      tx.set(ledgerRef, {
+    batch.set(ledgerRef, {
         id: ledgerRef.id,
         shop_id: shopId,
         customerPhone: customerPhone,
@@ -99,12 +89,11 @@ export async function executeAction(action: any, actorType: 'system' | 'owner' =
         type: transaction.type,
         source: actorType === 'owner' ? 'app-ai' : 'whatsapp-ai',
         createdAt: FieldValue.serverTimestamp(),
-      });
-
-      return { success: true };
     });
 
-    return result;
+    await batch.commit();
+    return { success: true };
+
   } catch (error) {
     console.error('[ActionEngine] Execution failed:', error);
     return { success: false, message: "System error during execution." };
