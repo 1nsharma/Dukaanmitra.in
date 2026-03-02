@@ -1,28 +1,28 @@
+# DukaanMitra (MitraOS) Stage-5 Architecture
 
-# DukaanMitra Stage-5 Architecture: Autonomous Platform
+This document outlines the **Stage-5 Autonomous Platform** implementation, enabling MitraOS to transition from a SaaS tool to a **Vertical LLM Data Engine**.
 
-This document outlines the Stage-5 implementation that enables DukaanMitra to transition from a generic SaaS to a **Vertical LLM Company**.
+## 1. The Core Philosophy: Deterministic-First
+We never let AI "guess" with money.
+- **Layer 0 (Accounting)**: 100% deterministic logic for financial writes.
+- **Layer 1 (Intelligence)**: AI analyzes patterns and **proposes** actions.
+- **Layer 2 (Execution)**: Human-in-the-loop (Owner clicks "Approve").
 
-## 1. The Data Flywheel
-We do not train models early. We collect "Ground Truth" high-fidelity signals.
-
-### Data Collection Loop:
-1. **The Message**: Hinglish WhatsApp message arrives.
-2. **The Logic**: Deterministic Parser (Confidence = 1.0) or AI Fallback (Confidence < 1.0).
-3. **The Snapshot**: We log `shop_context_snapshot` — exactly what the AI saw during inference.
-4. **The Outcome**: Every interaction stores `detected_intent` and `extracted_entities`.
-5. **The Correction**: If an owner edits a ledger entry, we link it back to the original `interactionId`, creating a perfectly labeled training pair for the future "Kirana-LLM".
-
-## 2. Safety Boundaries (ActionEngine)
-AI is a *proposer*, not an *executor*. The `ActionEngine` serves as the final barrier:
-- **Layer 0 (Accounting)**: Only deterministic code can write to the ledger. AI cannot change money balances.
-- **Risk Classification**: Actions are tagged (LOW/MEDIUM/HIGH). Low-risk actions (reminders) can auto-run; high-risk actions are blocked.
-- **Confidence Gate**: Any AI decision with < 0.75 confidence is automatically escalated to the owner.
+## 2. The Data Flywheel
+Every interaction is a training label for our future proprietary "Kirana-LLM".
+1. **Capture**: Log raw message + `shop_context_snapshot`.
+2. **Analyze**: AI assigns `detected_intent` and `confidence_score`.
+3. **Correct**: If an owner edits a ledger entry, we log the `correction_signal`.
+4. **Learn**: High-confidence interactions (>0.9) become "Ground Truth" for future fine-tuning.
 
 ## 3. Autonomous Layers
-- **Self-Healing Recovery**: A recurring job monitors for "received" interactions that failed to process (likely due to crashes) and moves them to "escalated" status for admin radar.
-- **Outbox Idempotency**: Prevents duplicate WhatsApp messages during delivery retries using payload hashing.
-- **Guided Automation**: The Co-Pilot doesn't just talk; it prepares executable actions (Buttons) for the owner to approve with one click.
+- **Action Engine**: Risk-gated execution path (Low/Medium/High risk).
+- **Self-Healing**: Autonomous job clears stuck interactions and retries failed messaging.
+- **Aggregation**: Metrics are aggregated O(1) for Super Admin visibility without scanning raw collections.
 
-## 4. Vertical AI Moat
-By capturing millions of structured interactions across diverse Indian regions, DukaanMitra builds a dataset advantage that generalized LLMs (GPT-4, Gemini) cannot match. This dataset becomes the primary asset for fine-tuning our proprietary "Munim-1" model in Stage 6.
+## 4. Security & Isolation
+- **Tenant Isolation**: Strict Firestore rules ensure `/shops/{shopId}` data is never leaked.
+- **Production Guard**: Middleware blocks SaaS routes on Vercel deployments, ensuring only marketing pages are public.
+
+---
+*Built for 100M Indian SMBs. Digital India Native.*
