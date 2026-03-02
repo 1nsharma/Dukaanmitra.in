@@ -20,17 +20,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ThemeToggle } from "../theme-toggle";
 
 const navLinks = [
-  { href: "/features", label: "Features" },
-  { href: "/insights", label: "Insights" },
-  { href: "/pricing", label: "Pricing" },
+  { href: "/features", label: "AI Modules" },
+  { href: "/insights", label: "Intelligence" },
+  { href: "/pricing", label: "Plans" },
+  { href: "/manifesto", label: "Manifesto" },
   { href: "/blog", label: "Blog" },
-  { href: "/docs", label: "Docs" },
-  { href: "/contact", label: "Contact" },
 ];
 
-/**
- * Set this to true to hide login/dashboard buttons globally.
- */
 const IS_PUBLIC_ONLY = true;
 
 export default function Header() {
@@ -67,12 +63,14 @@ export default function Header() {
     <header className="px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-lg z-[100] border-b border-border shadow-sm">
         <Link href="/" className="flex items-center gap-3 cursor-pointer">
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/10">
-             <span className="text-primary-foreground text-2xl font-black">D</span>
+             <span className="text-primary-foreground text-2xl font-black">M</span>
           </div>
-          <h1 className="text-2xl font-black tracking-tighter text-foreground">DukaanMitra</h1>
+          <div className="flex flex-col leading-tight">
+            <h1 className="text-2xl font-black tracking-tighter text-foreground">MitraOS</h1>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Powered by DukaanMitra</span>
+          </div>
         </Link>
         
-        {/* Desktop Navigation */}
         <nav className="hidden lg:flex space-x-8 text-sm font-semibold text-muted-foreground items-center">
           {navLinks.map(link => <NavLink key={link.href} {...link} />)}
         </nav>
@@ -94,18 +92,12 @@ export default function Header() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuLabel>Account</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => router.push('/dashboard')}>
                               <LayoutDashboard className="mr-2" />
-                              My Dashboard
+                              Dashboard
                             </DropdownMenuItem>
-                            {user.role === 'super_admin' && (
-                                <DropdownMenuItem onClick={() => router.push('/SAP/Superdashboard')}>
-                                    <Shield className="mr-2" />
-                                    Super Admin
-                                </DropdownMenuItem>
-                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                               <LogOut className="mr-2" />
@@ -114,10 +106,8 @@ export default function Header() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                     ) : (
-                        <Button
-                            onClick={() => router.push('/login')}
-                        >
-                            <span>Go to App</span>
+                        <Button onClick={() => router.push('/login')}>
+                            <span>Enter MitraOS</span>
                         </Button>
                     )}
                     </>
@@ -125,7 +115,6 @@ export default function Header() {
                  <ThemeToggle />
             </div>
 
-            {/* Mobile Navigation */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button
@@ -146,9 +135,9 @@ export default function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     >
                         <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
-                            <span className="text-primary-foreground text-2xl font-black">D</span>
+                            <span className="text-primary-foreground text-2xl font-black">M</span>
                         </div>
-                        <h1 className="text-2xl font-black tracking-tighter text-foreground">DukaanMitra</h1>
+                        <h1 className="text-2xl font-black tracking-tighter text-foreground">MitraOS</h1>
                     </Link>
                 </SheetTitle>
               </SheetHeader>
@@ -157,27 +146,7 @@ export default function Header() {
                   {navLinks.map((link) => <NavLink key={link.href} {...link} />)}
                 </nav>
                 <div className="mt-auto flex flex-col gap-4 border-t border-border pt-6">
-                    {!IS_PUBLIC_ONLY && !isUserLoading && (
-                        <>
-                        {user ? (
-                            <>
-                                <Button onClick={() => {router.push('/dashboard'); setMobileMenuOpen(false);}} size="lg">My Dashboard</Button>
-                                {user.role === 'super_admin' && (
-                                    <Button onClick={() => {router.push('/SAP/Superdashboard'); setMobileMenuOpen(false);}} size="lg" variant="secondary">Super Admin</Button>
-                                )}
-                                <Button onClick={() => {handleSignOut(); setMobileMenuOpen(false);}} variant="outline" size="lg">Sign Out</Button>
-                            </>
-                        ) : (
-                            <>
-                                <Button onClick={() => {router.push('/login'); setMobileMenuOpen(false);}} size="lg">Log In</Button>
-                                <Button onClick={() => {router.push('/login?register=true'); setMobileMenuOpen(false);}} variant="secondary" size="lg">Sign Up</Button>
-                            </>
-                        )}
-                        </>
-                    )}
-                    <div className="flex justify-center pt-4">
-                        <ThemeToggle />
-                    </div>
+                    <ThemeToggle />
                 </div>
               </div>
             </SheetContent>

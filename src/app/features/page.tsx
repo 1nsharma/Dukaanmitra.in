@@ -1,134 +1,96 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
     ArrowRight, MessageSquare, BookOpen, BarChart3, Bell, Users,
     ShieldCheck, Smartphone, Zap, Bot, CalendarCheck, FileClock, ClipboardList, FileDown, ShieldAlert,
-    Package, TrendingDown, TrendingUp, Lock, DatabaseBackup
+    Package, TrendingDown, TrendingUp, Lock, DatabaseBackup, Shield, Cpu
 } from 'lucide-react';
 import React from 'react';
 import Link from 'next/link';
 
-const features = {
-  "WhatsApp Munim": {
-    description: "Entries, receipts, and reminders all happen over WhatsApp. No app needed.",
-    items: [
-      { title: "Natural Language Entry", description: 'Type "Ravi 500 udhaar" and our AI understands.', icon: <Bot /> },
-      { title: "Automatic Digital Receipts", description: "Customers get instant confirmation on WhatsApp.", icon: <MessageSquare /> },
-      { title: "Automated Payment Reminders", description: "Polite, timely reminders for pending payments.", icon: <Bell /> },
-      { title: "End-of-Day Summary", description: "Get a full sales and credit report every night on WhatsApp.", icon: <CalendarCheck /> },
+const modules = [
+  {
+    name: "Munim AI",
+    positioning: "Your AI Accountant for GST, Billing & Cash Flow",
+    icon: <Shield />,
+    features: [
+      { title: "Deterministic Ledger", description: "Bulletproof accounting logic that never makes a math error." },
+      { title: "WhatsApp Billing", description: "Send professional bills directly via WhatsApp." },
+      { title: "Auto GST Ready", description: "Categorized transactions ready for tax filing." },
+      { title: "Udhaar Recovery", description: "Munim AI automatically detects and reminds overdue customers." }
     ]
   },
-  "Digital Ledger & Udhaar Management": {
-    description: "A secure, cloud-based ledger that never gets lost or damaged.",
-    items: [
-      { title: "Centralized Credit View", description: "See all pending udhaar from all customers in one place.", icon: <BookOpen /> },
-      { title: "Customer-wise Ledger", description: "Drill down into the full transaction history for any customer.", icon: <Users /> },
-      { title: "Payment Confirmation", description: 'Log payments easily: "Ravi paid 500".', icon: <ShieldCheck /> },
-      { title: "Error Correction", description: "Easily edit or delete wrong entries from the dashboard.", icon: <Zap /> },
+  {
+    name: "Vyapar AI",
+    positioning: "AI Salesman for Smart Inventory & Revenue Growth",
+    icon: <TrendingUp />,
+    features: [
+      { title: "Inventory Prediction", description: "Get alerts before you run out of stock." },
+      { title: "Sales Drop Alerts", description: "Proactive notifications if your daily revenue dips." },
+      { title: "Fast-Mover Reports", description: "Know exactly which products are making you money." },
+      { title: "Trend Intelligence", description: "Analyze regional demand trends to stock the right items." }
     ]
   },
-  "Smart Reports & Daily Closing": {
-    description: "Make data-driven decisions with powerful, easy-to-understand reports.",
-    items: [
-      { title: "Live Sales Dashboard", description: "Track your revenue, bills, and average sale value in real-time.", icon: <BarChart3 /> },
-      { title: "Daily & Monthly Closing Reports", description: "Automated financial summaries to save you time.", icon: <FileClock /> },
-      { title: "Product & Category Analysis", description: "See which items are your best-sellers.", icon: <ClipboardList /> },
-      { title: "Data Export", description: "Export your sales and customer data to CSV for offline analysis.", icon: <FileDown /> },
-    ]
-  },
-  "Customer Intelligence": {
-    description: "Understand your customers better to increase loyalty and sales.",
-    items: [
-      { title: "Automatic Customer Database", description: "Every new number is a new customer profile.", icon: <Users /> },
-      { title: "Customer Segmentation", description: "Automatically identify new, regular, and VIP customers.", icon: <Users /> },
-      { title: "Purchase History", description: "See what a customer buys and how often they visit.", icon: <Users /> },
-      { title: "Churn Detection", description: "Get alerts when a regular customer might be at risk of leaving.", icon: <ShieldAlert /> },
-    ]
-  },
-  "Inventory & Low Stock Alerts": {
-    description: "Manage your stock intelligently to prevent losses.",
-    items: [
-        { title: "Simple Stock Entry", description: "Add your products and their stock levels.", icon: <Package /> },
-        { title: "Automatic Stock Deduction", description: "Stock is updated automatically when you make a sale.", icon: <TrendingDown /> },
-        { title: "Low Stock Alerts", description: "Get timely WhatsApp alerts before you run out of a popular item.", icon: <Bell /> },
-        { title: "Fast-Moving Item Reports", description: "Identify which products are your top performers.", icon: <TrendingUp /> },
-    ]
-  },
-  "Secure Cloud & Multi-Device Access": {
-    description: "Your data is safe, secure, and accessible from anywhere.",
-    items: [
-        { title: "Full Data Encryption", description: "All your business data is encrypted and secure.", icon: <Lock /> },
-        { title: "Automatic Cloud Backup", description: "Never worry about losing your hisaab-kitaab again.", icon: <DatabaseBackup /> },
-        { title: "Mobile & Desktop Dashboard", description: "Access your dashboard from your phone, tablet, or computer.", icon: <Smartphone /> },
-        { title: "Multi-User & Staff Access", description: "Give access to your staff with specific permissions (Pro Plan).", icon: <Users /> },
+  {
+    name: "Grahak AI",
+    positioning: "AI Assistant for Loyalty & Personalized Offers",
+    icon: <Users />,
+    features: [
+      { title: "Customer Segments", description: "Automatically identify your VIP and At-Risk customers." },
+      { title: "Personalized Offers", description: "Send special deals to customers who haven't visited in 30 days." },
+      { title: "Interactive Demo", description: "A 24/7 salesman on WhatsApp answering customer queries." },
+      { title: "Loyalty Scoring", description: "Score every customer based on lifetime value." }
     ]
   }
-};
-
-interface FeatureCardProps {
-    title: string;
-    description: string;
-    icon: React.ReactNode;
-}
-
-const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon }) => (
-    <Card className="bg-card/50 hover:border-primary/50 hover:bg-card transition-all transform hover:-translate-y-1">
-        <CardHeader className="flex flex-row items-center gap-4 space-y-0">
-            <div className="p-3 bg-primary/10 rounded-lg text-primary">{icon}</div>
-            <CardTitle className="text-lg font-bold">{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <p className="text-muted-foreground">{description}</p>
-        </CardContent>
-    </Card>
-);
-
-interface SectionProps {
-    title: string;
-    description: string;
-    children: React.ReactNode;
-}
-
-const FeatureSection: React.FC<SectionProps> = ({ title, description, children }) => (
-    <section className="py-16 border-b border-border last:border-b-0">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase">{title}</h2>
-            <p className="mt-2 text-lg text-muted-foreground">{description}</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {children}
-        </div>
-    </section>
-);
-
+];
 
 export default function FeaturesPage() {
   return (
-    <div className="container py-16 md:py-24 space-y-12">
-      {/* 1. Hero Section */}
+    <div className="container py-16 md:py-24 space-y-24">
+      {/* Hero Section */}
       <section className="text-center max-w-4xl mx-auto">
-        <h1 className="font-headline text-5xl md:text-7xl font-black tracking-tighter">
-          Features
+        <h1 className="font-headline text-5xl md:text-7xl font-black tracking-tighter uppercase">
+          MITRAOS <span className="text-primary">MODULES</span>
         </h1>
         <p className="mt-4 text-lg md:text-xl text-muted-foreground">
-          Everything you get with DukaanMitra to grow your business.
+          Replace fragmented tools with specialized AI agents working on a single operating system.
         </p>
       </section>
 
-      {Object.entries(features).map(([title, data]) => (
-        <FeatureSection key={title} title={title} description={data.description}>
-          {data.items.map(feature => <FeatureCard key={feature.title} {...feature} />)}
-        </FeatureSection>
+      {modules.map((module) => (
+        <section key={module.name} className="space-y-12">
+          <div className="flex flex-col md:flex-row items-center gap-6 border-b border-border pb-8">
+            <div className="p-4 bg-primary/10 rounded-2xl text-primary">
+              {React.cloneElement(module.icon as React.ReactElement, { size: 40 })}
+            </div>
+            <div className="text-center md:text-left">
+              <h2 className="text-4xl font-black uppercase tracking-tighter">{module.name}</h2>
+              <p className="text-xl text-primary font-bold">{module.positioning}</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {module.features.map((feature) => (
+              <Card key={feature.title} className="bg-card/50 hover:border-primary/50 transition-all">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
       ))}
 
       {/* Call to Action */}
-      <section className="text-center py-16 bg-card rounded-2xl">
-        <h2 className="text-3xl font-bold mb-4">Ready to Digitize Your Dukaan?</h2>
-        <p className="text-muted-foreground mb-6 max-w-xl mx-auto">Start your 14-day free trial today. No credit card required. Cancel anytime.</p>
-        <Button size="lg" className="px-8 h-12 text-lg font-bold" asChild>
+      <section className="text-center py-16 bg-primary/5 rounded-3xl border border-primary/20">
+        <h2 className="text-3xl font-bold mb-4">Start with Munim AI Today</h2>
+        <p className="text-muted-foreground mb-8 max-w-xl mx-auto">Experience the power of MitraOS with our 14-day free trial. No credit card required.</p>
+        <Button size="lg" className="px-12 h-14 text-xl font-black uppercase tracking-widest" asChild>
             <Link href="/login?register=true">
-              Start Free Trial
+              Get Started
               <ArrowRight className="ml-2"/>
             </Link>
         </Button>
