@@ -1,14 +1,14 @@
+
 'use server';
 
 import { ai } from '@/ai/genkit';
 import { ParseTransactionInputSchema, ParseTransactionOutputSchema, type ParseTransactionOutput } from '@/ai/schemas';
 
-// Re-export for easier external access if needed by components
+// Explicitly export for use in components/other flows
 export { ParseTransactionOutputSchema };
 
 /**
  * Munim AI: Deterministic-First Billing Parser.
- * Next.js 15: Marked 'use server' and exporting only async functions.
  */
 export async function parseTransaction(input: { query: string }): Promise<ParseTransactionOutput> {
   const result = await transactionParserFlow(input);

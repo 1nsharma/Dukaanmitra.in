@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Twitter, MessageSquare, ShieldCheck, Zap, ShieldAlert, Globe } from 'lucide-react';
+import { Twitter, MessageSquare, ShieldCheck, Zap, Globe } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';

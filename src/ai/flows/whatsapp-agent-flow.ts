@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview The core DukaanMitra AI Agent.
@@ -58,7 +59,6 @@ const marketTrendTool = ai.defineTool(
 
 /**
  * Policy Guard: Validates actions against business rules.
- * Keeps this logic isolated from the LLM prompt.
  */
 function policyGuard(
   intent: SupportedIntent,
@@ -83,10 +83,6 @@ const anigravityAgentPrompt = ai.definePrompt({
     output: { schema: AgentOutputSchema },
     system: `You are DukaanMitra, an AI assistant for a Kirana store.
     Your goal: Understand customer messages and decide on actions.
-    
-    SHOP CONTEXT:
-    - Name: {{shopContext.name}}
-    - connu_products: {{shopContext.known_products_and_prices}}
     
     RESPONSE RULES:
     1. Greeting: Hello/Namaste.
