@@ -49,11 +49,11 @@ export default function LandingPage() {
               <span className="text-xs font-bold text-primary uppercase tracking-widest">MitraOS: The AI Operating System</span>
             </div>
             <h1 className="font-headline text-5xl md:text-8xl font-black leading-none tracking-tighter uppercase">
-              Your WhatsApp <br/>
-              <span className="text-primary text-outline">Digital Munim</span>
+              The Digital <br/>
+              <span className="text-primary text-outline">Manual Book</span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl font-medium leading-relaxed mx-auto lg:mx-0">
-              Replace manual registers with the smartest <strong className="text-foreground">digital khata</strong> and <strong className="text-foreground">udhaar app</strong>. Automate your billing and sales growth directly through WhatsApp.
+              Replace manual registers with the smartest <strong className="text-foreground">digital khata</strong> and <strong className="text-foreground">udhaar app</strong> on WhatsApp. Built for the busy Indian shopkeeper.
             </p>
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
               <Button
@@ -73,7 +73,7 @@ export default function LandingPage() {
               </Button>
             </div>
 
-            {/* TRUST BAR — Under Hero Section */}
+            {/* TRUST BAR */}
             <div className="pt-8 grid grid-cols-2 md:flex md:flex-wrap justify-center lg:justify-start items-center gap-4 md:gap-8 border-t border-border/50">
                 <div className="flex items-center gap-2 group cursor-default">
                     <div className="p-2 bg-success/10 rounded-lg group-hover:bg-success/20 transition-colors">
@@ -113,7 +113,7 @@ export default function LandingPage() {
         <div className="container">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter">Built for <span className="text-primary">Real Reality</span></h2>
-            <p className="text-lg text-muted-foreground">The most intuitive <strong className="text-primary">kirana software</strong> designed for busy Indian retailers.</p>
+            <p className="text-lg text-muted-foreground">The most intuitive <strong className="text-primary">kirana software</strong> designed for busy Indian retailers. No apps to learn.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="flex flex-col items-center text-center space-y-4">
@@ -156,7 +156,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Reality Proof Layer - 1 Day Usage Story */}
+      {/* 1 Day Usage Story */}
       <section className="py-24 bg-secondary/10 border-b border-border">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -197,7 +197,7 @@ export default function LandingPage() {
                   <MessageCircle size={18} />
                 </div>
                 <div className="p-4 h-[450px] overflow-y-auto bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat bg-contain">
-                  <WhatsAppBubble side="right" text="9876543210 Ravi 500 udhaar" time="09:30 AM" />
+                  <WhatsAppBubble side="right" text="#SHP123 Ravi 500 udhaar" time="09:30 AM" />
                   <WhatsAppBubble side="left" text="Ji Namaste 🙏\n\nRavi Kumar ke liye ₹500 Udhaar add kar diya gaya hai.\n\nTotal Udhaar: ₹1,450" time="09:31 AM" />
                   
                   <WhatsAppBubble side="left" text="🔔 *Munim Alert*\n\nSunita ji ka payment 7 din se pending hai. Reminder bhejein?" time="04:00 PM" />
@@ -217,7 +217,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Before vs After Section */}
+      {/* Comparison Section */}
       <section className="py-24 border-b border-border">
         <div className="container">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
@@ -271,7 +271,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* TRUST LAYER — HARDENED ASSURANCES */}
+      {/* Trust Section */}
       <section className="py-24 bg-primary/5">
         <div className="container">
             <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
@@ -305,7 +305,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How It Works - The Activation Path */}
+      {/* Activation Preview */}
       <section className="py-24 border-b border-border bg-secondary/10">
         <div className="container">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
@@ -332,7 +332,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Final CTA - The Trial Hook */}
+      {/* Final CTA */}
       <section className="py-32 text-center">
         <div className="container max-w-3xl space-y-8">
           <MessageCircle size={48} className="mx-auto text-primary mb-2 animate-bounce" />

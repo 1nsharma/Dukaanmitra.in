@@ -13,21 +13,21 @@ const ChatAssistant = dynamic(() => import('@/components/chat/chat-assistant'), 
 const Mitraa = dynamic(() => import('@/components/robot'), { ssr: false });
 
 export const metadata: Metadata = {
-  title: 'MitraOS | AI Operating System for Indian Local Businesses',
-  description: 'DukaanMitra is the best digital khata and udhaar app for Indian shops. Powered by MitraOS, it serves as a smart kirana software on WhatsApp for automated accounting and sales growth.',
-  keywords: 'digital khata, udhaar app, kirana software, WhatsApp Munim, Kirana Billing, Udhaar Ledger, Indian Shop AI, MitraOS, Retail Intelligence India, GST Billing WhatsApp',
+  title: 'DukaanMitra | The Best Digital Khata and Udhaar App for Indian Shops',
+  description: 'DukaanMitra is the smartest digital khata and udhaar app for Indian Kirana stores. Automate your accounting via WhatsApp. The best kirana software for sales growth.',
+  keywords: 'digital khata, udhaar app, kirana software, WhatsApp Munim, Kirana Billing, Udhaar Ledger, Indian Shop AI, MitraOS, Retail Intelligence India, GST Billing WhatsApp, Digital Manual Book',
   authors: [{ name: 'MitraOS Team' }],
   openGraph: {
     url: 'https://dukaanmitra.in',
     type: 'website',
-    title: 'DukaanMitra | Your Shop\'s Digital AI Munim on WhatsApp',
-    description: 'Replace manual registers with the smartest digital khata and udhaar app. Automate your kirana software needs with AI directly through WhatsApp.',
+    title: 'DukaanMitra | Digital Khata & WhatsApp Munim',
+    description: 'Replace manual registers with the smartest digital khata and udhaar app. No more billing errors.',
     images: [
         {
             url: 'https://images.unsplash.com/photo-1620752763329-37f6d5c5b9f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraXJhbmElMjBzdG9yZSUyMG93bmVyJTIwcGhvbmV8ZW58MHx8fHwxNzcwMjE3OTM0fDA&ixlib=rb-4.1.0&q=80&w=1200&h=630',
             width: 1200,
             height: 630,
-            alt: 'DukaanMitra - The Future of Indian Retail.',
+            alt: 'DukaanMitra - The Digital Manual Book.',
         }
     ],
     siteName: 'MitraOS',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'DukaanMitra | AI Munim for Local Shops',
-    description: 'Automate your shop accounting via WhatsApp. No new apps to learn.',
+    description: 'Automate your shop accounting via WhatsApp. Best Digital Khata App.',
     images: ['https://images.unsplash.com/photo-1620752763329-37f6d5c5b9f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraXJhbmElMjBzdG9yZSUyMG93bmVyJTIwcGhvbmV8ZW58MHx8fHwxNzcwMjE3OTM0fDA&ixlib=rb-4.1.0&q=80&w=1200&h=630'],
   },
 };

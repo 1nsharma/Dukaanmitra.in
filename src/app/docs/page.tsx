@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, ShieldCheck, HelpCircle, MessageCircle } from 'lucide-react';
+import { FileText, ShieldCheck, HelpCircle, MessageCircle, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 const faqItems = [
@@ -27,8 +27,8 @@ const faqItems = [
     answer: 'Ji haan! Aap hamare Support team ko excel/CSV sheet bhej sakte hain aur hum usey aapke digital ledger me import kar denge.',
   },
   {
-    question: 'Account block toh nahi hoga WhatsApp par?',
-    answer: 'Nahi. Hum official Meta Business APIs use karte hain, jo business automation ke liye hi bani hain. Yeh koi "unofficial mod" nahi hai, isliye aapka account safe hai.',
+    question: 'Mera phone kho gaya toh kya hisaab safe rahega?',
+    answer: 'Bilkul! Aapka sara hisaab cloud par secure hai. Naye phone me login karte hi sara data wapas mil jayega. Manual register ki tarah khone ka darr nahi hai.',
   },
 ];
 
@@ -36,34 +36,37 @@ export default function DocsPage() {
   return (
     <div className="container max-w-4xl py-16 md:py-24">
       <div className="text-center space-y-4 mb-16">
+        <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full text-primary text-xs font-bold uppercase tracking-widest">
+          <Zap size={14} /> Quick Start
+        </div>
         <h1 className="font-headline text-4xl font-black uppercase tracking-tighter sm:text-6xl">
           Support & <span className="text-primary">Guides</span>
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Everything you need to know to automate your shop with MitraOS.
+          Everything you need to know to automate your shop with the Digital Manual Book.
         </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 mb-16">
-        <Card className="hover:border-primary/50 transition-colors">
+        <Card className="hover:border-primary/50 transition-colors border-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><FileText className="text-primary"/> Quick Start Guide</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">Learn how to connect your first shop and record transactions via WhatsApp in under 5 minutes.</p>
             <Button variant="link" className="p-0 h-auto text-primary" asChild>
-              <Link href="/blog/upi-lite-kirana">Read Guide →</Link>
+              <Link href="/blog/upi-lite-kirana">Read 5-Min Guide →</Link>
             </Button>
           </CardContent>
         </Card>
-        <Card className="hover:border-primary/50 transition-colors">
+        <Card className="hover:border-primary/50 transition-colors border-2">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><ShieldCheck className="text-primary"/> Data Safety Manual</CardTitle>
+            <CardTitle className="flex items-center gap-2"><ShieldCheck className="text-primary"/> Data Safety Pledge</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">A detailed breakdown of how we encrypt your shop data and protect your customer privacy.</p>
             <Button variant="link" className="p-0 h-auto text-primary" asChild>
-              <Link href="/privacy-policy">View Policy →</Link>
+              <Link href="/privacy-policy">View Safety Policy →</Link>
             </Button>
           </CardContent>
         </Card>
@@ -88,15 +91,15 @@ export default function DocsPage() {
         </Accordion>
       </section>
 
-      <section className="mt-24 p-8 bg-secondary/30 rounded-3xl border border-border text-center space-y-6">
-        <h2 className="font-headline text-3xl font-black uppercase tracking-tighter">Still have questions?</h2>
-        <p className="text-muted-foreground">Hamari team aapki help ke liye hamesha ready hai.</p>
+      <section className="mt-24 p-8 bg-secondary/30 rounded-3xl border-2 border-border text-center space-y-6">
+        <h2 className="font-headline text-3xl font-black uppercase tracking-tighter">Need Setup Help?</h2>
+        <p className="text-muted-foreground">Hamari team aapki shop set up karne me madad karegi.</p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Button size="lg" className="rounded-full" asChild>
-            <Link href="/contact">Talk to Support</Link>
+          <Button size="lg" className="rounded-full h-14 px-10 font-bold" asChild>
+            <Link href="/contact">Book Setup Call</Link>
           </Button>
-          <Button size="lg" variant="outline" className="rounded-full bg-success/10 border-success/20 text-success hover:bg-success/20">
-            <MessageCircle className="mr-2" /> WhatsApp Help
+          <Button size="lg" variant="outline" className="rounded-full h-14 px-10 bg-success/10 border-success/20 text-success hover:bg-success/20 font-bold">
+            <MessageCircle className="mr-2" /> WhatsApp Support
           </Button>
         </div>
       </section>

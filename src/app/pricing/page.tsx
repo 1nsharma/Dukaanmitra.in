@@ -1,6 +1,6 @@
 import { Check, ShieldCheck, Zap, HelpCircle, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -9,8 +9,8 @@ const plans = [
     title: 'Free Trial',
     price: '₹0',
     period: '/ 14 days',
-    description: 'Perfect to explore the power of AI Munim.',
-    features: ['WhatsApp Integration', 'Basic Ledger', '1 Shop Admin', 'Daily Summaries', 'Up to 100 Customers'],
+    description: 'Explore the magic of your WhatsApp Munim.',
+    features: ['WhatsApp Integration', 'Digital Manual Book', 'Daily Summaries', 'Up to 100 Customers', 'Basic Reports'],
     isRecommended: false,
     cta: 'Start Free Trial',
   },
@@ -18,26 +18,26 @@ const plans = [
     title: 'Basic',
     price: '₹1999',
     period: '/ month',
-    description: 'Ideal for small retail stores.',
-    features: ['Full WhatsApp Automation', 'Udhaar Recovery Reminders', '2 Admin Users', 'Standard Analytics', '1,000 Customers'],
-    isRecommended: false,
-    cta: 'Choose Basic',
+    description: 'Perfect for local Kirana & retail stores.',
+    features: ['Full WhatsApp Automation', 'Udhaar Recovery Reminders', 'Standard Analytics', '1,000 Customers', 'GST-Ready Exports'],
+    isRecommended: true,
+    cta: 'Activate Basic',
   },
   {
     title: 'Pro',
     price: '₹4999',
     period: '/ month',
-    description: 'For growing businesses with multiple staff.',
-    features: ['Everything in Basic', 'AI Growth Insights', '5 Admin Users', 'Inventory Alerts', 'Unlimited Customers'],
-    isRecommended: true,
-    cta: 'Choose Pro',
+    description: 'For busy shops with multiple staff members.',
+    features: ['Everything in Basic', 'AI Growth Insights', 'Inventory Alerts', 'Unlimited Customers', 'Priority Support'],
+    isRecommended: false,
+    cta: 'Go Pro',
   },
   {
     title: 'Enterprise',
     price: 'Custom',
     period: '',
     description: 'For chains and franchise operations.',
-    features: ['Multi-Branch Dashboard', 'Custom AI Agents', 'Unlimited Admin Users', 'Priority Support', 'API Access'],
+    features: ['Multi-Branch Dashboard', 'Custom AI Agents', 'Unlimited Admin Users', 'API Access', 'Account Manager'],
     isRecommended: false,
     cta: 'Contact Sales',
   },
@@ -51,10 +51,10 @@ export default function PricingPage() {
           <h1 className="font-headline text-5xl md:text-7xl font-black uppercase tracking-tighter">
             No Surprises. <span className="text-primary">Just Value.</span>
           </h1>
-          <p className="text-lg text-muted-foreground">Start with a 14-day free trial. No credit card required. Cancel any time with one click.</p>
+          <p className="text-lg text-muted-foreground italic">"Agar 14 din me value na mile to cancel karein. No questions asked."</p>
           <div className="flex justify-center items-center gap-6 text-xs font-bold uppercase tracking-widest text-muted-foreground pt-4">
               <span className="flex items-center gap-1.5"><BadgeCheck size={14} className="text-primary"/> No Credit Card</span>
-              <span className="flex items-center gap-1.5"><Zap size={14} className="text-primary"/> Instant Setup</span>
+              <span className="flex items-center gap-1.5"><Zap size={14} className="text-primary"/> 2-Minute Setup</span>
           </div>
         </div>
         
@@ -63,13 +63,13 @@ export default function PricingPage() {
             <Card
               key={plan.title}
               className={cn(
-                'flex flex-col rounded-[40px] bg-card border-2 border-border transition-all duration-normal motion-safe:hover:scale-[1.03] motion-safe:hover:border-primary', 
+                'flex flex-col rounded-[40px] bg-card border-2 border-border transition-all duration-normal hover:border-primary', 
                 plan.isRecommended && 'border-primary ring-4 ring-primary/20 shadow-heavy shadow-primary/10'
               )}
             >
               <CardHeader className="items-center text-center pb-8">
                   <div className="h-8 mb-4">
-                    {plan.isRecommended && <span className="bg-primary text-primary-foreground text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Best for Growth</span>}
+                    {plan.isRecommended && <span className="bg-primary text-primary-foreground text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Most Popular</span>}
                   </div>
                   <CardTitle className="font-headline text-2xl font-black uppercase tracking-tight">{plan.title}</CardTitle>
                   <div className="flex items-baseline mt-4">
@@ -103,22 +103,22 @@ export default function PricingPage() {
                 <p className="text-muted-foreground font-medium">"Humein pata hai aapka business kitna important hai." Our team is ready to help you set up your shop on a 15-min call.</p>
                 <div className="pt-4">
                     <Button variant="outline" className="rounded-full font-bold h-12 px-6" asChild>
-                        <Link href="/contact"><HelpCircle className="mr-2 h-4 w-4"/> Chat with Support</Link>
+                        <Link href="/contact"><HelpCircle className="mr-2 h-4 w-4"/> Free Setup Assistance</Link>
                     </Button>
                 </div>
             </div>
             <div className="space-y-6">
                 <div className="flex gap-4">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0"><Check size={20}/></div>
-                    <p className="text-sm font-bold uppercase tracking-tight">Free Onboarding Assistance</p>
+                    <p className="text-sm font-bold uppercase tracking-tight">Onboarding Support Included</p>
                 </div>
                 <div className="flex gap-4">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0"><Check size={20}/></div>
-                    <p className="text-sm font-bold uppercase tracking-tight">GST-Ready Reports Included</p>
+                    <p className="text-sm font-bold uppercase tracking-tight">GST-Ready Reports Export</p>
                 </div>
                 <div className="flex gap-4">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0"><Check size={20}/></div>
-                    <p className="text-sm font-bold uppercase tracking-tight">Secure & Private Data Vault</p>
+                    <p className="text-sm font-bold uppercase tracking-tight">Secure & 100% Private Vault</p>
                 </div>
             </div>
         </div>
