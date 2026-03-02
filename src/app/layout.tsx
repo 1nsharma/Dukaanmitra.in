@@ -10,28 +10,29 @@ import { ThemeProvider } from '@/components/theme-provider';
 import Mitraa from '@/components/robot';
 
 export const metadata: Metadata = {
-  title: 'MitraOS | The AI Operating System for Local Businesses',
-  description: 'MitraOS is the technological backbone for local commerce. DukaanMitra, powered by MitraOS, provides AI-driven business intelligence, automated accounting (Munim AI), and sales growth (Vyapar AI).',
-  keywords: 'MitraOS, DukaanMitra, AI Operating System, Kirana Tech, WhatsApp Munim, Vyapar AI, Grahak AI, SMB Automation India',
+  title: 'MitraOS | AI Operating System for Indian Local Businesses',
+  description: 'DukaanMitra, powered by MitraOS, is a WhatsApp-native Digital Munim. Automate your Kirana accounting, udhaar recovery, and sales growth with Munim AI and Vyapar AI.',
+  keywords: 'WhatsApp Munim, Kirana Billing, Udhaar Ledger, Indian Shop AI, MitraOS, Retail Intelligence India, GST Billing WhatsApp',
+  authors: [{ name: 'MitraOS Team' }],
   openGraph: {
     url: 'https://dukaanmitra.in',
     type: 'website',
-    title: 'MitraOS | AI-Powered Business Intelligence for Local Shops',
-    description: 'Empower your shop with MitraOS. Automated ledger, smart inventory, and customer loyalty through specialized AI agents.',
+    title: 'DukaanMitra | Your Shop\'s Digital AI Munim on WhatsApp',
+    description: 'Replace manual registers with AI. Deterministic accounting + WhatsApp automation for Indian Kirana stores.',
     images: [
         {
             url: 'https://images.unsplash.com/photo-1620752763329-37f6d5c5b9f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraXJhbmElMjBzdG9yZSUyMG93bmVyJTIwcGhvbmV8ZW58MHx8fHwxNzcwMjE3OTM0fDA&ixlib=rb-4.1.0&q=80&w=1200&h=630',
             width: 1200,
             height: 630,
-            alt: 'MitraOS - Powering the future of Indian Retail.',
+            alt: 'DukaanMitra - The Future of Indian Retail.',
         }
     ],
     siteName: 'MitraOS',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MitraOS | The AI Operating System for SMBs',
-    description: 'Digitize your shop with Munim AI and Vyapar AI agents on WhatsApp.',
+    title: 'DukaanMitra | AI Munim for Local Shops',
+    description: 'Automate your shop accounting via WhatsApp. No new apps to learn.',
     images: ['https://images.unsplash.com/photo-1620752763329-37f6d5c5b9f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraXJhbmElMjBzdG9yZSUyMG93bmVyJTIwcGhvbmV8ZW58MHx8fHwxNzcwMjE3OTM0fDA&ixlib=rb-4.1.0&q=80&w=1200&h=630'],
   },
 };
