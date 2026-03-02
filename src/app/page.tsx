@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -54,7 +53,7 @@ export default function LandingPage() {
               <span className="text-primary text-outline">Digital Munim</span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl font-medium leading-relaxed mx-auto lg:mx-0">
-              Replace manual registers with AI. Automate your billing, udhaar recovery, and sales growth directly through WhatsApp.
+              Replace manual registers with the smartest <strong className="text-foreground">digital khata</strong> and <strong className="text-foreground">udhaar app</strong>. Automate your billing and sales growth directly through WhatsApp.
             </p>
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
               <Button
@@ -114,7 +113,7 @@ export default function LandingPage() {
         <div className="container">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter">Built for <span className="text-primary">Real Reality</span></h2>
-            <p className="text-lg text-muted-foreground">Ab dhanda sambhalne ke liye koi course nahi chahiye.</p>
+            <p className="text-lg text-muted-foreground">The most intuitive <strong className="text-primary">kirana software</strong> designed for busy Indian retailers.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="flex flex-col items-center text-center space-y-4">
@@ -223,7 +222,7 @@ export default function LandingPage() {
         <div className="container">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter">Ab Register Ki <span className="text-primary">Tension Chhodo</span></h2>
-            <p className="text-lg text-muted-foreground">The difference is clear. Your business deserves MitraOS.</p>
+            <p className="text-lg text-muted-foreground">Upgrade your store with the most powerful <strong className="text-primary">udhaar app</strong> in India.</p>
           </div>
           
           <div className="grid md:grid-cols-2 gap-8">
