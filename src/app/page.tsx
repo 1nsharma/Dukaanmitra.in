@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -8,7 +7,7 @@ import {
   Cpu, Shield, TrendingUp, Users, ArrowRight, Zap, Bot, 
   Smartphone, Lock, CheckCircle2, Star, MessageCircle,
   BarChart3, BadgeCheck, XCircle, GraduationCap, MonitorOff,
-  History, Send, Check
+  History, Send, Check, Cloud, Database, EyeOff
 } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -73,10 +72,33 @@ export default function LandingPage() {
                 <Link href="/features">How it works</Link>
               </Button>
             </div>
-            <div className="flex flex-wrap justify-center lg:justify-start items-center gap-6 pt-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                <span className="flex items-center gap-2"><Lock size={14} className="text-success"/> 100% Private</span>
-                <span className="flex items-center gap-2"><Zap size={14} className="text-success"/> 2-Min Setup</span>
-                <span className="flex items-center gap-2"><BadgeCheck size={14} className="text-success"/> No Credit Card</span>
+
+            {/* TRUST BAR — Under Hero Section */}
+            <div className="pt-8 grid grid-cols-2 md:flex md:flex-wrap justify-center lg:justify-start items-center gap-4 md:gap-8 border-t border-border/50">
+                <div className="flex items-center gap-2 group cursor-default">
+                    <div className="p-2 bg-success/10 rounded-lg group-hover:bg-success/20 transition-colors">
+                        <Lock size={16} className="text-success"/>
+                    </div>
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">100% Private Data</span>
+                </div>
+                <div className="flex items-center gap-2 group cursor-default">
+                    <div className="p-2 bg-success/10 rounded-lg group-hover:bg-success/20 transition-colors">
+                        <Cloud size={16} className="text-success"/>
+                    </div>
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">Indian Cloud Secure</span>
+                </div>
+                <div className="flex items-center gap-2 group cursor-default">
+                    <div className="p-2 bg-success/10 rounded-lg group-hover:bg-success/20 transition-colors">
+                        <EyeOff size={16} className="text-success"/>
+                    </div>
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">No Data Selling</span>
+                </div>
+                <div className="flex items-center gap-2 group cursor-default">
+                    <div className="p-2 bg-success/10 rounded-lg group-hover:bg-success/20 transition-colors">
+                        <BadgeCheck size={16} className="text-success"/>
+                    </div>
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground">GST-Ready Reports</span>
+                </div>
             </div>
           </div>
         </div>
@@ -249,6 +271,40 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* TRUST LAYER — HARDENED ASSURANCES */}
+      <section className="py-24 bg-primary/5">
+        <div className="container">
+            <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter">Bharosa Hi <span className="text-primary">Dhanda Hai</span></h2>
+                <p className="text-lg text-muted-foreground">Your shop's data is your property. We protect it like a bank.</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+                <div className="p-8 bg-background rounded-3xl border-2 border-border hover:border-primary transition-all space-y-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                        <Database size={24}/>
+                    </div>
+                    <h4 className="font-black uppercase tracking-tight">Your Data, Your Property</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">Aapki shop ka sara data aapka hai. Hum sirf usay manage karne me aapki help karte hain. Aap jab chahein export kar sakte hain.</p>
+                </div>
+                <div className="p-8 bg-background rounded-3xl border-2 border-border hover:border-primary transition-all space-y-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                        <Shield size={24}/>
+                    </div>
+                    <h4 className="font-black uppercase tracking-tight">Strict No Data-Selling</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">Hum aapka sales data ya customer list kisi ko nahi bechte. Hamara business model subscriptions par hai, data trading par nahi.</p>
+                </div>
+                <div className="p-8 bg-background rounded-3xl border-2 border-border hover:border-primary transition-all space-y-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                        <Cloud size={24}/>
+                    </div>
+                    <h4 className="font-black uppercase tracking-tight">Indian Cloud Secure</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">All data is stored on secure servers with bank-grade encryption. Aapka hisaab-kitaab physically aur digitally safe hai.</p>
+                </div>
+            </div>
+        </div>
+      </section>
+
       {/* How It Works - The Activation Path */}
       <section className="py-24 border-b border-border bg-secondary/10">
         <div className="container">
@@ -272,74 +328,6 @@ export default function LandingPage() {
               title="Type & Record"
               description="Type 'Ravi 500 udhaar' on WhatsApp. AI records it and updates your ledger automatically."
             />
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Layer - Addressing Concerns */}
-      <section className="py-24">
-        <div className="container grid md:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-                <div className="inline-flex items-center gap-2 bg-success/10 px-3 py-1 rounded-full text-success text-xs font-bold uppercase">
-                  <Shield size={14}/> Safe & Secure
-                </div>
-                <h2 className="font-headline text-4xl md:text-5xl font-black uppercase tracking-tighter">Your Data, <span className="text-primary">Strictly Private</span></h2>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                    We understand your shop data is your lifeblood. MitraOS is built on a "Privacy-First" architecture. 
-                </p>
-                <div className="space-y-6">
-                    <div className="flex gap-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shrink-0"><Lock size={24}/></div>
-                        <div>
-                            <h4 className="font-bold uppercase tracking-tight">No Data Selling</h4>
-                            <p className="text-sm text-muted-foreground">We never share your customer lists or sales data with any third party or competitor.</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shrink-0"><CheckCircle2 size={24}/></div>
-                        <div>
-                            <h4 className="font-bold uppercase tracking-tight">100% Accuracy</h4>
-                            <p className="text-sm text-muted-foreground">Deterministic logic ensures your financial balances are always correct. AI never 'guesses' your money.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="bg-card border border-border p-10 rounded-[40px] shadow-heavy relative">
-                <Star className="absolute top-6 right-6 text-primary animate-pulse" />
-                <h3 className="font-headline text-2xl font-black uppercase mb-6 tracking-tighter">Trusted by Indian Retailers</h3>
-                <p className="text-xl text-foreground italic mb-8 leading-relaxed">
-                  "DukaanMitra ne mera hisaab-kitaab aasaan kar diya. Ab sab entries WhatsApp par hi ho jati hain, koi register ki tension nahi."
-                </p>
-                <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center font-bold text-xl text-muted-foreground">RK</div>
-                    <div>
-                        <p className="font-bold uppercase text-sm tracking-widest">Rajesh Kumar</p>
-                        <p className="text-xs text-muted-foreground uppercase font-bold">Kumar Provision Store, Jaipur</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-      </section>
-
-      {/* AI Modules Preview */}
-      <section className="py-24 bg-secondary/5 border-y border-border">
-        <div className="container">
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="p-8 bg-background rounded-3xl border border-border space-y-4 hover:border-primary transition-all">
-              <Shield className="text-primary" size={32} />
-              <h3 className="text-2xl font-black uppercase tracking-tighter">Munim AI</h3>
-              <p className="text-muted-foreground">Automatic billing and udhaar ledger via WhatsApp. 100% accurate accounting.</p>
-            </div>
-            <div className="p-8 bg-background rounded-3xl border border-border space-y-4 hover:border-accent transition-all">
-              <BarChart3 className="text-accent" size={32} />
-              <h3 className="text-2xl font-black uppercase tracking-tighter text-accent">Vyapar AI</h3>
-              <p className="text-muted-foreground">Proactive sales insights and inventory alerts sent directly to your phone.</p>
-            </div>
-            <div className="p-8 bg-background rounded-3xl border border-border space-y-4 hover:border-success transition-all">
-              <Users className="text-success" size={32} />
-              <h3 className="text-2xl font-black uppercase tracking-tighter text-success">Grahak AI</h3>
-              <p className="text-muted-foreground">Personalized loyalty offers and reminders to bring back inactive customers.</p>
-            </div>
           </div>
         </div>
       </section>
