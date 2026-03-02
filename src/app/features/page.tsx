@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
     ArrowRight, MessageSquare, Shield, TrendingUp, Users, Zap, CheckCircle2, 
-    Lock, BarChart3, BellRing, Smartphone, Scale, Cpu, ShieldCheck
+    Lock, BarChart3, Scale, Cpu, ShieldCheck
 } from 'lucide-react';
 import React from 'react';
 import Link from 'next/link';
@@ -16,32 +16,32 @@ const modules = [
     features: [
       { title: "Pen aur Register chhodo", description: "WhatsApp par entry bhejein. Munim AI usey rule-based logic se 100% sahi jagah record karega." },
       { title: "Guided Billing", description: "Badi entries par AI aapse confirmation maangega. System kabhi akele paise ka faisla nahi leta." },
-      { title: "Automatic Udhaar Recovery", description: "AI patterns pehchan kar aapko batayega kisse paise maangne hain. Action aap lenge." },
-      { title: "CA-Ready Audit Logs", description: "Har transaction ka deterministic record. Tax aur audit ke liye 100% bharosemand data." }
+      { title: "Udhaar Vasooli Automatic", description: "AI patterns pehchan kar aapko batayega kisse paise maangne hain. Action aap lenge." },
+      { title: "CA-Ready Exports", description: "Har transaction ka deterministic record. Tax aur audit ke liye 100% bharosemand data." }
     ]
   },
   {
     name: "Vyapar AI",
-    positioning: "Data se sales badhao, guess-work se nahi",
+    positioning: "Sales badhao aur stock sahi rakho",
     icon: <TrendingUp />,
     tagline: "Proactive Signals",
     features: [
       { title: "Sales Drop Alerts", description: "Agar kisi product ki demand giri, toh system aapko signal dega taki aap stock adjust kar sakein." },
-      { title: "Smart Inventory Tips", description: "AI batayega kaunsa saaman slow mover hai. Stock clear karne ke liye offers suggest karega." },
+      { title: "Inventory Movement", description: "AI batayega kaunsa saaman slow mover hai. Stock clear karne ke liye offers suggest karega." },
       { title: "Area Demand Signals", description: "Aapke region ke trends ke hisaab se naye products mangwane ki intelligence." },
       { title: "Raat 9 baje ki Summary", description: "Din bhar ki performance ka accurate snapshot. Agle din ki strategy banne me madad." }
     ]
   },
   {
     name: "Grahak AI",
-    positioning: "Customer relationship ko automate karein",
+    positioning: "Customers ko wapas bulao aur loyal banao",
     icon: <Users />,
     tagline: "Retention Engine",
     features: [
       { title: "VIP Identification", description: "High-value customers ki list taiyaar. Unhe special feel karane ke liye action points." },
       { title: "Churn Risk Detection", description: "Jo grahak kaafi din se nahi aaye, unke liye win-back campaigns propose honge." },
       { title: "24/7 Response Assistant", description: "Grahako ke sawalon ke automated replies (Hinglish). Complex sawal aapke paas aayenge." },
-      { title: "Review Nudges", description: "Happy customers ko digital bill ke saath review link suggest karna. Reputation builder." }
+      { title: "Digital Feedback", description: "Happy customers ko digital bill ke saath review link suggest karna. Reputation builder." }
     ]
   }
 ];
@@ -52,14 +52,14 @@ export default function FeaturesPage() {
       {/* Hero Section */}
       <section className="text-center max-w-4xl mx-auto">
         <h1 className="font-headline text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none">
-          AI AGENTS JO <br/> <span className="text-primary text-outline">APKE LIYE</span> KAAM KAREIN
+          Outcome-Based <br/> <span className="text-primary text-outline">Intelligence</span>
         </h1>
         <p className="mt-6 text-lg md:text-xl text-muted-foreground">
           DukaanMitra AI apka salesman aur accountant hai, lekin <strong>Boss aap hi hain</strong>. AI propose karega, aap approve karenge.
         </p>
       </section>
 
-      {/* Stage-5 Safety Architecture Section */}
+      {/* Safety Boundary Detail */}
       <section className="bg-primary/5 p-8 md:p-16 rounded-[40px] border-2 border-primary/20 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
             <Cpu size={200} className="text-primary" />
@@ -68,11 +68,11 @@ export default function FeaturesPage() {
         <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full text-primary text-xs font-bold uppercase tracking-widest border border-primary/20">
-              <ShieldCheck size={14}/> Layered Safety Architecture
+              <ShieldCheck size={14}/> Risk-Gated Architecture
             </div>
             <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">AI Proposes, <br/> <span className="text-primary text-outline">Owner Disposes</span></h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Humne MitraOS ko <strong>Risk-Gated Architecture</strong> par banaya hai. Hum paise ke maamle me AI ko "khud se" faisla nahi lene dete.
+            <p className="text-lg text-muted-foreground leading-relaxed font-medium">
+              MitraOS paise ke maamle me AI ko "khud se" faisla nahi lene deta. Hamara system strict safety boundaries par kaam karta hai.
             </p>
             
             <div className="space-y-4">
@@ -87,45 +87,44 @@ export default function FeaturesPage() {
                     <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center text-accent shrink-0"><Scale size={20}/></div>
                     <div>
                         <h4 className="font-bold text-sm uppercase">Medium Risk (Guided)</h4>
-                        <p className="text-xs text-muted-foreground mt-1">Payment reminders aur offers AI suggest karta hai, aap click karke approve karte hain.</p>
+                        <p className="text-xs text-muted-foreground mt-1">Payment reminders aur offers AI suggest karta hai, aap approve karte hain.</p>
                     </div>
                 </div>
                 <div className="flex gap-4 p-4 bg-background rounded-2xl border border-border border-l-4 border-l-destructive">
                     <div className="w-10 h-10 bg-destructive/10 rounded-xl flex items-center justify-center text-destructive shrink-0"><Lock size={20}/></div>
                     <div>
                         <h4 className="font-bold text-sm uppercase">High Risk (Deterministic)</h4>
-                        <p className="text-xs text-muted-foreground mt-1">Financial writes aur ledger updates sirf strict mathematical rules se hote hain.</p>
+                        <p className="text-xs text-muted-foreground mt-1">Financial entries aur ledger updates sirf strict math rules se hote hain.</p>
                     </div>
                 </div>
             </div>
           </div>
           
-          <div className="relative group">
-             <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
+          <div className="relative">
              <Card className="relative rounded-[40px] border-4 border-primary/20 bg-card p-8 shadow-heavy">
                 <h3 className="font-headline text-2xl font-black uppercase mb-6 flex items-center gap-2">
                     <BarChart3 className="text-primary"/>
-                    Safety Dashboard
+                    Safety Logic
                 </h3>
                 <div className="space-y-6">
                     <div className="p-4 bg-secondary/50 rounded-2xl border border-border">
                         <div className="flex justify-between items-center mb-2">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">AI Observation</span>
-                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px]">VERIFY</Badge>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">AI PROPOSAL</span>
+                            <span className="bg-primary/10 text-primary border border-primary/20 text-[10px] px-2 py-0.5 rounded font-black">PENDING</span>
                         </div>
-                        <p className="text-sm font-bold">"Ravi ne ₹2,500 ka udhaar liya hai. Bill confirm karein?"</p>
+                        <p className="text-sm font-bold">"Ravi ne ₹2,500 pay kiya hai. Ledger update karein?"</p>
                         <div className="flex gap-2 mt-4">
-                            <Button size="sm" className="rounded-full text-[10px] font-black px-4 uppercase">Approve Bill</Button>
+                            <Button size="sm" className="rounded-full text-[10px] font-black px-4 uppercase">Approve & Add</Button>
                             <Button size="sm" variant="outline" className="rounded-full text-[10px] font-black px-4 uppercase">Edit</Button>
                         </div>
                     </div>
                     <div className="space-y-2">
                         <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                            <div className="h-full bg-primary w-[88%]" />
+                            <div className="h-full bg-primary w-[98%]" />
                         </div>
                         <div className="flex justify-between items-center text-[10px] font-bold uppercase text-muted-foreground">
-                            <span>System Reliability</span>
-                            <span className="text-primary">88/100 (Stage-5 Ready)</span>
+                            <span>Deterministic Certainty</span>
+                            <span className="text-primary">100.0%</span>
                         </div>
                     </div>
                 </div>

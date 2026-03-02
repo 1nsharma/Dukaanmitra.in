@@ -48,12 +48,15 @@ export default function PricingPage() {
     <div className="bg-background">
       <div className="container py-24 sm:py-32">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+          <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full text-primary text-xs font-bold uppercase tracking-widest border border-primary/20 mb-4">
+            <ShieldCheck size={14} /> 100% Risk Free Trial
+          </div>
           <h1 className="font-headline text-5xl md:text-7xl font-black uppercase tracking-tighter">
             No Surprises. <span className="text-primary">Just Value.</span>
           </h1>
-          <p className="text-lg text-muted-foreground italic">"Agar 14 din me value na mile to cancel karein. No questions asked."</p>
+          <p className="text-lg text-muted-foreground italic font-medium">"Agar 14 din me value na mile to cancel karein. No questions asked."</p>
           <div className="flex justify-center items-center gap-6 text-xs font-bold uppercase tracking-widest text-muted-foreground pt-4">
-              <span className="flex items-center gap-1.5"><BadgeCheck size={14} className="text-primary"/> No Credit Card</span>
+              <span className="flex items-center gap-1.5"><BadgeCheck size={14} className="text-primary"/> No Credit Card Required</span>
               <span className="flex items-center gap-1.5"><Zap size={14} className="text-primary"/> 2-Minute Setup</span>
           </div>
         </div>
@@ -76,7 +79,7 @@ export default function PricingPage() {
                   <span className="font-headline text-5xl font-black tracking-tighter">{plan.price}</span>
                   {plan.period && <span className="text-muted-foreground font-semibold ml-1">{plan.period}</span>}
                   </div>
-                  <CardDescription className="pt-2 h-12 text-xs font-medium">{plan.description}</CardDescription>
+                  <CardDescription className="pt-2 h-12 text-xs font-medium leading-relaxed">{plan.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-1 px-8">
                   <ul className="space-y-4">
@@ -97,12 +100,12 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <div className="mt-24 max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center bg-secondary/30 p-12 rounded-[40px] border border-border">
+        <div className="mt-24 max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center bg-secondary/30 p-12 rounded-[40px] border-2 border-border">
             <div className="space-y-4">
-                <h3 className="font-headline text-3xl font-black uppercase tracking-tighter">Still got <span className="text-primary">Questions?</span></h3>
-                <p className="text-muted-foreground font-medium">"Humein pata hai aapka business kitna important hai." Our team is ready to help you set up your shop on a 15-min call.</p>
+                <h3 className="font-headline text-3xl font-black uppercase tracking-tighter">Need <span className="text-primary">Setup Help?</span></h3>
+                <p className="text-muted-foreground font-medium italic">"Humein pata hai aapka business kitna important hai." Our team is ready to help you set up your shop on a 15-min call.</p>
                 <div className="pt-4">
-                    <Button variant="outline" className="rounded-full font-bold h-12 px-6" asChild>
+                    <Button variant="outline" className="rounded-full font-bold h-12 px-6 border-2 border-primary text-primary hover:bg-primary/10" asChild>
                         <Link href="/contact"><HelpCircle className="mr-2 h-4 w-4"/> Free Setup Assistance</Link>
                     </Button>
                 </div>
