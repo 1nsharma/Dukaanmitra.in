@@ -5,6 +5,8 @@ import { adminDb } from '@/lib/firebase-admin';
 import { addMonths, format } from 'date-fns';
 import { sendWhatsAppMessage } from '@/lib/services/whatsapp';
 
+export const dynamic = 'force-dynamic';
+
 const { RAZORPAY_WEBHOOK_SECRET } = process.env;
 
 export async function POST(request: NextRequest) {
@@ -18,37 +20,31 @@ export async function POST(request: NextRequest) {
   const rawBody = await request.text();
 
   try {
-    // 1. Verify Webhook Signature
     const expectedSignature = crypto
       .createHmac('sha256', secret)
       .update(rawBody)
       .digest('hex');
 
     if (expectedSignature !== signature) {
-      console.warn('Invalid Razorpay webhook signature received.');
       return NextResponse.json({ message: 'Invalid signature' }, { status: 400 });
     }
 
     const event = JSON.parse(rawBody);
 
-    // 2. Handle the 'payment.captured' event
     if (event.event === 'payment.captured') {
       const payment = event.payload.payment.entity;
       const razorpayOrderId = payment.order_id;
-      const { shopId, userId, plan } = payment.notes;
+      const { shopId, plan } = payment.notes;
 
       if (!shopId) {
         throw new Error('shopId not found in payment notes');
       }
 
-      // Use the pre-initialized adminDb instance
       const firestore = adminDb;
-      
       let shopOwnerPhone = '';
       let shopName = '';
       const newExpiryDate = addMonths(new Date(), 1);
 
-      // 3. Update Firestore in a transaction
       await firestore.runTransaction(async (transaction) => {
         const orderQuery = await firestore.collection('orders')
           .where('razorpayOrderId', '==', razorpayOrderId)
@@ -60,9 +56,7 @@ export async function POST(request: NextRequest) {
         }
         
         const orderDoc = orderQuery.docs[0];
-        // Prevent processing the same webhook twice
         if (orderDoc.data().status === 'paid') {
-            console.log(`Order ${orderDoc.id} already marked as paid. Ignoring webhook.`);
             return;
         }
         
@@ -75,45 +69,23 @@ export async function POST(request: NextRequest) {
         shopOwnerPhone = shopData?.phone;
         shopName = shopData?.name;
 
-
-        // Update Order
         transaction.update(orderDoc.ref, {
           status: 'paid',
           paidAt: new Date(),
           razorpayPaymentId: payment.id,
         });
 
-        // Update Shop
         transaction.update(shopRef, {
           status: 'active',
           plan: plan,
           paid_till: newExpiryDate,
           updated_at: new Date(),
         });
-        
-        // Create an audit log
-        const logRef = firestore.collection('logs').doc();
-        transaction.set(logRef, {
-            id: logRef.id,
-            event: 'payment_verified',
-            createdAt: new Date(),
-            details: {
-                shopId,
-                userId,
-                plan,
-                amount: payment.amount / 100,
-                razorpayPaymentId: payment.id,
-                message: `Subscription activated for shop ${shopId}.`
-            }
-        });
       });
       
-      console.log(`Successfully processed payment for Shop ID: ${shopId}`);
-      
-      // 4. Send WhatsApp Confirmation
       if (shopOwnerPhone) {
         const formattedExpiry = format(newExpiryDate, 'dd MMMM yyyy');
-        const confirmationMessage = `Namaste ${shopName || ''} 🎉\n\n₹${payment.amount / 100} payment received successfully.\n\nDukaanMitra active till ${formattedExpiry}.\n\nAapka business ab secure hai.`;
+        const confirmationMessage = `Namaste ${shopName || ''} 🎉\n\n₹${payment.amount / 100} payment received successfully.\nDukaanMitra active till ${formattedExpiry}.`;
         await sendWhatsAppMessage(shopOwnerPhone, confirmationMessage);
       }
     }
@@ -121,7 +93,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ status: 'ok' }, { status: 200 });
     
   } catch (error: any) {
-    console.error('[/api/verify-payment] Webhook Error:', error);
-    return NextResponse.json({ message: error.message || 'Webhook processing failed' }, { status: 500 });
+    console.error('[/api/verify-payment] Error:', error);
+    return NextResponse.json({ message: error.message || 'Webhook failed' }, { status: 500 });
   }
 }
