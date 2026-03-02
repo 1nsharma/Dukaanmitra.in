@@ -5,7 +5,7 @@ import {
     ArrowRight, BarChart3, Bell, CheckCircle, FileDown, Gauge, 
     LayoutDashboard, Plug, Store, User, Users, Zap, Brain, TrendingUp, Package,
     Clock, Repeat, Gem, ShieldAlert, Megaphone, Star, Database, Bot, Sparkles, Scale,
-    ShieldCheck, Smartphone, DollarSign
+    ShieldCheck, Smartphone, DollarSign, History, Lock
 } from 'lucide-react';
 import React from 'react';
 import Link from 'next/link';

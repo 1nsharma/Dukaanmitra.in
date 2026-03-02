@@ -1,4 +1,3 @@
-
 import { Check, ShieldCheck, Zap, HelpCircle, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
