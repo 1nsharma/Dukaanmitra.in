@@ -1,0 +1,12 @@
+
+{
+  "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": true,
+  "errorPages": [
+    {
+      "status": 404,
+      "src": "/404/"
+    }
+  ]
+}

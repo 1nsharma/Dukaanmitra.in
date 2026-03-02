@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -11,7 +12,7 @@ export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const host = request.headers.get('host') || '';
   
-  // Production host identifiers
+  // Production host identifiers (Hardened)
   const isProductionFrontend = 
     host.includes('vercel.app') || 
     host === 'dukaanmitra.in' || 
@@ -33,7 +34,8 @@ export function middleware(request: NextRequest) {
   const isProtected = protectedPaths.some(path => url.pathname.startsWith(path));
 
   if (isProductionFrontend && isProtected) {
-    // Force redirect to homepage for any SaaS or Admin routes on Vercel
+    // Force redirect to homepage for any SaaS or Admin routes on Vercel deployments
+    // This preserves marketing storytelling while hiding app operations.
     return NextResponse.redirect(new URL('/', request.url));
   }
 
