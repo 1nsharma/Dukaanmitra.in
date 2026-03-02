@@ -7,7 +7,8 @@ import {
     Clock, Repeat, Gem, ShieldAlert, Megaphone, Star, Archive, Truck,
     ClipboardList, Percent, CalendarCheck, RotateCw, MessageSquare, GitCompare,
     Library, Map, History, Lock, FileClock, Terminal, FileSpreadsheet, Code,
-    Database, Trophy, AreaChart, Briefcase, Table, DollarSign, Bot, Sparkles, Scale
+    Database, Trophy, AreaChart, Briefcase, Table, DollarSign, Bot, Sparkles, Scale,
+    ShieldCheck, Smartphone
 } from 'lucide-react';
 import React from 'react';
 
