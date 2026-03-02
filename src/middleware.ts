@@ -1,25 +1,24 @@
-
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/request';
+import type { NextRequest } from 'next/server';
 
 /**
- * DukaanMitra Production Security Middleware
+ * MitraOS Production Security Middleware
  * 
- * This middleware ensures that Vercel deployments ONLY serve the public marketing pages.
- * Any attempt to access the Dashboard, Admin Panels, or SaaS APIs on Vercel 
- * is redirected to the homepage.
+ * Ensures Vercel/Production deployments ONLY serve public marketing pages.
+ * SaaS logic (Dashboard, Admin, APIs) is locked and redirected to home.
  */
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const host = request.headers.get('host') || '';
   
-  // Identify if the request is coming from Vercel or the production domain
+  // Production host identifiers
   const isProductionFrontend = 
     host.includes('vercel.app') || 
     host === 'dukaanmitra.in' || 
-    host === 'www.dukaanmitra.in';
+    host === 'www.dukaanmitra.in' ||
+    host === 'mitraos.in';
   
-  // Paths that are restricted on the public production frontend
+  // Restricted SaaS/Admin/API paths
   const protectedPaths = [
     '/dashboard', 
     '/SAP', 
@@ -42,6 +41,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Apply middleware to all routes except static assets and images
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
