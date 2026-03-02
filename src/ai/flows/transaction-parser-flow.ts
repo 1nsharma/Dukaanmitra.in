@@ -3,6 +3,9 @@
 import { ai } from '@/ai/genkit';
 import { ParseTransactionInputSchema, ParseTransactionOutputSchema, type ParseTransactionOutput } from '@/ai/schemas';
 
+// Re-export for easier external access if needed by components
+export { ParseTransactionOutputSchema };
+
 /**
  * Munim AI: Deterministic-First Billing Parser.
  * Next.js 15: Marked 'use server' and exporting only async functions.

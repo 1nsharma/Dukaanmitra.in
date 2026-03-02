@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview The core DukaanMitra AI Agent.
@@ -57,7 +56,10 @@ const marketTrendTool = ai.defineTool(
     }
 );
 
-// Policy Guard
+/**
+ * Policy Guard: Validates actions against business rules.
+ * Keeps this logic isolated from the LLM prompt.
+ */
 function policyGuard(
   intent: SupportedIntent,
   transactionDetails: ParseTransactionOutput | null,
@@ -96,7 +98,10 @@ const anigravityAgentPrompt = ai.definePrompt({
     `,
 });
 
-const anigravityAgent = ai.defineFlow(
+/**
+ * Main AI Agent Flow.
+ */
+export const anigravityAgent = ai.defineFlow(
   {
     name: 'anigravityAgent',
     inputSchema: AgentInputSchema,

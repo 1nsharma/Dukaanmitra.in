@@ -1,11 +1,10 @@
-
 'use client';
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Cpu, Shield, TrendingUp, Users, ArrowRight, Zap, Bot, 
-  Smartphone, Lock, CheckCircle2, Star, MessageCircle,
+  Smartphone, Lock, CheckCircle2, MessageCircle,
   BarChart3, BadgeCheck, XCircle, History, Cloud, 
   Database, EyeOff, Scale, ShieldCheck, CheckCircle
 } from 'lucide-react';

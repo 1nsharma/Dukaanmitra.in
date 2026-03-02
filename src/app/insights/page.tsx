@@ -1,15 +1,11 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-    ArrowRight, BarChart3, Bell, CheckCircle, FileDown, Gauge, GitFork, Landmark, 
+    ArrowRight, BarChart3, Bell, CheckCircle, FileDown, Gauge, 
     LayoutDashboard, Plug, Store, User, Users, Zap, Brain, TrendingUp, Package,
-    Clock, Repeat, Gem, ShieldAlert, Megaphone, Star, Archive, Truck,
-    ClipboardList, Percent, CalendarCheck, RotateCw, MessageSquare, GitCompare,
-    Library, Map, History, Lock, FileClock, Terminal, FileSpreadsheet, Code,
-    Database, Trophy, AreaChart, Briefcase, Table, DollarSign, Bot, Sparkles, Scale,
-    ShieldCheck, Smartphone
+    Clock, Repeat, Gem, ShieldAlert, Megaphone, Star, Database, Bot, Sparkles, Scale,
+    ShieldCheck, Smartphone, DollarSign
 } from 'lucide-react';
 import React from 'react';
 import Link from 'next/link';
@@ -99,7 +95,7 @@ const customerIntelligence = [
 const securityTrust = [
     { title: 'Role Based Guardrails', description: 'Owner, manager, staff ke alag rights aur permissions.', icon: <Users /> },
     { title: 'Encrypted Data Vault', description: 'Your business secrets stay in your vault only.', icon: <Lock /> },
-    { title: 'Deterministic Audit Trail', description: 'A perfect, unchangeable record of every system event.', icon: <FileClock /> },
+    { title: 'Deterministic Audit Trail', description: 'A perfect, unchangeable record of every system event.', icon: <History /> },
     { title: 'Safety-First Backups', description: 'Daily snapshots of your ledger for ultimate safety.', icon: <Database /> },
 ];
 

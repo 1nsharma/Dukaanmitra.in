@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Cpu, Quote, Shield, Zap, Bot, ShieldCheck, Scale } from "lucide-react";
+import { ArrowLeft, Cpu, Quote, ShieldCheck, Scale, Lock } from "lucide-react";
 import Link from "next/link";
 
 export default function ManifestoPage() {
