@@ -25,7 +25,7 @@ export class LedgerService {
     },
     correlationId: string = crypto.randomUUID()
   ) {
-    if (actor.role !== 'super_admin' && actor.shopId !== shopId) {
+    if (actor.role !== 'super_admin' && actor.shopId !== shopId && actor.role !== 'system') {
       throw new Error('[LedgerService] Tenant violation: Unauthorized shop access.');
     }
 
@@ -133,6 +133,9 @@ export class LedgerService {
     });
   }
 
+  /**
+   * Deep Audit: Re-calculates hash chain to prove no manual tampering occurred.
+   */
   static async verifyIntegrity(shopId: string): Promise<{ valid: boolean; lastValidId?: string; error?: string }> {
     const shopRef = adminDb.collection('shops').doc(shopId);
     const shopDoc = await shopRef.get();
@@ -147,11 +150,23 @@ export class LedgerService {
     for (const doc of entries.docs) {
         const data = doc.data();
         if (data.entryHash !== currentHash) {
+            // AUTO-LOCK ON CORRUPTION
             await shopRef.update({
                 integrityStatus: 'corrupted',
                 status: 'integrity_lock',
                 updated_at: FieldValue.serverTimestamp()
             });
+            
+            await AuditService.log({
+                actorId: 'system',
+                actorRole: 'system',
+                action: 'security:integrity_lock:triggered',
+                targetType: 'shop',
+                targetId: shopId,
+                shopId: shopId,
+                after: { reason: 'Hash chain broken', entryId: doc.id }
+            });
+
             return { valid: false, lastValidId: doc.id, error: 'Hash chain broken' };
         }
         currentHash = data.previousEntryHash;
