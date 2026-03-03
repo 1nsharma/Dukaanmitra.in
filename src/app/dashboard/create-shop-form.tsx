@@ -54,15 +54,16 @@ export default function CreateShopForm({ onShopCreated }: { onShopCreated: (id: 
             phone: values.phone,
             created_at: serverTimestamp(),
             updated_at: serverTimestamp(),
-            plan: 'free',
+            plan: 'basic',
             status: 'trial',
-            trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            // MARKET PILOT: Auto-assign 90 days trial
+            trial_ends_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), 
             settings: {
                 language: "hinglish",
                 currency: "INR",
                 timezone: "Asia/Kolkata",
                 allow_credit: true,
-                credit_limit_per_transaction: 5000,
+                credit_limit_per_transaction: 10000,
             },
         };
         batch.set(newShopRef, shopData);
@@ -72,7 +73,7 @@ export default function CreateShopForm({ onShopCreated }: { onShopCreated: (id: 
 
         try {
              await batch.commit();
-             toast({ title: "Shop Ready!", description: "Let's activate your WhatsApp Munim." });
+             toast({ title: "Dukaan Ready!", description: "WhatsApp Munim set up ho gaya hai." });
              onShopCreated(shopId);
         } catch(serverError) {
              const permissionError = new FirestorePermissionError({
@@ -90,12 +91,12 @@ export default function CreateShopForm({ onShopCreated }: { onShopCreated: (id: 
     <Card className="max-w-md mx-auto border-2 border-primary/20 shadow-xl overflow-hidden">
       <div className="bg-primary/10 p-4 flex items-center justify-center gap-2 border-b border-primary/10">
         <Sparkles className="text-primary h-5 w-5" />
-        <span className="font-bold text-primary uppercase tracking-widest text-xs">Set Up Your Digital Shop</span>
+        <span className="font-bold text-primary uppercase tracking-widest text-xs">Pilot Program: 90 Days Free</span>
       </div>
       <CardHeader>
-        <CardTitle className="font-headline text-2xl text-center">Welcome, Boss!</CardTitle>
+        <CardTitle className="font-headline text-2xl text-center">Apni Dukaan Shuru Karein</CardTitle>
         <CardDescription className="text-center">
-          Just 2 details to get started with your Digital Munim.
+          Sirf 2 details fill karein aur WhatsApp Munim payein.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -106,7 +107,7 @@ export default function CreateShopForm({ onShopCreated }: { onShopCreated: (id: 
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-bold uppercase text-[10px] tracking-wider text-muted-foreground">Shop Name</FormLabel>
+                  <FormLabel className="font-bold uppercase text-[10px] tracking-wider text-muted-foreground">Dukaan ka Naam</FormLabel>
                   <FormControl><Input placeholder="e.g., Gupta Store" className="h-12 text-lg" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,7 +118,7 @@ export default function CreateShopForm({ onShopCreated }: { onShopCreated: (id: 
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-bold uppercase text-[10px] tracking-wider text-muted-foreground">Your Phone Number</FormLabel>
+                  <FormLabel className="font-bold uppercase text-[10px] tracking-wider text-muted-foreground">Aapka WhatsApp Number</FormLabel>
                   <FormControl><Input placeholder="10-digit mobile number" className="h-12 text-lg" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
