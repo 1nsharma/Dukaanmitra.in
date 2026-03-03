@@ -31,6 +31,8 @@ export async function executeAction(
   correlationId: string = crypto.randomUUID()
 ): Promise<{ success: boolean; message?: string }> {
   
+  console.log(`[ActionEngine] Executing action: ${action?.type} | Correlation: ${correlationId}`);
+
   if (!action?.type || !action?.payload) return { success: false, message: "Malformed action." };
 
   const shopId = action.payload.shopId;
@@ -49,9 +51,10 @@ export async function executeAction(
   }
 
   // Layer 1: Approval Gate (Human-in-the-loop)
-  if (policy.requiresApproval && actor.id === 'system') {
+  // If the 'system' (AI) is proposing a high-risk action, queue it as an Insight.
+  if (policy.requiresApproval && actor.role === 'system') {
       await createActionableInsight(action, correlationId);
-      return { success: true, message: "Action queued for manual approval." };
+      return { success: true, message: "Aapka entry check ke liye dashboard par bhej diya gaya hai. 👍" };
   }
 
   // Layer 2: Domain Execution
@@ -64,14 +67,14 @@ export async function executeAction(
             amount: transaction.amount,
             item: transaction.items,
             type: transaction.type,
-            source: actor.id === 'system' ? 'whatsapp-ai' : 'app-ai'
+            source: actor.role === 'system' ? 'whatsapp-ai' : 'app-ai'
         }, correlationId);
     }
 
     return { success: true };
 
   } catch (error: any) {
-    console.error('[ActionEngine] Execution failed:', error);
+    console.error(`[ActionEngine] Execution failed [${correlationId}]:`, error);
     return { success: false, message: error.message || "Execution error." };
   }
 }
@@ -87,7 +90,7 @@ async function createActionableInsight(action: any, correlationId: string) {
         message: `${transaction.customer_name || customerPhone} ke liye ₹${transaction.amount} add karein?`,
         action_label: "Approve & Add",
         action_type: action.type,
-        action_payload: action.payload,
+        action_payload: { ...action.payload, shopId }, // Ensure shopId is preserved
         correlationId,
         createdAt: FieldValue.serverTimestamp(),
         isRead: false

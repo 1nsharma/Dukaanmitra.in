@@ -27,6 +27,7 @@ export function handleWhatsAppMessage(body: any) {
                             if (change.field === 'messages' && change.value.messages) {
                                 for (const message of change.value.messages) {
                                     const messageId = message.id;
+                                    const correlationId = crypto.randomUUID();
                                     const interactionRef = adminDb.collection('interactions').doc(messageId);
                                     
                                     // PRE-CHECK: Atomic check for existing processing
@@ -43,14 +44,17 @@ export function handleWhatsAppMessage(body: any) {
                                             text: message.text.body,
                                             messageId: message.id,
                                             receivedAt: Date.now(),
+                                            correlationId
                                         };
 
                                         const shopCodeMatch = normalizedMessage.text.match(/#(\w+)/);
                                         const shopId = shopCodeMatch ? shopCodeMatch[1].toUpperCase() : undefined;
                                         
                                         // 1. PERSISTENCE LAYER: Record receipt before logic
+                                        // This ensures we have a trace even if the AI runner fails.
                                         await interactionRef.set({
                                             interactionId: messageId,
+                                            correlationId,
                                             shop_id: shopId,
                                             sender_phone: normalizedMessage.from,
                                             sender_type: 'customer',
@@ -60,7 +64,6 @@ export function handleWhatsAppMessage(body: any) {
                                         });
                                         
                                         // 2. DISPATCH: Process message
-                                        // Note: In Stage-6, this will be pushed to a real Queue (Pub/Sub)
                                         await processMessage(normalizedMessage);
                                     }
                                 }
@@ -134,7 +137,6 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
     };
 
     try {
-        // Log intent to send
         await logRef.set({ 
             to, 
             text, 
@@ -145,7 +147,6 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
 
         const responseData = await withRetry(sendOperation, 3, 1000);
         
-        // Update on success
         await logRef.update({ 
             status: 'sent', 
             sentAt: FieldValue.serverTimestamp(), 

@@ -1,3 +1,4 @@
+
 import { anigravityAgent } from '@/ai/flows/whatsapp-agent-flow';
 import { loadShopAndContextByShopCode } from './context-loader';
 import { sendWhatsAppMessage } from './whatsapp';
@@ -9,14 +10,16 @@ import { FieldValue } from 'firebase-admin/firestore';
  * MitraOS Unified Processor (Layer 0-2 Autonomy)
  * Implements the "Data Flywheel" by logging snapshots for future Vertical LLM training.
  */
-export async function processMessage(message: { from: string; text: string; messageId: string; receivedAt: number }) {
+export async function processMessage(message: { from: string; text: string; messageId: string; receivedAt: number; correlationId: string }) {
     const startTime = Date.now();
     const interactionRef = adminDb.collection('interactions').doc(message.messageId);
 
     try {
         const shopCodeMatch = message.text.match(/#(\w+)/);
         if (!shopCodeMatch) {
-            await sendWhatsAppMessage(message.from, "Please include your Shop Code (e.g., #SHP123) to use Munim AI. 🙏");
+            const reply = "Please include your Shop Code (e.g., #SHP123) to use Munim AI. 🙏";
+            await sendWhatsAppMessage(message.from, reply);
+            await interactionRef.update({ system_response: reply, processing_status: 'processed' });
             return;
         }
         
@@ -25,13 +28,17 @@ export async function processMessage(message: { from: string; text: string; mess
 
         const { shop, shopContext, success } = await loadShopAndContextByShopCode(shopCode);
         if (!success || !shop || !shopContext) {
-            await sendWhatsAppMessage(message.from, "Invalid Shop Code. Check your dashboard.");
+            const reply = "Invalid Shop Code. Check your dashboard.";
+            await sendWhatsAppMessage(message.from, reply);
+            await interactionRef.update({ system_response: reply, processing_status: 'failed' });
             return;
         }
 
         // Layer 0: Deterministic Guard
-        if (shop.status === 'locked') {
-            await sendWhatsAppMessage(message.from, "Account Locked. Please clear dues on your dashboard to continue. 💳");
+        if (shop.status === 'locked' || shop.status === 'suspended') {
+            const reply = "Account Locked. Please clear dues on your dashboard to continue. 💳";
+            await sendWhatsAppMessage(message.from, reply);
+            await interactionRef.update({ system_response: reply, processing_status: 'processed' });
             return;
         }
 
@@ -53,7 +60,12 @@ export async function processMessage(message: { from: string; text: string; mess
 
         // Layer 2: Action Engine
         if (agentOutput.action) {
-            const result = await executeAction(agentOutput.action, 'system');
+            // Inject shopId into payload if missing
+            if (!agentOutput.action.payload.shopId) {
+                agentOutput.action.payload.shopId = shopCode;
+            }
+            
+            const result = await executeAction(agentOutput.action, { id: 'system', role: 'system' }, message.correlationId);
             if (result.message && !agentOutput.response) {
                 agentOutput.response = result.message;
             }
@@ -66,7 +78,7 @@ export async function processMessage(message: { from: string; text: string; mess
         // Data Flywheel: Capture everything for future LLM training
         await interactionRef.update({
             processing_status: 'processed',
-            system_response: agentOutput.response,
+            system_response: agentOutput.response || null,
             detected_intent: agentOutput.intent,
             processing_path: 'ai_fallback',
             decision_confidence: agentOutput.confidence,
@@ -76,7 +88,7 @@ export async function processMessage(message: { from: string; text: string; mess
         });
 
     } catch (error) {
-        console.error(`[MitraOS] Critical Processor Error:`, error);
+        console.error(`[MitraOS] Critical Processor Error [${message.correlationId}]:`, error);
         await interactionRef.update({ 
             processing_status: 'failed', 
             system_response: (error as Error).message 
