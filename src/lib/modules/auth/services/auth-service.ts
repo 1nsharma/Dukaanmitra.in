@@ -3,10 +3,10 @@ import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { UserProfile } from '@/docs/backend-types';
 import { AuditService } from '../../audit/services/audit-service';
+import { eventBus } from '@/lib/services/domain-event-bus';
 
 /**
- * AuthService: Enterprise-grade user and role management.
- * Enforces RBAC and logs all administrative changes.
+ * AuthService: Hardened User Management.
  */
 export class AuthService {
   static async updateRole(
@@ -14,13 +14,23 @@ export class AuthService {
     targetUid: string,
     newRole: UserProfile['role']
   ) {
+    if (actor.role !== 'super_admin') {
+      throw new Error('[AuthService] Permission Denied: SuperAdmin path required.');
+    }
+
     const userRef = adminDb.collection('users').doc(targetUid);
     const userDoc = await userRef.get();
     
     if (!userDoc.exists) throw new Error('User not found');
     
     const before = userDoc.data();
-    await userRef.update({ role: newRole, updated_at: FieldValue.serverTimestamp() });
+    
+    // Atomic update + record revocation timestamp
+    await userRef.update({ 
+      role: newRole, 
+      sessionRevokedAt: FieldValue.serverTimestamp(),
+      updated_at: FieldValue.serverTimestamp() 
+    });
 
     await AuditService.log({
       actorId: actor.id,
@@ -31,6 +41,8 @@ export class AuthService {
       before: { role: before?.role },
       after: { role: newRole }
     });
+
+    eventBus.emit('auth.role.updated', { targetUid, newRole });
   }
 
   static async updateStatus(
@@ -38,13 +50,19 @@ export class AuthService {
     targetUid: string,
     status: UserProfile['status']
   ) {
+    if (actor.role !== 'super_admin') throw new Error('Unauthorized');
+
     const userRef = adminDb.collection('users').doc(targetUid);
     const userDoc = await userRef.get();
     
     if (!userDoc.exists) throw new Error('User not found');
     
     const before = userDoc.data();
-    await userRef.update({ status, updated_at: FieldValue.serverTimestamp() });
+    await userRef.update({ 
+      status, 
+      sessionRevokedAt: status === 'suspended' ? FieldValue.serverTimestamp() : null,
+      updated_at: FieldValue.serverTimestamp() 
+    });
 
     await AuditService.log({
       actorId: actor.id,
