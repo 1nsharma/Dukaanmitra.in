@@ -4,19 +4,19 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // =================================
-    // Helper Functions (Audit-Optimized)
+    // Helper Functions (Enterprise Optimized)
     // =================================
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // PHASE 1: Try Custom Claims (Zero Read Cost)
-    // PHASE 2: Fallback to Firestore lookup
+    // Centralized profile fetch to keep rules readable and performant
+    function getUserProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
     function hasRole(role) {
-      return isAuthenticated() && (
-        request.auth.token.role == role || 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role
-      );
+      return isAuthenticated() && getUserProfile().role == role;
     }
 
     function isSuperAdmin() {
@@ -33,7 +33,7 @@ service cloud.firestore {
 
     function isShopMember(shopId) {
         if (!isAuthenticated()) return false;
-        let profile = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+        let profile = getUserProfile();
         return profile.status == 'active' &&
                profile.shopId == shopId &&
                (profile.role == 'owner' || profile.role == 'staff');
@@ -41,12 +41,11 @@ service cloud.firestore {
     
     function isShopOwner(shopId) {
         if (!isAuthenticated()) return false;
-        let profile = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+        let profile = getUserProfile();
         return profile.status == 'active' &&
                profile.shopId == shopId &&
                profile.role == 'owner';
     }
-
 
     // =================================
     // Public & System Collections
@@ -80,7 +79,7 @@ service cloud.firestore {
     }
     
     match /auditLogs/{auditLogId} {
-        allow write: if false;
+        allow write: if false; // System only
         allow read: if isSuperAdmin() || isFranchiseAdmin();
     }
     
@@ -113,7 +112,7 @@ service cloud.firestore {
     }
 
     // =================================
-    // Main Multi-Tenant Shop Collections
+    // Main Multi-Tenant Shop Collections (Hardened)
     // =================================
     match /shops/{shopId} {
       allow create: if isAuthenticated() && isOwner(request.resource.data.owner_id);
@@ -126,9 +125,10 @@ service cloud.firestore {
       }
       
       match /ledger/{ledgerId} {
-        allow create: if isShopMember(shopId);
+        // Enforce deterministic isolation: shopId in path must match data
+        allow create: if isShopMember(shopId) && request.resource.data.shop_id == shopId;
         allow read: if isShopMember(shopId) || isFranchiseAdmin() || isSuperAdmin();
-        allow update, delete: if false;
+        allow update, delete: if false; // Ledger is immutable
       }
 
       match /insights/{insightId} {
@@ -138,7 +138,7 @@ service cloud.firestore {
       }
 
       match /{subcollection}/{docId=**} {
-          allow read, write: if false;
+          allow read, write: if false; // Strict fallback
       }
     }
   }

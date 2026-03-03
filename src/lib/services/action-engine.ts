@@ -1,11 +1,13 @@
-import { FieldValue } from 'firebase-admin/firestore';
+
 import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
+import { LedgerService } from '../modules/ledger/services/ledger-service';
 
 /**
- * ActionEngine: The Multi-Layer Safety Boundary (Level 5 Compliant).
+ * ActionEngine: The Multi-Layer Safety Boundary (Modular Monolith Refactored).
  * 
- * Classifies AI-suggested actions into risk levels and enforces
- * the "Human-in-the-loop" requirement for financial accuracy.
+ * Routes actions to domain services and enforces the "Human-in-the-loop" 
+ * requirement for high-risk operations.
  */
 
 type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH';
@@ -19,7 +21,7 @@ interface ActionPolicy {
 const ACTION_POLICIES: Record<string, ActionPolicy> = {
     'ADD_LEDGER_ENTRY': { risk: 'HIGH', requiresApproval: true, allowed: true },
     'SEND_REMINDER': { risk: 'LOW', requiresApproval: false, allowed: true },
-    'REQUEST_REVIEW': { risk: 'LOW', requiresApproval: true, allowed: true }, // Level 5 Feature
+    'REQUEST_REVIEW': { risk: 'LOW', requiresApproval: true, allowed: true },
     'UPDATE_SHOP_SETTINGS': { risk: 'MEDIUM', requiresApproval: true, allowed: false },
 };
 
@@ -28,75 +30,32 @@ export async function executeAction(action: any, actorType: 'system' | 'owner' =
 
   const policy = ACTION_POLICIES[action.type] || { risk: 'HIGH', requiresApproval: true, allowed: false };
 
-  // --- BOUNDARY 1: PERMISSION GATE ---
   if (!policy.allowed) {
       return { success: false, message: `Action '${action.type}' is restricted.` };
   }
 
-  // --- BOUNDARY 2: APPROVAL GATE ---
+  // Approval Gate: AI is a proposer, not an executor
   if (policy.requiresApproval && actorType === 'system') {
-      console.log(`[ActionEngine] Action ${action.type} requires manual approval. Generating Insight.`);
+      console.log(`[ActionEngine] Action ${action.type} queued for manual approval.`);
       await createActionableInsight(action);
       return { success: true, message: "Action queued for owner approval." };
-  }
+    }
 
-  // --- BOUNDARY 3: EXECUTION (Layer 0 Deterministic) ---
   try {
-    const { shopId, customerPhone, transaction } = action.payload;
-    const shopRef = adminDb.collection('shops').doc(shopId);
-    const customerRef = shopRef.collection('customers').doc(customerPhone);
-    const ledgerRef = shopRef.collection('ledger').doc();
-
-    const batch = adminDb.batch();
+    const actor = { id: actorType === 'system' ? 'system' : 'owner', role: actorType === 'system' ? 'system' : 'owner' };
 
     if (action.type === 'ADD_LEDGER_ENTRY') {
-        const udhaarImpact = transaction.type === 'credit' ? transaction.amount : -transaction.amount;
-        
-        const customerDoc = await customerRef.get();
-        if (!customerDoc.exists) {
-            batch.set(customerRef, {
-                shop_id: shopId,
-                phone: customerPhone,
-                name: transaction.customerName || `Customer ${customerPhone.slice(-4)}`,
-                totalUdhaar: udhaarImpact,
-                total_spent: transaction.amount,
-                visit_count: 1,
-                status: 'NEW',
-                first_visit: FieldValue.serverTimestamp(),
-                last_visit: FieldValue.serverTimestamp(),
-                created_at: FieldValue.serverTimestamp(),
-                updated_at: FieldValue.serverTimestamp(),
-            });
-        } else {
-            batch.update(customerRef, {
-                totalUdhaar: FieldValue.increment(udhaarImpact),
-                total_spent: FieldValue.increment(transaction.amount),
-                visit_count: FieldValue.increment(1),
-                last_visit: FieldValue.serverTimestamp(),
-                updated_at: FieldValue.serverTimestamp(),
-            });
-        }
-
-        batch.set(ledgerRef, {
-            id: ledgerRef.id,
-            shop_id: shopId,
-            customerPhone: customerPhone,
-            customerName: transaction.customerName || 'Customer',
+        const { shopId, customerPhone, transaction } = action.payload;
+        await LedgerService.addEntry(actor, shopId, {
+            customerPhone,
+            customerName: transaction.customerName,
             amount: transaction.amount,
-            item: transaction.items || 'Misc',
+            item: transaction.items,
             type: transaction.type,
-            source: actorType === 'owner' ? 'app-ai' : 'whatsapp-ai',
-            createdAt: FieldValue.serverTimestamp(),
+            source: actorType === 'owner' ? 'app-ai' : 'whatsapp-ai'
         });
     }
 
-    // Level 5: Handle specialized business actions
-    if (action.type === 'REQUEST_REVIEW') {
-        // Logic to trigger a Review Request message (async)
-        // For now, we just mark it as done.
-    }
-
-    await batch.commit();
     return { success: true };
 
   } catch (error) {
@@ -117,10 +76,6 @@ async function createActionableInsight(action: any) {
         title = `Verify ${transaction.type} entry`;
         message = `${transaction.customerName || customerPhone} ke liye ₹${transaction.amount} ki entry add karein?`;
         label = "Approve & Add";
-    } else if (action.type === 'REQUEST_REVIEW') {
-        title = "Review Funnel";
-        message = `${transaction.customerName || customerPhone} ne abhi payment ki hai. Review request bhejein?`;
-        label = "Send Request";
     }
     
     await insightRef.set({
