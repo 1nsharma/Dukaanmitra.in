@@ -167,6 +167,7 @@
         "activeTrials": { "type": "number" },
         "churnedShops": { "type": "number" },
         "totalShops": { "type": "number" },
+        "trialToPaidConversionRate": { "type": "number" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "updatedAt"]

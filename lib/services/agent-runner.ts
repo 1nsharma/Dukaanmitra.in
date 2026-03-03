@@ -14,16 +14,24 @@ interface NormalizedMessage {
 }
 
 /**
- * Deterministic parser for simple bill entries.
- * Extracts the first number as amount, identifies payment keywords, and the rest as items.
- * Returns null if no amount is found, indicating it's not a simple bill.
+ * Bharat Language Engine: Deterministic parser for local dialects.
+ * Extracts amount and type using strict rule-based logic for Hindi, Marathi, and Hinglish.
  */
 function parseSimpleBill(text: string): { amount: number; items: string; type: 'credit' | 'payment' } | null {
-    const paymentKeywords = /\b(paid|jama|diya)\b/i;
+    // Slang Mapping:
+    // Credit: Udhaar, Baaki, Likhlena, De baaki (Hinglish/Hindi)
+    // Payment: Jama, Diya, Paid, Upas (Hindi/Marathi)
+    const creditKeywords = /\b(udhaar|baaki|likh|likhlena|credit|de-baaki)\b/i;
+    const paymentKeywords = /\b(paid|jama|diya|payment|dhila|upas)\b/i;
+    
+    const isCredit = creditKeywords.test(text);
     const isPayment = paymentKeywords.test(text);
     
-    const cleanText = text.replace(paymentKeywords, '').trim();
+    if (!isCredit && !isPayment) return null;
 
+    const cleanText = text.replace(creditKeywords, '').replace(paymentKeywords, '').trim();
+
+    // Extract first number as amount
     const match = cleanText.match(/(\d+\.?\d*)\s*(.*)/);
     if (match) {
         const amount = parseFloat(match[1]);
@@ -61,6 +69,7 @@ export async function processMessage(message: NormalizedMessage) {
         
         const { shop, shopContext } = contextResult;
 
+        // Revenue Engine Gate
         if (shop.status === 'locked' || shop.status === 'suspended') {
             const reply = cleanedQuery.trim().toUpperCase() === 'PAY' 
                 ? "Aapka plan expire ho gaya hai. Account reactivate karne ke liye, kripya apne DukaanMitra dashboard me login karke payment complete karein."
@@ -132,7 +141,7 @@ export async function processMessage(message: NormalizedMessage) {
             const agentOutput = await anigravityAgent(agentInput);
 
             if (agentOutput.action) {
-                await executeAction(agentOutput.action);
+                await executeAction(agentOutput.action, { id: 'system', role: 'system', shopId: shopCode });
             }
 
             if (agentOutput.response) {
