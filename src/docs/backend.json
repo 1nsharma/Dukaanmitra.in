@@ -59,6 +59,14 @@
         "paid_till": { "type": "string", "format": "date-time" },
         "created_at": { "type": "string", "format": "date-time" },
         "updated_at": { "type": "string", "format": "date-time" },
+        "impact_metrics": {
+          "type": "object",
+          "properties": {
+            "total_entries": { "type": "number" },
+            "total_recovery_inr": { "type": "number" },
+            "avg_daily_entries": { "type": "number" }
+          }
+        },
         "settings": {
           "type": "object",
           "properties": {
@@ -171,19 +179,6 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "updatedAt"]
-    },
-    "PlatformAnchor": {
-      "title": "Platform Anchor",
-      "description": "Cryptographic snapshot of the entire platform state.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "platformHash": { "type": "string" },
-        "shopCount": { "type": "number" },
-        "mrrSnapshot": { "type": "number" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "platformHash", "createdAt"]
     }
   },
   "auth": {

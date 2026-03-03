@@ -1,9 +1,11 @@
+
 import { AgentInput, anigravityAgent } from '@/ai/flows/whatsapp-agent-flow';
 import { loadShopAndContextByShopCode } from './context-loader';
 import { sendWhatsAppMessage } from './whatsapp';
 import { executeAction } from './action-engine';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { LedgerService } from '@/lib/modules/ledger/services/ledger-service';
 
 interface NormalizedMessage {
     from: string;
@@ -14,6 +16,7 @@ interface NormalizedMessage {
 
 /**
  * Bharat Language Engine: Deterministic parser for local dialects.
+ * Extracting metadata only. DB operations delegated to LedgerService for integrity.
  */
 function parseSimpleBill(text: string): { amount: number; items: string; type: 'credit' | 'payment' } | null {
     const creditKeywords = /\b(udhaar|baaki|likh|likhlena|credit|de-baaki)\b/i;
@@ -37,94 +40,82 @@ function parseSimpleBill(text: string): { amount: number; items: string; type: '
 
 /**
  * The main processor for incoming WhatsApp messages.
- * MARKET PILOT: Hardened for human-readable error responses.
+ * HARDENED: All write paths consolidated through LedgerService.
  */
 export async function processMessage(message: NormalizedMessage) {
-    console.log(`[Processor] Started processing message ${message.messageId}`);
     const interactionRef = adminDb.collection('interactions').doc(message.messageId);
+    const correlationId = message.messageId; // Message ID is our initial correlation root
 
     try {
         const shopCodeMatch = message.text.match(/#(\w+)/);
         if (!shopCodeMatch) {
-            await sendWhatsAppMessage(message.from, "Namaste 🙏 Kripya shop code (#ABC) ke saath message bhejein.");
-            await interactionRef.update({ processing_status: 'failed', system_response: "No shop code found." });
+            const reply = "Namaste 🙏 Kripya shop code (#ABC) ke saath message bhejein.";
+            await sendWhatsAppMessage(message.from, reply);
+            await interactionRef.update({ processing_status: 'failed', system_response: reply });
             return;
         }
+        
         const shopCode = shopCodeMatch[1].toUpperCase();
         const cleanedQuery = message.text.replace(/#\w+\s*/, '').trim();
 
         const contextResult = await loadShopAndContextByShopCode(shopCode);
         if (!contextResult.success || !contextResult.shop || !contextResult.shopContext) {
-            await sendWhatsAppMessage(message.from, "Maaf kijiye, yeh shop code invalid hai. ❌");
-            await interactionRef.update({ processing_status: 'failed', system_response: contextResult.message });
+            const reply = "Maaf kijiye, yeh shop code invalid hai. ❌";
+            await sendWhatsAppMessage(message.from, reply);
+            await interactionRef.update({ processing_status: 'failed', system_response: reply });
             return;
         }
         
         const { shop, shopContext } = contextResult;
 
-        if (shop.status === 'locked' || shop.status === 'suspended') {
-            const reply = "Aapka DukaanMitra trial expire ho gaya hai. Service continue karne ke liye kripya login karke payment karein. 🙏";
+        // Revenue Engine Gate
+        if (shop.status === 'locked' || shop.status === 'suspended' || shop.status === 'integrity_lock') {
+            const reply = shop.status === 'integrity_lock' 
+                ? "Aapki shop integrity safety check ke liye lock hai. Kripya support se baat karein."
+                : "Aapka DukaanMitra plan expire ho gaya hai. Service continue karne ke liye dashboard se payment karein. 🙏";
             await sendWhatsAppMessage(message.from, reply);
             await interactionRef.update({ processing_status: 'processed', system_response: reply });
             return;
         }
 
-        // 1. ATTEMPT DETERMINISTIC PARSING
+        // 1. ATTEMPT DETERMINISTIC PARSING (Fast, Free, High Integrity)
         const simpleBill = parseSimpleBill(cleanedQuery);
 
         if (simpleBill) {
-            const { amount, items, type } = simpleBill;
-            const customerPhone = message.from;
-            let replyMessage = '';
+            console.log(`[Processor] Using deterministic path for ${message.messageId}`);
+            
+            // Unified High-Integrity Write Path
+            await LedgerService.addEntry({ 
+                id: 'system', 
+                role: 'system', 
+                shopId: shopCode 
+            }, shopCode, {
+                customerPhone: message.from,
+                customerName: `Customer ${message.from.slice(-4)}`,
+                amount: simpleBill.amount,
+                item: simpleBill.items,
+                type: simpleBill.type,
+                source: 'whatsapp'
+            }, correlationId);
 
-            await adminDb.runTransaction(async (transaction) => {
-                const customerRef = adminDb.collection('shops').doc(shopCode).collection('customers').doc(customerPhone);
-                const ledgerRef = adminDb.collection('shops').doc(shopCode).collection('ledger').doc();
-                const customerDoc = await transaction.get(customerRef);
-
-                const udhaarAmount = type === 'credit' ? amount : -amount;
-
-                if (!customerDoc.exists) {
-                    replyMessage = `Ji Namaste 🙏\n\nAapka ₹${amount} ka ${type} record kar liya gaya hai.\n\nShukriya!`;
-                    transaction.set(customerRef, {
-                        shop_id: shopCode, phone: customerPhone, name: `Customer ${customerPhone.slice(-4)}`,
-                        visit_count: 1, total_spent: amount, totalUdhaar: udhaarAmount,
-                        last_visit: FieldValue.serverTimestamp(), status: 'NEW', 
-                        created_at: FieldValue.serverTimestamp(), updated_at: FieldValue.serverTimestamp()
-                    });
-                } else {
-                    replyMessage = `Ji Dhanyavaad! ✅\n\n₹${amount} record ho gaya hai.\n\nTotal Balance: ₹${(customerDoc.data()!.totalUdhaar || 0) + udhaarAmount}`;
-                    transaction.update(customerRef, {
-                        visit_count: FieldValue.increment(1), 
-                        total_spent: FieldValue.increment(amount), 
-                        totalUdhaar: FieldValue.increment(udhaarAmount),
-                        last_visit: FieldValue.serverTimestamp(), 
-                        updated_at: FieldValue.serverTimestamp()
-                    });
-                }
-
-                transaction.set(ledgerRef, {
-                    id: ledgerRef.id, shop_id: shopCode, customerPhone, amount, item: items, type,
-                    source: 'whatsapp', createdAt: FieldValue.serverTimestamp(), raw_text: message.text,
-                    source_model_version: 'deterministic_parser_v1', source_confidence: 1.0,
-                });
-            });
-
-            await sendWhatsAppMessage(customerPhone, replyMessage);
+            const reply = `Ji Namaste 🙏\n\n₹${simpleBill.amount} record ho gaya hai. ✅\n\nShukriya!`;
+            await sendWhatsAppMessage(message.from, reply);
+            
             await interactionRef.update({ 
                 processing_status: 'processed', 
-                system_response: replyMessage, 
+                system_response: reply, 
                 detected_intent: 'ledger_entry_simple',
                 processing_path: 'deterministic',
             });
         
         } else {
             // --- AI FALLBACK PATH ---
+            console.log(`[Processor] Using AI fallback for ${message.messageId}`);
             const agentInput: AgentInput = { query: cleanedQuery, shopContext };
             const agentOutput = await anigravityAgent(agentInput);
 
             if (agentOutput.action) {
-                await executeAction(agentOutput.action, { id: 'system', role: 'system', shopId: shopCode });
+                await executeAction(agentOutput.action, { id: 'system', role: 'system', shopId: shopCode }, correlationId);
             }
 
             const finalReply = agentOutput.response || "Bhaiya, yeh entry samajh nahi aayi. ❌ Kripya dobara likhein.";
@@ -138,8 +129,9 @@ export async function processMessage(message: NormalizedMessage) {
             });
         }
     } catch (error) {
-        console.error(`[Processor] Error:`, error);
-        await sendWhatsAppMessage(message.from, "Sorry, thoda network issue hai. Kripya 2 minute baad try karein. 🙏");
+        console.error(`[Processor] Critical Error for ${message.messageId}:`, error);
+        const errorReply = "Sorry, thoda network issue hai. Kripya 2 minute baad try karein. 🙏";
+        await sendWhatsAppMessage(message.from, errorReply);
         await interactionRef.update({ processing_status: 'failed', system_response: (error as Error).message });
     }
 }
