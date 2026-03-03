@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import type { Shop } from '@/docs/backend-types';
-import { Loader2, MoreHorizontal, Eye, Edit, Lock, Unlock, AlertTriangle } from 'lucide-react';
+import { Loader2, MoreHorizontal, Eye, Edit, Lock, Unlock, AlertTriangle, ShieldCheck, ShieldAlert, Activity } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,19 @@ const renderPlanBadge = (plan?: string) => {
     }
 }
 
+const renderIntegrityBadge = (status?: string) => {
+    switch(status) {
+        case 'healthy': return <Badge className="bg-green-500/10 text-green-500 border-green-500/20 flex items-center gap-1"><ShieldCheck size={10}/> Healthy</Badge>;
+        case 'corrupted': return <Badge variant="destructive" className="flex items-center gap-1 animate-pulse"><ShieldAlert size={10}/> Corrupted</Badge>;
+        default: return <Badge variant="outline" className="flex items-center gap-1 opacity-50"><Activity size={10}/> Pending</Badge>;
+    }
+}
+
 const renderStatusBadge = (shop: Shop) => {
+    if (shop.status === 'integrity_lock') {
+        return <Badge variant="destructive" className="bg-red-500 text-white border-red-600 flex items-center gap-1">INTEGRITY LOCK</Badge>;
+    }
+
     if (shop.status === 'trial' && shop.trial_ends_at) {
         const trialEndDate = shop.trial_ends_at.toDate ? shop.trial_ends_at.toDate() : new Date(shop.trial_ends_at);
         const daysLeft = differenceInDays(trialEndDate, new Date());
@@ -122,11 +134,10 @@ export default function BusinessesTable() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Business / Owner</TableHead>
-                  <TableHead>Plan</TableHead>
+                  <TableHead>Integrity</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>MRR</TableHead>
-                  <TableHead>Paid Till / Trial Ends</TableHead>
-                  <TableHead>Last Active</TableHead>
+                  <TableHead>Last Verified</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -135,15 +146,16 @@ export default function BusinessesTable() {
                   <TableRow key={shop.id} className="hover:bg-muted/50 transition-colors">
                     <TableCell>
                       <div className="font-semibold">{shop.name}</div>
-                      <div className="text-xs text-muted-foreground">{shop.owner_name || shop.phone}</div>
+                      <div className="text-xs text-muted-foreground flex items-center gap-2">
+                        {shop.id} {renderPlanBadge(shop.plan)}
+                      </div>
                     </TableCell>
-                    <TableCell>{renderPlanBadge(shop.plan)}</TableCell>
+                    <TableCell>{renderIntegrityBadge((shop as any).integrityStatus)}</TableCell>
                     <TableCell>{renderStatusBadge(shop)}</TableCell>
                     <TableCell className="font-mono">₹{shop.mrr || 0}</TableCell>
-                    <TableCell>
-                      {shop.status === 'trial' ? formatDate(shop.trial_ends_at) : formatDate(shop.paid_till)}
+                    <TableCell className="text-xs text-muted-foreground">
+                      {formatDate((shop as any).lastVerifiedAt, true)}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{formatDate(shop.lastActive, true)}</TableCell>
                     <TableCell className="text-right">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -154,7 +166,8 @@ export default function BusinessesTable() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions for {shop.name}</DropdownMenuLabel>
-                                <DropdownMenuItem><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
+                                <DropdownMenuItem><Eye className="mr-2 h-4 w-4" /> View Trace</DropdownMenuItem>
+                                <DropdownMenuItem><ShieldCheck className="mr-2 h-4 w-4" /> Run Verify</DropdownMenuItem>
                                 
                                 <DropdownMenuItem onSelect={() => setEditingShop(shop)}>
                                     <Edit className="mr-2 h-4 w-4" /> Edit Business

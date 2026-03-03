@@ -50,9 +50,11 @@
         "pincode": { "type": "string" },
         "mrr": { "type": "number" },
         "ledgerRootHash": { "type": "string", "description": "Cryptographic head of the ledger chain." },
+        "integrityStatus": { "type": "string", "enum": ["healthy", "corrupted", "pending"] },
+        "lastVerifiedAt": { "type": "string", "format": "date-time" },
         "lastActive": { "type": "string", "format": "date-time" },
         "plan": { "type": "string", "enum": ["free", "basic", "pro", "enterprise"] },
-        "status": { "type": "string", "enum": ["active", "trial", "suspended", "cancelled", "locked"] },
+        "status": { "type": "string", "enum": ["active", "trial", "suspended", "cancelled", "locked", "integrity_lock"] },
         "trial_ends_at": { "type": "string", "format": "date-time" },
         "paid_till": { "type": "string", "format": "date-time" },
         "created_at": { "type": "string", "format": "date-time" },
@@ -115,6 +117,8 @@
         "source": { "type": "string", "enum": ["whatsapp", "app", "manual", "app-ai", "whatsapp-ai"] },
         "previousEntryHash": { "type": "string" },
         "entryHash": { "type": "string" },
+        "ledgerVersion": { "type": "number" },
+        "hashAlgorithm": { "type": "string" },
         "correlationId": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" },
         "raw_text": { "type": "string" },
@@ -167,6 +171,19 @@
       },
       "required": ["id", "updatedAt"]
     },
+    "PlatformAnchor": {
+      "title": "Platform Anchor",
+      "description": "Cryptographic snapshot of the entire platform state.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "platformHash": { "type": "string" },
+        "shopCount": { "type": "number" },
+        "mrrSnapshot": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "platformHash", "createdAt"]
+    },
     "ShopInsight": {
       "title": "Shop Insight",
       "description": "Operator Intelligence Feed item.",
@@ -199,6 +216,7 @@
       { "path": "/contactFormSubmissions/{submissionId}", "definition": { "schema": { "$ref": "#/entities/ContactFormSubmission" } } },
       { "path": "/interactions/{interactionId}", "definition": { "schema": { "$ref": "#/entities/Interaction" } } },
       { "path": "/metrics/{metricId}", "definition": { "schema": { "$ref": "#/entities/GlobalMetrics" } } },
+      { "path": "/platform_anchors/{anchorId}", "definition": { "schema": { "$ref": "#/entities/PlatformAnchor" } } },
       { "path": "/cron_locks/{lockId}", "definition": { "schema": { "type": "object" } } },
       { "path": "/whatsapp_outbox/{hash}", "definition": { "schema": { "type": "object" } } },
       { "path": "/auditLogs/{auditId}", "definition": { "schema": { "type": "object" } } }

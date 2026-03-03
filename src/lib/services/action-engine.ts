@@ -9,6 +9,7 @@ import crypto from 'crypto';
  * 
  * AI proposes -> Owner approves -> Service executes.
  * Injects correlation IDs into all domain service calls.
+ * Enforces Integrity Locks at the routing layer.
  */
 
 type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH';
@@ -31,6 +32,15 @@ export async function executeAction(
 ): Promise<{ success: boolean; message?: string }> {
   
   if (!action?.type || !action?.payload) return { success: false, message: "Malformed action." };
+
+  const shopId = action.payload.shopId;
+  if (!shopId) return { success: false, message: "Missing shopId in payload." };
+
+  // DETERMINISTIC GUARD: Check for Integrity Lock
+  const shopDoc = await adminDb.collection('shops').doc(shopId).get();
+  if (shopDoc.data()?.status === 'integrity_lock') {
+      return { success: false, message: "CRITICAL: This shop is locked due to an integrity failure. Manual audit required." };
+  }
 
   const policy = ACTION_POLICIES[action.type] || { risk: 'HIGH', requiresApproval: true, allowed: false };
 
