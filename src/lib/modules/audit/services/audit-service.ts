@@ -1,13 +1,12 @@
 
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { AuditLog } from '@/docs/backend-types';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
 
 /**
  * AuditService: Investor-grade compliance logging.
- * Captures IP, User Agent, and state hashes for tamper detection.
+ * Captures Correlation IDs, metadata, and state hashes.
  */
 export class AuditService {
   static async log(details: {
@@ -17,6 +16,7 @@ export class AuditService {
     targetType: string;
     targetId: string;
     shopId?: string;
+    correlationId?: string;
     before?: object;
     after?: object;
   }) {
@@ -25,7 +25,7 @@ export class AuditService {
       const ip = headerList.get('x-forwarded-for') || 'unknown';
       const ua = headerList.get('user-agent') || 'unknown';
 
-      // Create a deterministic hash of the change snapshot
+      // Hash the snapshot for tamper detection
       const snapshotHash = crypto
         .createHash('sha256')
         .update(JSON.stringify({ before: details.before, after: details.after }))
@@ -39,7 +39,8 @@ export class AuditService {
         action: details.action,
         targetType: details.targetType,
         targetId: details.targetId,
-        shopId: details.shopId,
+        shopId: details.shopId || null,
+        correlationId: details.correlationId || crypto.randomUUID(),
         before: details.before || null,
         after: details.after || null,
         metadata: {

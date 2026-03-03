@@ -2,12 +2,13 @@
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { LedgerService } from '../modules/ledger/services/ledger-service';
+import crypto from 'crypto';
 
 /**
  * ActionEngine: The Multi-Layer Safety Boundary.
  * 
- * Delegates strictly to Domain Services.
  * AI proposes -> Owner approves -> Service executes.
+ * Injects correlation IDs into all domain service calls.
  */
 
 type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH';
@@ -25,7 +26,8 @@ const ACTION_POLICIES: Record<string, ActionPolicy> = {
 
 export async function executeAction(
   action: any, 
-  actor: { id: string; role: string; shopId?: string }
+  actor: { id: string; role: string; shopId?: string },
+  correlationId: string = crypto.randomUUID()
 ): Promise<{ success: boolean; message?: string }> {
   
   if (!action?.type || !action?.payload) return { success: false, message: "Malformed action." };
@@ -38,7 +40,7 @@ export async function executeAction(
 
   // Layer 1: Approval Gate (Human-in-the-loop)
   if (policy.requiresApproval && actor.id === 'system') {
-      await createActionableInsight(action);
+      await createActionableInsight(action, correlationId);
       return { success: true, message: "Action queued for manual approval." };
   }
 
@@ -53,7 +55,7 @@ export async function executeAction(
             item: transaction.items,
             type: transaction.type,
             source: actor.id === 'system' ? 'whatsapp-ai' : 'app-ai'
-        });
+        }, correlationId);
     }
 
     return { success: true };
@@ -64,7 +66,7 @@ export async function executeAction(
   }
 }
 
-async function createActionableInsight(action: any) {
+async function createActionableInsight(action: any, correlationId: string) {
     const { shopId, customerPhone, transaction } = action.payload;
     const insightRef = adminDb.collection('shops').doc(shopId).collection('insights').doc();
     
@@ -76,6 +78,7 @@ async function createActionableInsight(action: any) {
         action_label: "Approve & Add",
         action_type: action.type,
         action_payload: action.payload,
+        correlationId,
         createdAt: FieldValue.serverTimestamp(),
         isRead: false
     });
