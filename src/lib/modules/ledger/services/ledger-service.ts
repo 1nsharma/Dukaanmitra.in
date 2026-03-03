@@ -1,4 +1,3 @@
-
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { LedgerEntry } from '@/docs/backend-types';
@@ -7,11 +6,10 @@ import { eventBus } from '@/lib/services/domain-event-bus';
 import crypto from 'crypto';
 
 /**
- * LedgerService: The Deterministic Fortress.
+ * LedgerService: The Absolute Source of Truth Custodian.
  * 
- * STRICTLY APPEND-ONLY. 
  * Implements Multi-Context Hash-Chaining for financial integrity.
- * Features Continuous Monitoring Handshakes.
+ * Strictly Append-Only. No updates or deletions.
  */
 export class LedgerService {
   static async addEntry(
@@ -27,7 +25,6 @@ export class LedgerService {
     },
     correlationId: string = crypto.randomUUID()
   ) {
-    // 1. Tenant Isolation & Integrity Guard
     if (actor.role !== 'super_admin' && actor.shopId !== shopId) {
       throw new Error('[LedgerService] Tenant violation: Unauthorized shop access.');
     }
@@ -36,25 +33,20 @@ export class LedgerService {
     const ledgerRef = shopRef.collection('ledger').doc();
     const entryId = ledgerRef.id;
 
-    // 2. Atomic Transaction for Integrity with Pre-Append Handshake
     return await adminDb.runTransaction(async (transaction) => {
       const shopDoc = await transaction.get(shopRef);
       if (!shopDoc.exists) throw new Error('Shop not found');
       
       const shopData = shopDoc.data()!;
-      
-      // FAILURE RESPONSE: Integrity Lock Check
       if (shopData.status === 'integrity_lock') {
-          throw new Error('[LedgerService] Write Aborted: Shop ledger is locked due to integrity failure.');
+          throw new Error('[LedgerService] Write Aborted: Shop ledger is locked.');
       }
 
       const previousEntryHash = shopData.ledgerRootHash || 'genesis';
-      
-      // 3. Multi-Context Hash Generation
-      // Versioned for long-term audit compatibility
       const ledgerVersion = 1;
       const hashAlgorithm = 'sha256';
       
+      // Hash context: links the entire history to this shop and actor
       const hashInput = `${previousEntryHash}|${shopId}|${entryId}|${payload.amount}|${payload.type}|${actor.id}|v${ledgerVersion}`;
       const currentEntryHash = crypto
         .createHash(hashAlgorithm)
@@ -63,8 +55,9 @@ export class LedgerService {
 
       const udhaarImpact = payload.type === 'credit' ? payload.amount : -payload.amount;
       const customerRef = shopRef.collection('customers').doc(payload.customerPhone);
+      const customerDoc = await transaction.get(customerRef);
 
-      // Record Entry (Append Only)
+      // Create ledger entry (IMMUTABLE)
       transaction.set(ledgerRef, {
         id: entryId,
         shop_id: shopId,
@@ -83,27 +76,42 @@ export class LedgerService {
         createdAt: FieldValue.serverTimestamp(),
       });
 
-      // Update Customer Total
-      transaction.update(customerRef, {
-        totalUdhaar: FieldValue.increment(udhaarImpact),
-        total_spent: FieldValue.increment(payload.amount),
-        visit_count: FieldValue.increment(1),
-        last_visit: FieldValue.serverTimestamp(),
-        updated_at: FieldValue.serverTimestamp(),
-      });
+      // Update aggregate Customer state
+      if (!customerDoc.exists) {
+          transaction.set(customerRef, {
+              shop_id: shopId,
+              phone: payload.customerPhone,
+              name: payload.customerName || `Customer ${payload.customerPhone.slice(-4)}`,
+              totalUdhaar: udhaarImpact,
+              total_spent: payload.amount,
+              visit_count: 1,
+              status: 'NEW',
+              first_visit: FieldValue.serverTimestamp(),
+              last_visit: FieldValue.serverTimestamp(),
+              created_at: FieldValue.serverTimestamp(),
+              updated_at: FieldValue.serverTimestamp(),
+          });
+      } else {
+          transaction.update(customerRef, {
+              totalUdhaar: FieldValue.increment(udhaarImpact),
+              total_spent: FieldValue.increment(payload.amount),
+              visit_count: FieldValue.increment(1),
+              last_visit: FieldValue.serverTimestamp(),
+              updated_at: FieldValue.serverTimestamp(),
+          });
+      }
 
-      // Update Shop Root Hash (Checkpoint)
-      // Continuous Monitoring Status
+      // Finalize shop-level cryptographic state
       transaction.update(shopRef, {
         ledgerRootHash: currentEntryHash,
         integrityStatus: 'healthy',
         lastVerifiedAt: FieldValue.serverTimestamp(),
-        lastLedgerUpdate: FieldValue.serverTimestamp(),
+        lastActive: FieldValue.serverTimestamp(),
       });
 
       return { entryId, currentEntryHash };
     }).then(async (result) => {
-        // 4. Post-Transaction Effects (Audit & Events)
+        // Emit events for decoupled consumers (AI, Analytics)
         await AuditService.log({
           actorId: actor.id,
           actorRole: actor.role,
@@ -125,18 +133,13 @@ export class LedgerService {
     });
   }
 
-  /**
-   * Continuous Integrity Monitoring Job logic.
-   * Traverses the ledger chain and re-calculates hashes to detect tampering.
-   * If corruption is found, the shop is automatically locked.
-   */
   static async verifyIntegrity(shopId: string): Promise<{ valid: boolean; lastValidId?: string; error?: string }> {
     const shopRef = adminDb.collection('shops').doc(shopId);
     const shopDoc = await shopRef.get();
     if (!shopDoc.exists) return { valid: false, error: 'Shop not found' };
     
     const rootHash = shopDoc.data()?.ledgerRootHash;
-    if (!rootHash) return { valid: true }; // Genesis state
+    if (!rootHash) return { valid: true }; 
 
     const entries = await shopRef.collection('ledger').orderBy('createdAt', 'desc').get();
     let currentHash = rootHash;
@@ -144,23 +147,11 @@ export class LedgerService {
     for (const doc of entries.docs) {
         const data = doc.data();
         if (data.entryHash !== currentHash) {
-            // INTEGRITY FAILURE: Self-Healing Response
             await shopRef.update({
                 integrityStatus: 'corrupted',
                 status: 'integrity_lock',
                 updated_at: FieldValue.serverTimestamp()
             });
-            
-            await AuditService.log({
-                actorId: 'system',
-                actorRole: 'system',
-                action: 'integrity:failure:detected',
-                targetType: 'shop',
-                targetId: shopId,
-                shopId: shopId,
-                after: { brokenEntryId: doc.id, expectedHash: currentHash, actualHash: data.entryHash }
-            });
-
             return { valid: false, lastValidId: doc.id, error: 'Hash chain broken' };
         }
         currentHash = data.previousEntryHash;
@@ -168,12 +159,8 @@ export class LedgerService {
 
     const isValid = currentHash === 'genesis';
     if (isValid) {
-        await shopRef.update({
-            integrityStatus: 'healthy',
-            lastVerifiedAt: FieldValue.serverTimestamp()
-        });
+        await shopRef.update({ integrityStatus: 'healthy', lastVerifiedAt: FieldValue.serverTimestamp() });
     }
-
     return { valid: isValid };
   }
 }

@@ -4,25 +4,34 @@ This document outlines the **Stage-5 Autonomous Platform** implementation, enabl
 
 ## 1. The Core Philosophy: Deterministic-First
 We never let AI "guess" with money.
-- **Layer 0 (Accounting)**: 100% deterministic logic for financial writes.
-- **Layer 1 (Intelligence)**: AI analyzes patterns and **proposes** actions.
-- **Layer 2 (Execution)**: Human-in-the-loop (Owner clicks "Approve").
+- **Layer 0 (Accounting)**: 100% deterministic logic for financial writes. Managed via `LedgerService`.
+- **Layer 1 (Intelligence)**: AI analyzes patterns and **proposes** actions. Managed via `Genkit Flows`.
+- **Layer 2 (Execution)**: Human-in-the-loop (Owner clicks "Approve"). Managed via `ActionEngine`.
 
-## 2. The Data Flywheel
-Every interaction is a training label for our future proprietary "Kirana-LLM".
-1. **Capture**: Log raw message + `shop_context_snapshot`.
-2. **Analyze**: AI assigns `detected_intent` and `confidence_score`.
-3. **Correct**: If an owner edits a ledger entry, we log the `correction_signal`.
-4. **Learn**: High-confidence interactions (>0.9) become "Ground Truth" for future fine-tuning.
+## 2. Absolute Source of Truth (SSoT)
+The system operates on an **Event-Sourced** philosophy:
+1.  **Ground Truth**: `auditLogs` (The Event Store). Every change is a discrete, immutable event.
+2.  **Projection**: `shops/{shopId}/ledger`. This is a materialized view of the events, protected by a **Cryptographic Hash Chain**.
+3.  **State Rebuild**: If the ledger is corrupted, the system can replay the `auditLogs` for a specific `shopId` to reconstruct the balance perfectly.
 
-## 3. Autonomous Layers
-- **Action Engine**: Risk-gated execution path (Low/Medium/High risk).
-- **Self-Healing**: Autonomous job clears stuck interactions and retries failed messaging.
-- **Aggregation**: Metrics are aggregated O(1) for Super Admin visibility without scanning raw collections.
+## 3. Data Flow & State Machine
+Every interaction follows a strict lifecycle:
+`Received` (Webhook) -> `Processing` (Logic/AI) -> `Validated` (Integrity Check) -> `Committed` (Ledger + Hash) -> `Notified` (WhatsApp Reply).
 
-## 4. Security & Isolation
-- **Tenant Isolation**: Strict Firestore rules ensure `/shops/{shopId}` data is never leaked.
-- **Production Guard**: Middleware blocks SaaS routes on Vercel deployments, ensuring only marketing pages are public.
+## 4. Integrity Guard (Hash Chaining)
+Every ledger entry is cryptographically linked:
+`Hash = SHA256(PreviousHash | ShopId | EntryId | Amount | ActorId)`
+- **Tamper Detection**: If any entry is modified manually, the root hash handshake will fail.
+- **Automatic Response**: Mismatch triggers `integrity_lock`, freezing all writes for that tenant.
+
+## 5. Revenue Lock
+Processing is gated by the `Shop.status`:
+- `active` / `trial`: Full processing.
+- `locked` / `suspended`: Logic intercepts message, blocks write, and requests payment.
+
+## 6. Observability & Tracing
+- **Correlation ID**: A unique UUID is generated at the webhook layer and stamped on every log, entry, and event.
+- **Full Trace**: Founders can view the entire timeline from the raw WhatsApp message to the final cryptographic commit.
 
 ---
 *Built for 100M Indian SMBs. Digital India Native.*

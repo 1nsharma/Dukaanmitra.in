@@ -1,10 +1,10 @@
-
 import { AgentInput, anigravityAgent } from '@/ai/flows/whatsapp-agent-flow';
 import { loadShopAndContextByShopCode } from './context-loader';
 import { sendWhatsAppMessage } from './whatsapp';
 import { executeAction } from './action-engine';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { LedgerService } from '@/lib/modules/ledger/services/ledger-service';
 
 interface NormalizedMessage {
     from: string;
@@ -15,12 +15,9 @@ interface NormalizedMessage {
 
 /**
  * Bharat Language Engine: Deterministic parser for local dialects.
- * Extracts amount and type using strict rule-based logic for Hindi, Marathi, and Hinglish.
+ * Extracting metadata only. DB operations delegated to LedgerService for integrity.
  */
 function parseSimpleBill(text: string): { amount: number; items: string; type: 'credit' | 'payment' } | null {
-    // Slang Mapping:
-    // Credit: Udhaar, Baaki, Likhlena, De baaki (Hinglish/Hindi)
-    // Payment: Jama, Diya, Paid, Upas (Hindi/Marathi)
     const creditKeywords = /\b(udhaar|baaki|likh|likhlena|credit|de-baaki)\b/i;
     const paymentKeywords = /\b(paid|jama|diya|payment|dhila|upas)\b/i;
     
@@ -31,7 +28,6 @@ function parseSimpleBill(text: string): { amount: number; items: string; type: '
 
     const cleanText = text.replace(creditKeywords, '').replace(paymentKeywords, '').trim();
 
-    // Extract first number as amount
     const match = cleanText.match(/(\d+\.?\d*)\s*(.*)/);
     if (match) {
         const amount = parseFloat(match[1]);
@@ -42,124 +38,99 @@ function parseSimpleBill(text: string): { amount: number; items: string; type: '
 }
 
 /**
- * The main processor for incoming WhatsApp messages, implementing a
- * "Deterministic-First with AI Fallback" strategy.
- * @param message - The normalized message from the WhatsApp webhook.
+ * The main processor for incoming WhatsApp messages.
+ * HARDENED: All write paths consolidated through LedgerService.
  */
 export async function processMessage(message: NormalizedMessage) {
-    console.log(`[Processor] Started processing message ${message.messageId} from ${message.from}`);
     const interactionRef = adminDb.collection('interactions').doc(message.messageId);
+    const correlationId = message.messageId; // Message ID is our initial correlation root
 
     try {
         const shopCodeMatch = message.text.match(/#(\w+)/);
         if (!shopCodeMatch) {
-            await sendWhatsAppMessage(message.from, "Kripya shop code (#SHP123) ke saath bill bhejein.");
-            await interactionRef.update({ processing_status: 'failed', system_response: "No shop code found." });
+            const reply = "Namaste 🙏 Kripya shop code (#ABC) ke saath message bhejein.";
+            await sendWhatsAppMessage(message.from, reply);
+            await interactionRef.update({ processing_status: 'failed', system_response: reply });
             return;
         }
+        
         const shopCode = shopCodeMatch[1].toUpperCase();
         const cleanedQuery = message.text.replace(/#\w+\s*/, '').trim();
 
         const contextResult = await loadShopAndContextByShopCode(shopCode);
         if (!contextResult.success || !contextResult.shop || !contextResult.shopContext) {
-            await sendWhatsAppMessage(message.from, contextResult.message || "Invalid shop code.");
-            await interactionRef.update({ processing_status: 'failed', system_response: contextResult.message });
+            const reply = "Maaf kijiye, yeh shop code invalid hai. ❌";
+            await sendWhatsAppMessage(message.from, reply);
+            await interactionRef.update({ processing_status: 'failed', system_response: reply });
             return;
         }
         
         const { shop, shopContext } = contextResult;
 
         // Revenue Engine Gate
-        if (shop.status === 'locked' || shop.status === 'suspended') {
-            const reply = cleanedQuery.trim().toUpperCase() === 'PAY' 
-                ? "Aapka plan expire ho gaya hai. Account reactivate karne ke liye, kripya apne DukaanMitra dashboard me login karke payment complete karein."
-                : "Aapka DukaanMitra plan expire ho gaya hai. Service continue karne ke liye 'PAY' likh kar bhejein.";
+        if (shop.status === 'locked' || shop.status === 'suspended' || shop.status === 'integrity_lock') {
+            const reply = shop.status === 'integrity_lock' 
+                ? "Aapki shop integrity safety check ke liye lock hai. Kripya support se baat karein."
+                : "Aapka DukaanMitra plan expire ho gaya hai. Service continue karne ke liye dashboard se payment karein. 🙏";
             await sendWhatsAppMessage(message.from, reply);
-            await interactionRef.update({ processing_status: 'processed', system_response: reply, detected_intent: 'shop_locked_interaction' });
+            await interactionRef.update({ processing_status: 'processed', system_response: reply });
             return;
         }
 
-        // 1. ATTEMPT DETERMINISTIC PARSING (Fast & Free)
+        // 1. ATTEMPT DETERMINISTIC PARSING (Fast, Free, High Integrity)
         const simpleBill = parseSimpleBill(cleanedQuery);
 
         if (simpleBill) {
-            // --- Deterministic Path ---
-            console.log(`[Processor] Message ${message.messageId} is a simple bill. Using deterministic parser.`);
-            const { amount, items, type } = simpleBill;
-            const customerPhone = message.from;
-            let replyMessage = '';
+            console.log(`[Processor] Using deterministic path for ${message.messageId}`);
+            
+            // Unified High-Integrity Write Path
+            await LedgerService.addEntry({ 
+                id: 'system', 
+                role: 'system', 
+                shopId: shopCode 
+            }, shopCode, {
+                customerPhone: message.from,
+                customerName: `Customer ${message.from.slice(-4)}`,
+                amount: simpleBill.amount,
+                item: simpleBill.items,
+                type: simpleBill.type,
+                source: 'whatsapp'
+            }, correlationId);
 
-            await adminDb.runTransaction(async (transaction) => {
-                const customerRef = adminDb.collection('shops').doc(shopCode).collection('customers').doc(customerPhone);
-                const ledgerRef = adminDb.collection('shops').doc(shopCode).collection('ledger').doc();
-                const customerDoc = await transaction.get(customerRef);
-
-                const udhaarAmount = type === 'credit' ? amount : -amount;
-
-                if (!customerDoc.exists) {
-                    replyMessage = "Shukriya! Aapka bill add ho gaya.";
-                    transaction.set(customerRef, {
-                        shop_id: shopCode, phone: customerPhone, name: `Customer ${customerPhone.slice(-4)}`,
-                        visit_count: 1, total_spent: amount, totalUdhaar: udhaarAmount,
-                        last_visit: FieldValue.serverTimestamp(), lastPaymentDate: type === 'payment' ? FieldValue.serverTimestamp() : null,
-                        status: 'NEW', created_at: FieldValue.serverTimestamp(), updated_at: FieldValue.serverTimestamp(), reminderCount: 0,
-                    });
-                } else {
-                    const visitCount = customerDoc.data()!.visit_count || 0;
-                    replyMessage = visitCount >= 5 ? "Aap hamare loyal customer hain 🙏 Dhanyavaad!" : "Dhanyavaad! Aap phir aaye 😊";
-                    const updateData: any = {
-                        visit_count: FieldValue.increment(1), total_spent: FieldValue.increment(amount), totalUdhaar: FieldValue.increment(udhaarAmount),
-                        last_visit: FieldValue.serverTimestamp(), status: visitCount + 1 >= 5 ? 'LOYAL' : 'REPEAT', updated_at: FieldValue.serverTimestamp()
-                    };
-                    if (type === 'payment') {
-                        updateData.lastPaymentDate = FieldValue.serverTimestamp();
-                        updateData.reminderCount = 0;
-                    }
-                    transaction.update(customerRef, updateData);
-                }
-
-                transaction.set(ledgerRef, {
-                    id: ledgerRef.id, shop_id: shopCode, customerPhone, amount, item: items, type,
-                    source: 'whatsapp', createdAt: FieldValue.serverTimestamp(), raw_text: message.text,
-                    source_model_version: 'deterministic_parser_v1', source_confidence: 1.0,
-                });
-            });
-
-            await sendWhatsAppMessage(customerPhone, replyMessage);
+            const reply = `Ji Namaste 🙏\n\n₹${simpleBill.amount} record ho gaya hai. ✅\n\nShukriya!`;
+            await sendWhatsAppMessage(message.from, reply);
+            
             await interactionRef.update({ 
                 processing_status: 'processed', 
-                system_response: replyMessage, 
+                system_response: reply, 
                 detected_intent: 'ledger_entry_simple',
                 processing_path: 'deterministic',
             });
         
         } else {
             // --- AI FALLBACK PATH ---
-            console.log(`[Processor] Message ${message.messageId} is not a simple bill. Routing to AI Agent.`);
-            
+            console.log(`[Processor] Using AI fallback for ${message.messageId}`);
             const agentInput: AgentInput = { query: cleanedQuery, shopContext };
             const agentOutput = await anigravityAgent(agentInput);
 
             if (agentOutput.action) {
-                await executeAction(agentOutput.action, { id: 'system', role: 'system', shopId: shopCode });
+                await executeAction(agentOutput.action, { id: 'system', role: 'system', shopId: shopCode }, correlationId);
             }
 
-            if (agentOutput.response) {
-                await sendWhatsAppMessage(message.from, agentOutput.response);
-            }
+            const finalReply = agentOutput.response || "Bhaiya, yeh entry samajh nahi aayi. ❌ Kripya dobara likhein.";
+            await sendWhatsAppMessage(message.from, finalReply);
             
             await interactionRef.update({
                 processing_status: agentOutput.escalate ? 'escalated' : 'processed',
-                system_response: agentOutput.response,
+                system_response: finalReply,
                 detected_intent: agentOutput.intent,
-                extracted_entities: agentOutput.action?.payload || null,
                 processing_path: 'ai_fallback',
             });
         }
-        console.log(`[Processor] Finished processing message ${message.messageId}`);
     } catch (error) {
-        console.error(`[Processor] Unhandled error for message ${message.messageId}:`, error);
-        await sendWhatsAppMessage(message.from, "Sorry, an unexpected error occurred. Please try again later.");
+        console.error(`[Processor] Critical Error for ${message.messageId}:`, error);
+        const errorReply = "Sorry, thoda network issue hai. Kripya 2 minute baad try karein. 🙏";
+        await sendWhatsAppMessage(message.from, errorReply);
         await interactionRef.update({ processing_status: 'failed', system_response: (error as Error).message });
     }
 }
