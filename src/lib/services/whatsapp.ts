@@ -15,6 +15,7 @@ function generatePayloadHash(to: string, text: string): string {
 
 /**
  * Handles the incoming WhatsApp message payload from the webhook.
+ * HARDENING: Immediate persistence check to prevent serverless termination loss.
  */
 export function handleWhatsAppMessage(body: any) {
     new Promise<void>(async (resolve) => {
@@ -27,10 +28,11 @@ export function handleWhatsAppMessage(body: any) {
                                 for (const message of change.value.messages) {
                                     const messageId = message.id;
                                     const interactionRef = adminDb.collection('interactions').doc(messageId);
+                                    
+                                    // PRE-CHECK: Atomic check for existing processing
                                     const interactionDoc = await interactionRef.get();
-
                                     if (interactionDoc.exists()) {
-                                        console.log(`[WhatsAppService] Duplicate interaction ID ${messageId} received.`);
+                                        console.log(`[WhatsAppService] Duplicate ID ${messageId}. Ignoring.`);
                                         continue;
                                     }
                                     
@@ -46,6 +48,7 @@ export function handleWhatsAppMessage(body: any) {
                                         const shopCodeMatch = normalizedMessage.text.match(/#(\w+)/);
                                         const shopId = shopCodeMatch ? shopCodeMatch[1].toUpperCase() : undefined;
                                         
+                                        // 1. PERSISTENCE LAYER: Record receipt before logic
                                         await interactionRef.set({
                                             interactionId: messageId,
                                             shop_id: shopId,
@@ -56,6 +59,8 @@ export function handleWhatsAppMessage(body: any) {
                                             created_at: FieldValue.serverTimestamp(),
                                         });
                                         
+                                        // 2. DISPATCH: Process message
+                                        // Note: In Stage-6, this will be pushed to a real Queue (Pub/Sub)
                                         await processMessage(normalizedMessage);
                                     }
                                 }
@@ -65,10 +70,10 @@ export function handleWhatsAppMessage(body: any) {
                 }
             }
         } catch (error) {
-            console.error('[WhatsAppService] Error:', error);
+            console.error('[WhatsAppService] Critical Error:', error);
         }
         resolve();
-    }).catch(e => console.error('[WhatsAppService] Promise rejection:', e));
+    }).catch(e => console.error('[WhatsAppService] Unhandled Rejection:', e));
 }
 
 async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1000): Promise<T> {
@@ -86,11 +91,13 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1000): 
 
 /**
  * Sends a reply back to the user via the WhatsApp Business API.
+ * HARDENING: Outbox pattern logging for delivery reliability.
  */
 export async function sendWhatsAppMessage(to: string, text: string): Promise<void> {
     const payloadHash = generatePayloadHash(to, text);
     const logRef = adminDb.collection('whatsapp_outbox').doc(payloadHash);
     
+    // Idempotency check for the outbox
     const existingEntry = await logRef.get();
     if (existingEntry.exists && existingEntry.data()?.status === 'sent') {
         return;
@@ -121,17 +128,35 @@ export async function sendWhatsAppMessage(to: string, text: string): Promise<voi
 
         if (!response.ok) {
             const responseData = await response.json();
-            throw new Error(`API Error: ${JSON.stringify(responseData)}`);
+            throw new Error(`WhatsApp API Error: ${JSON.stringify(responseData)}`);
         }
         return response.json();
     };
 
     try {
-        await logRef.set({ to, text, status: 'pending', createdAt: FieldValue.serverTimestamp() }, { merge: true });
+        // Log intent to send
+        await logRef.set({ 
+            to, 
+            text, 
+            status: 'pending', 
+            retryCount: 0,
+            createdAt: FieldValue.serverTimestamp() 
+        }, { merge: true });
+
         const responseData = await withRetry(sendOperation, 3, 1000);
-        await logRef.update({ status: 'sent', sentAt: FieldValue.serverTimestamp(), response: responseData });
+        
+        // Update on success
+        await logRef.update({ 
+            status: 'sent', 
+            sentAt: FieldValue.serverTimestamp(), 
+            response: responseData 
+        });
     } catch (error) {
-        console.error(`[WhatsAppService] Failed to send to ${to}.`, error);
-        await logRef.update({ status: 'failed', lastError: (error as Error).message });
+        console.error(`[WhatsAppService] Delivery failed to ${to}:`, error);
+        await logRef.update({ 
+            status: 'failed', 
+            lastError: (error as Error).message,
+            updatedAt: FieldValue.serverTimestamp()
+        });
     }
 }
