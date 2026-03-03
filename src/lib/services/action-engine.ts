@@ -38,10 +38,16 @@ export async function executeAction(
   const shopId = action.payload.shopId;
   if (!shopId) return { success: false, message: "Missing shopId in payload." };
 
-  // DETERMINISTIC GUARD: Check for Integrity Lock
+  // STRATEGIC GUARD: Enforcement of Revenue and Integrity state machine
   const shopDoc = await adminDb.collection('shops').doc(shopId).get();
-  if (shopDoc.data()?.status === 'integrity_lock') {
+  const shopData = shopDoc.data();
+
+  if (shopData?.status === 'integrity_lock') {
       return { success: false, message: "CRITICAL: This shop is locked due to an integrity failure. Manual audit required." };
+  }
+
+  if (shopData?.status === 'locked' || shopData?.status === 'suspended') {
+      return { success: false, message: "SUBSCRIPTION REQUIRED: Billing operations are suspended for this account." };
   }
 
   const policy = ACTION_POLICIES[action.type] || { risk: 'HIGH', requiresApproval: true, allowed: false };
@@ -51,13 +57,12 @@ export async function executeAction(
   }
 
   // Layer 1: Approval Gate (Human-in-the-loop)
-  // If the 'system' (AI) is proposing a high-risk action, queue it as an Insight.
   if (policy.requiresApproval && actor.role === 'system') {
       await createActionableInsight(action, correlationId);
       return { success: true, message: "Aapka entry check ke liye dashboard par bhej diya gaya hai. 👍" };
   }
 
-  // Layer 2: Domain Execution
+  // Layer 2: Domain Execution (Source of Truth writes)
   try {
     if (action.type === 'ADD_LEDGER_ENTRY') {
         const { shopId, customerPhone, transaction } = action.payload;
@@ -90,7 +95,7 @@ async function createActionableInsight(action: any, correlationId: string) {
         message: `${transaction.customer_name || customerPhone} ke liye ₹${transaction.amount} add karein?`,
         action_label: "Approve & Add",
         action_type: action.type,
-        action_payload: { ...action.payload, shopId }, // Ensure shopId is preserved
+        action_payload: { ...action.payload, shopId },
         correlationId,
         createdAt: FieldValue.serverTimestamp(),
         isRead: false

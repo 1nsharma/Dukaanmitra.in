@@ -183,24 +183,6 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "platformHash", "createdAt"]
-    },
-    "ShopInsight": {
-      "title": "Shop Insight",
-      "description": "Operator Intelligence Feed item.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "type": { "type": "string", "enum": ["SALES_DROP", "GROWTH_TIP", "RISK_ALERT", "SUCCESS", "ACTION_REQUIRED"] },
-        "title": { "type": "string" },
-        "message": { "type": "string" },
-        "action_label": { "type": "string" },
-        "action_type": { "type": "string" },
-        "action_payload": { "type": "object" },
-        "correlationId": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "isRead": { "type": "boolean" }
-      },
-      "required": ["id", "type", "title", "message", "createdAt"]
     }
   },
   "auth": {
