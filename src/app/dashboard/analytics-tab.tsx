@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo } from "react";
@@ -47,12 +46,12 @@ export default function AnalyticsTab({ shopId }: AnalyticsTabProps) {
 
   const ledgerQuery = useMemoFirebase(() => {
     if (!shopId) return null;
-    return query(collection(firestore, "shops", shopId, "ledger"), orderBy("createdAt", "desc"), limit(50));
+    return query(collection(firestore!, "shops", shopId, "ledger"), orderBy("createdAt", "desc"), limit(50));
   }, [firestore, shopId]);
 
   const customersQuery = useMemoFirebase(() => {
     if (!shopId) return null;
-    return collection(firestore, "shops", shopId, "customers");
+    return collection(firestore!, "shops", shopId, "customers");
   }, [firestore, shopId]);
 
   const { data: ledgerEntries, isLoading: isLoadingLedger } = useCollection<LedgerEntry>(ledgerQuery);

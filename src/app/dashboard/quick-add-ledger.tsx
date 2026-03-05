@@ -5,7 +5,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
 import { collection, serverTimestamp, doc, getDoc, writeBatch, increment } from "firebase/firestore";
-import { Bot, Loader2, Sparkles } from "lucide-react";
+import { Bot, Loader2, Sparkles, Zap } from "lucide-react";
 
 import { useFirestore, FirestorePermissionError, errorEmitter } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";

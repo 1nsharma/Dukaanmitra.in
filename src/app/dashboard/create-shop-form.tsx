@@ -43,8 +43,8 @@ export default function CreateShopForm({ onShopCreated }: { onShopCreated: (id: 
     if (!user) return;
 
     startTransition(async () => {
-        const batch = writeBatch(firestore);
-        const newShopRef = doc(collection(firestore, "shops"));
+        const batch = writeBatch(firestore!);
+        const newShopRef = doc(collection(firestore!, "shops"));
         const shopId = newShopRef.id;
 
         const shopData = {
@@ -68,7 +68,7 @@ export default function CreateShopForm({ onShopCreated }: { onShopCreated: (id: 
         };
         batch.set(newShopRef, shopData);
 
-        const userProfileRef = doc(firestore, "users", user.uid);
+        const userProfileRef = doc(firestore!, "users", user.uid);
         batch.set(userProfileRef, { shopId: shopId }, { merge: true });
 
         try {

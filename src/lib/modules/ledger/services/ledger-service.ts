@@ -1,4 +1,3 @@
-
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { LedgerEntry } from '@/docs/backend-types';

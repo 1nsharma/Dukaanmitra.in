@@ -3,7 +3,7 @@
 import { useUser, useAuth } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Gift, LogOut } from "lucide-react";
 import CreateShopForm from "./create-shop-form";
 import ShopDashboard from "./shop-dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 
 /**
  * The consolidated Dashboard entry point.
- * This resolves the "parallel pages" build collision.
+ * Optimized for "Street SaaS" pilot.
  */
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -28,6 +28,13 @@ export default function DashboardPage() {
         await auth.signOut();
         router.push('/');
     }
+  };
+
+  const handleReferral = () => {
+      toast({
+          title: "Referral Link Copied!",
+          description: "Apne dost ko bhejien. Unke signup par aapko 1 mahina free milega! 🎁"
+      });
   };
 
   const handleGetAiAdvice = async () => {
@@ -67,58 +74,48 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container py-16 md:py-24">
+    <div className="container py-12 md:py-20">
       <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
         <div>
-          <h1 className="font-headline text-3xl font-bold tracking-tighter sm:text-4xl uppercase">
-            Shopkeeper Dashboard
+          <h1 className="font-headline text-3xl font-black tracking-tighter uppercase leading-none">
+            Apna <span className="text-primary">Munim</span>
           </h1>
-          <p className="text-muted-foreground">
-            Welcome, {user?.displayName || user.email}!
+          <p className="text-muted-foreground font-medium mt-1">
+            Namaste, {user?.displayName || user.email?.split('@')[0]}! 🙏
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
             <Button 
+              onClick={handleReferral}
+              variant="outline"
+              className="border-primary text-primary hover:bg-primary/5 rounded-full font-bold uppercase text-[10px] tracking-widest h-10 px-6"
+            >
+              <Gift className="mr-2 h-4 w-4" />
+              Earn Free Months
+            </Button>
+            
+            <Button 
               onClick={handleGetAiAdvice} 
               disabled={isAiLoading}
-              variant="outline"
-              className="border-primary text-primary hover:bg-primary/5 rounded-full"
+              variant="default"
+              className="rounded-full font-bold uppercase text-[10px] tracking-widest h-10 px-6 shadow-lg shadow-primary/20"
             >
               {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-              Get AI Munim Advice
+              AI Tips
             </Button>
-            {user.role === 'super_admin' && (
-                <Button asChild variant="outline" className="rounded-full">
-                    <Link href="/SAP/Superdashboard">Super Admin Panel</Link>
-                </Button>
-            )}
-            <Button onClick={handleSignOut} variant="destructive" className="rounded-full">
-                Sign Out
+
+            <Button onClick={handleSignOut} variant="ghost" size="icon" className="rounded-full text-muted-foreground">
+                <LogOut size={18} />
             </Button>
         </div>
       </div>
 
       {user.shopId ? (
         <ShopDashboard shopId={user.shopId} />
-      ) : user.role === 'super_admin' ? (
-         <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle>Super Admin Mode</CardTitle>
-            <CardDescription>
-              This is the view for shop owners.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">As a Super Admin, you can visit the main panel to manage all shops.</p>
-             <div className="mt-4">
-                <Button asChild className="rounded-full">
-                    <Link href="/SAP/Superdashboard">Go to Super Admin Dashboard</Link>
-                </Button>
-            </div>
-          </CardContent>
-        </Card>
       ) : (
-        <CreateShopForm onShopCreated={() => {}} />
+        <div className="py-12">
+            <CreateShopForm onShopCreated={() => {}} />
+        </div>
       )}
     </div>
   );

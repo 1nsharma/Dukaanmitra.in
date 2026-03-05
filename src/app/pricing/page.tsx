@@ -1,4 +1,3 @@
-
 import { Check, ShieldCheck, Zap, HelpCircle, BadgeCheck, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -41,7 +40,7 @@ export default function PricingPage() {
       <div className="container py-24 sm:py-32">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
           <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full text-primary text-xs font-bold uppercase tracking-widest border border-primary/20 mb-4">
-            <Zap size={14} /> Bharat-First Pricing
+            < Zap size={14} /> Bharat-First Pricing
           </div>
           <h1 className="font-headline text-5xl md:text-7xl font-black uppercase tracking-tighter">
             Digital Munim, <br/> <span className="text-primary">Pocket-Friendly Price.</span>
