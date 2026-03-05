@@ -7,11 +7,11 @@ import { eventBus } from '@/lib/services/domain-event-bus';
 import crypto from 'crypto';
 
 /**
- * LedgerService: The Absolute Source of Truth Custodian.
+ * LedgerService: The Customer Memory Custodian.
  * 
- * Implements Multi-Context Hash-Chaining for financial integrity.
- * Strictly Append-Only. No updates or deletions.
- * Now tracks IMPACT METRICS for pilot measurement.
+ * Simplified for MVP Pilot Testing. 
+ * Focused on "Zero-Typing" speed and udhaar recovery signals.
+ * Removed cryptographic hash-chaining to reduce pilot-phase latency.
  */
 export class LedgerService {
   static async addEntry(
@@ -27,6 +27,7 @@ export class LedgerService {
     },
     correlationId: string = crypto.randomUUID()
   ) {
+    // Multi-tenant isolation check
     if (actor.role !== 'super_admin' && actor.shopId !== shopId && actor.role !== 'system') {
       throw new Error('[LedgerService] Tenant violation: Unauthorized shop access.');
     }
@@ -40,25 +41,17 @@ export class LedgerService {
       if (!shopDoc.exists) throw new Error('Shop not found');
       
       const shopData = shopDoc.data()!;
-      if (shopData.status === 'integrity_lock') {
-          throw new Error('[LedgerService] Write Aborted: Shop ledger is locked.');
-      }
-
-      const previousEntryHash = shopData.ledgerRootHash || 'genesis';
-      const ledgerVersion = 1;
-      const hashAlgorithm = 'sha256';
       
-      const hashInput = `${previousEntryHash}|${shopId}|${entryId}|${payload.amount}|${payload.type}|${actor.id}|v${ledgerVersion}`;
-      const currentEntryHash = crypto
-        .createHash(hashAlgorithm)
-        .update(hashInput)
-        .digest('hex');
+      // Simple revenue lock
+      if (shopData.status === 'locked' || shopData.status === 'suspended') {
+          throw new Error('[LedgerService] Subscription Required.');
+      }
 
       const udhaarImpact = payload.type === 'credit' ? payload.amount : -payload.amount;
       const customerRef = shopRef.collection('customers').doc(payload.customerPhone);
       const customerDoc = await transaction.get(customerRef);
 
-      // 1. Create ledger entry
+      // 1. Create ledger entry (Simple, No Chaining)
       transaction.set(ledgerRef, {
         id: entryId,
         shop_id: shopId,
@@ -69,15 +62,11 @@ export class LedgerService {
         item: payload.item || 'Misc',
         type: payload.type,
         source: payload.source,
-        previousEntryHash,
-        entryHash: currentEntryHash,
-        ledgerVersion,
-        hashAlgorithm,
         correlationId,
         createdAt: FieldValue.serverTimestamp(),
       });
 
-      // 2. Update Customer state
+      // 2. Update Customer state (The "Memory Engine")
       if (!customerDoc.exists) {
           transaction.set(customerRef, {
               shop_id: shopId,
@@ -102,23 +91,14 @@ export class LedgerService {
           });
       }
 
-      // 3. Update IMPACT METRICS on Shop level
-      const impactUpdates: any = {
-        ledgerRootHash: currentEntryHash,
-        integrityStatus: 'healthy',
-        lastVerifiedAt: FieldValue.serverTimestamp(),
+      // 3. Update Pilot Metrics
+      transaction.update(shopRef, {
         lastActive: FieldValue.serverTimestamp(),
         "impact_metrics.total_entries": FieldValue.increment(1),
-      };
+        "impact_metrics.total_recovery_inr": payload.type === 'payment' ? FieldValue.increment(payload.amount) : FieldValue.increment(0)
+      });
 
-      if (payload.type === 'payment') {
-          // Track udhaar recovery as a core impact signal
-          impactUpdates["impact_metrics.total_recovery_inr"] = FieldValue.increment(payload.amount);
-      }
-
-      transaction.update(shopRef, impactUpdates);
-
-      return { entryId, currentEntryHash };
+      return { entryId };
     }).then(async (result) => {
         await AuditService.log({
           actorId: actor.id,
@@ -128,7 +108,7 @@ export class LedgerService {
           targetId: result.entryId,
           shopId: shopId,
           correlationId,
-          after: { ...payload, entryHash: result.currentEntryHash }
+          after: payload
         });
 
         eventBus.emit('ledger.entry.created', 'ledger', { 
@@ -142,36 +122,11 @@ export class LedgerService {
   }
 
   /**
-   * Deep Audit: Re-calculates hash chain to prove no manual tampering occurred.
+   * Verified State: Check if merchant is active.
    */
-  static async verifyIntegrity(shopId: string): Promise<{ valid: boolean; lastValidId?: string; error?: string }> {
+  static async verifyIntegrity(shopId: string) {
     const shopRef = adminDb.collection('shops').doc(shopId);
     const shopDoc = await shopRef.get();
-    if (!shopDoc.exists) return { valid: false, error: 'Shop not found' };
-    
-    const rootHash = shopDoc.data()?.ledgerRootHash;
-    if (!rootHash) return { valid: true }; 
-
-    const entries = await shopRef.collection('ledger').orderBy('createdAt', 'desc').limit(100).get();
-    let currentHash = rootHash;
-
-    for (const doc of entries.docs) {
-        const data = doc.data();
-        if (data.entryHash !== currentHash) {
-            await shopRef.update({
-                integrityStatus: 'corrupted',
-                status: 'integrity_lock',
-                updated_at: FieldValue.serverTimestamp()
-            });
-            return { valid: false, lastValidId: doc.id, error: 'Hash chain broken' };
-        }
-        currentHash = data.previousEntryHash;
-    }
-
-    const isValid = entries.size < 100 || currentHash === 'genesis';
-    if (isValid) {
-        await shopRef.update({ integrityStatus: 'healthy', lastVerifiedAt: FieldValue.serverTimestamp() });
-    }
-    return { valid: isValid };
+    return { valid: shopDoc.exists && shopDoc.data()?.status !== 'suspended' };
   }
 }
