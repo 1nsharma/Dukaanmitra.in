@@ -1,7 +1,6 @@
 /**
  * This layout is neutralized to resolve routing conflicts.
- * Protection logic is now at src/app/dashboard/layout.tsx.
+ * Protection logic and layout are now handled at src/app/dashboard/layout.tsx.
+ * Removing the default export prevents collision with other layouts at the same path level.
  */
-export default function NeutralizedLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
-}
+export const deprecated = true;
