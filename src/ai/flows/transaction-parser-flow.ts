@@ -25,6 +25,7 @@ const ParseTransactionOutputSchema = z.object({
   confidence_score: z.number().min(0).max(1).describe('The AI model\'s confidence in the accuracy of the parsed data.'),
 });
 export type ParseTransactionOutput = z.infer<typeof ParseTransactionOutputSchema>;
+export { ParseTransactionOutputSchema };
 
 export async function parseTransaction(input: ParseTransactionInput): Promise<ParseTransactionOutput> {
   // AI flow types are case-sensitive, so we map our lowercase to the schema's uppercase

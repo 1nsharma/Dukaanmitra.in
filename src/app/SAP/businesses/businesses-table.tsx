@@ -90,7 +90,7 @@ export default function BusinessesTable() {
         const newStatus = shopToSuspend.status === 'suspended' ? 'active' : 'suspended';
         startTransition(async () => {
             try {
-                await updateShopStatus(firestore, { id: currentUser.uid, role: currentUser.role }, shopToSuspend.id, newStatus);
+                await updateShopStatus(firestore, { id: currentUser.uid, role: currentUser.role! }, shopToSuspend.id, newStatus);
                 toast({
                     title: 'Success',
                     description: `Business has been ${newStatus}.`,

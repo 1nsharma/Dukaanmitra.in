@@ -11,7 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { parseTransaction, ParseTransactionOutputSchema, type ParseTransactionOutput } from './transaction-parser-flow';
-import { getMarketTrend, MarketTrendInputSchema, MarketTrendOutputSchema } from './market-trend-flow';
+import { getMarketTrend, MarketTrendInputSchema, MarketTrendOutputSchema, type MarketTrendOutput } from './market-trend-flow';
 
 // ==================================================
 // 1. INTENT & SCHEMA DEFINITIONS
@@ -93,7 +93,7 @@ const marketTrendTool = ai.defineTool(
         inputSchema: MarketTrendInputSchema,
         outputSchema: MarketTrendOutputSchema,
     },
-    async (input) => {
+    async (input): Promise<MarketTrendOutput> => {
         return getMarketTrend(input);
     }
 );
@@ -170,20 +170,20 @@ export const anigravityAgent = ai.defineFlow(
     inputSchema: AgentInputSchema,
     outputSchema: AgentOutputSchema,
   },
-  async (input) => {
+  async (input): Promise<AgentOutput> => {
 
     // 1. Execute the main agent prompt. Genkit handles the tool-calling loop automatically.
     const llmResponse = await anigravityAgentPrompt(input);
-    const agentDecision = llmResponse.output();
+    const agentDecision = llmResponse.output;
 
     if (!agentDecision) {
-      return {
+      return AgentOutputSchema.parse({
         intent: 'unknown',
         confidence: 0,
         escalate: true,
         escalation_reason: 'LLM failed to generate a valid decision.',
         response: 'Sorry, I am having trouble understanding. Please try again.',
-      };
+      });
     }
     
     // 2. Extract transaction details if an action was decided.

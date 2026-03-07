@@ -36,7 +36,7 @@ const marketTrendFlow = ai.defineFlow(
     inputSchema: MarketTrendInputSchema,
     outputSchema: MarketTrendOutputSchema,
   },
-  async (input) => {
+  async (input): Promise<MarketTrendOutput> => {
     // --- MOCK IMPLEMENTATION ---
     // In a real system, this would call Google Trends API, a database, or a cached result.
     

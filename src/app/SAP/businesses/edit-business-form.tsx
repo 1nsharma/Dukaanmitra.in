@@ -63,7 +63,7 @@ export default function EditBusinessForm({ shop, onFinished }: EditBusinessFormP
     if (!currentUser) return;
     startTransition(async () => {
       try {
-        await updateBusinessDetails(firestore, { id: currentUser.uid, role: currentUser.role }, shop.id, values);
+        await updateBusinessDetails(firestore, { id: currentUser.uid, role: currentUser.role! }, shop.id, values);
         toast({
           title: 'Business Updated',
           description: `${shop.name} has been successfully updated.`,

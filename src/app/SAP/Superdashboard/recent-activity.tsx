@@ -24,6 +24,10 @@ const renderEventBadge = (event: string) => {
 export default function RecentActivity() {
     const firestore = useFirestore();
 
+    if (!firestore) {
+        return <div className="flex justify-center items-center h-40"><Loader2 className="w-8 h-8 animate-spin"/></div>;
+    }
+
     const logsQuery = useMemoFirebase(() => {
         return query(
             collection(firestore, "logs"),
