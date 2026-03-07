@@ -5,48 +5,37 @@ import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase(): {
-  firebaseApp: FirebaseApp | null;
-  auth: Auth | null;
-  firestore: Firestore | null;
+  firebaseApp: FirebaseApp;
+  auth: Auth;
+  firestore: Firestore;
 } {
   if (getApps().length) {
     return getSdks(getApp());
   }
 
-  // Conditionally initialize Firebase only if the config is valid.
-  // This prevents the app from crashing if environment variables are missing.
-  if (firebaseConfig.apiKey && firebaseConfig.projectId) {
-    let firebaseApp;
-    try {
-      // Attempt to initialize via Firebase App Hosting environment variables
-      firebaseApp = initializeApp();
-    } catch (e) {
-      if (process.env.NODE_ENV === "production") {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
-      }
-      firebaseApp = initializeApp(firebaseConfig);
-    }
-    return getSdks(firebaseApp);
+  if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+    throw new Error("[Firebase] Missing required Firebase configuration.");
   }
 
-  // If config is not present, we cannot initialize Firebase.
-  // Return null services to allow the app to run in a degraded mode.
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn("[Firebase] Initialization skipped. Missing 'NEXT_PUBLIC_FIREBASE_API_KEY' or 'NEXT_PUBLIC_FIREBASE_PROJECT_ID'. Please create and populate .env.local");
+  let firebaseApp: FirebaseApp;
+  try {
+    firebaseApp = initializeApp();
+  } catch (e) {
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
+    }
+    firebaseApp = initializeApp(firebaseConfig);
   }
-  return { firebaseApp: null, auth: null, firestore: null };
+
+  return getSdks(firebaseApp);
 }
 
-export function getSdks(firebaseApp: FirebaseApp | null): {
-  firebaseApp: FirebaseApp | null;
-  auth: Auth | null;
-  firestore: Firestore | null;
+export function getSdks(firebaseApp: FirebaseApp): {
+  firebaseApp: FirebaseApp;
+  auth: Auth;
+  firestore: Firestore;
 } {
-  if (!firebaseApp) {
-    return { firebaseApp: null, auth: null, firestore: null };
-  }
   try {
     return {
       firebaseApp,
@@ -54,8 +43,8 @@ export function getSdks(firebaseApp: FirebaseApp | null): {
       firestore: getFirestore(firebaseApp),
     };
   } catch (e) {
-    console.error("[Firebase] Failed to get SDK instances. This is likely due to an invalid configuration (e.g., API key).", e);
-    return { firebaseApp: null, auth: null, firestore: null };
+    console.error('[Firebase] Failed to get SDK instances.', e);
+    throw new Error('[Firebase] Failed to initialize SDK instances.');
   }
 }
 

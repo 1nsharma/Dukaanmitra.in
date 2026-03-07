@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { collection, query, where, doc, updateDoc, increment, addDoc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { Loader2, ThumbsUp, Eye, Send, User } from 'lucide-react';
@@ -154,10 +154,10 @@ export default function BlogPostPage() {
           </p>
           <div className="mt-6 flex items-center gap-6 border-y border-border py-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Eye className="w-5 h-5" /> {post.views || 0} Views
+              <Eye className="w-5 h-5" /> {(post as any).views || 0} Views
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <ThumbsUp className="w-5 h-5" /> {post.likes || 0} Likes
+              <ThumbsUp className="w-5 h-5" /> {(post as any).likes || 0} Likes
             </div>
             <Button onClick={handleLike} variant="outline">
               <ThumbsUp className="w-4 h-4 mr-2" /> Like

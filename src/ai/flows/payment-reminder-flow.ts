@@ -3,13 +3,16 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { collection, query, where, getDocs, Timestamp, writeBatch, doc } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 import { sendWhatsAppMessage } from '@/lib/services/whatsapp';
 import { type Shop, type Customer } from '@/docs/backend-types';
 import { subDays, subHours } from 'date-fns';
 
-const firestore = getFirestore(initializeFirebase().firebaseApp);
+const { firestore } = initializeFirebase();
+
+if (!firestore) {
+  throw new Error('Firebase Firestore is not initialized.');
+}
 
 export const paymentReminderFlow = ai.defineFlow(
   {
