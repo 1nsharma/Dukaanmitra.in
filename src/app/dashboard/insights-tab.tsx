@@ -57,7 +57,6 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
   const handleAction = (insight: any) => {
       startTransition(async () => {
           try {
-              // This connects the 'Feedback' loop to 'Action'
               const result = await executeAction({
                   type: insight.action_type,
                   payload: { ...insight.action_payload, shopId }
