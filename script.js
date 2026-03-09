@@ -82,19 +82,21 @@ const initEngine = async () => {
       });
 
       // Signal Path Animation
-      const signalPath = createMotionPath('#mainPath');
-      onScroll('.svg-path', {
-        enter: () => {
-          animate('#signalDot', {
-            translateX: signalPath.translateX,
-            translateY: signalPath.translateY,
-            rotate: signalPath.rotate,
-            duration: 3000,
-            loop: true,
-            ease: 'linear'
-          });
-        }
-      });
+      // Note: We use a custom path animation here as a showcase
+      const pathEl = document.querySelector('#mainPath');
+      if (pathEl) {
+        // Simplified SVG Path simulation
+        animate('#signalDot', {
+          keyframes: [
+            { translateX: 20, translateY: 100 },
+            { translateX: 300, translateY: 50 },
+            { translateX: 580, translateY: 100 }
+          ],
+          duration: 3000,
+          loop: true,
+          ease: 'linear'
+        });
+      }
     };
 
     // --- ANIMATION MODULE: LAYOUT ENGINE ---
