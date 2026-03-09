@@ -62,7 +62,7 @@ export class LedgerService {
         createdAt: FieldValue.serverTimestamp(),
       });
 
-      // 2. Update Customer state
+      // 2. Update Customer state (The Memory Engine)
       if (!customerDoc.exists) {
           transaction.set(customerRef, {
               shop_id: shopId,
@@ -78,10 +78,15 @@ export class LedgerService {
               updated_at: FieldValue.serverTimestamp(),
           });
       } else {
+          const currentVisits = (customerDoc.data()?.visit_count || 0) + 1;
+          let newStatus = 'REGULAR';
+          if (currentVisits >= 5) newStatus = 'LOYAL';
+
           transaction.update(customerRef, {
               totalUdhaar: FieldValue.increment(udhaarImpact),
               total_spent: FieldValue.increment(payload.amount),
               visit_count: FieldValue.increment(1),
+              status: newStatus,
               last_visit: FieldValue.serverTimestamp(),
               updated_at: FieldValue.serverTimestamp(),
           });
