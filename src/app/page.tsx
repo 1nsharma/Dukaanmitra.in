@@ -1,15 +1,50 @@
-
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   ArrowRight, ShieldCheck, MessageCircle, Zap, Bot, 
-  CheckCircle2, XCircle, BadgeCheck, Smartphone
+  CheckCircle2, XCircle, BadgeCheck, Smartphone, Cpu, Store
 } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import anime from 'animejs';
+
+const AnimatedTitle = ({ text }: { text: string }) => {
+  const containerRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const content = text.split('').map(char => {
+      if (char === ' ') return '<span>&nbsp;</span>';
+      return `<span class="char-span">${char}</span>`;
+    }).join('');
+    
+    containerRef.current.innerHTML = content;
+    const chars = containerRef.current.querySelectorAll('.char-span');
+
+    anime({
+      targets: chars,
+      translateY: [
+        { value: '-2.75rem', easing: 'easeOutExpo', duration: 600 },
+        { value: 0, easing: 'easeOutBounce', duration: 800, delay: 100 }
+      ],
+      rotate: {
+        value: '-1turn',
+        duration: 800,
+        delay: 0
+      },
+      delay: anime.stagger(50),
+      easing: 'easeInOutCirc',
+      loop: true,
+      loopDelay: 2000
+    });
+  }, [text]);
+
+  return <h1 ref={containerRef} className="font-headline text-5xl md:text-8xl font-black leading-none tracking-tighter uppercase mb-4" />;
+};
 
 const WhatsAppBubble = ({ side, text, time }: { side: 'left' | 'right', text: string, time: string }) => (
   <div className={cn("flex flex-col mb-4", side === 'right' ? "items-end" : "items-start")}>
@@ -24,22 +59,38 @@ const WhatsAppBubble = ({ side, text, time }: { side: 'left' | 'right', text: st
 );
 
 export default function LandingPage() {
+  const lifecycleRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Lifecycle Flow Animation
+    anime({
+      targets: '.lifecycle-step',
+      opacity: [0, 1],
+      translateY: [20, 0],
+      delay: anime.stagger(300, { start: 1000 }),
+      easing: 'easeOutElastic(1, .8)',
+      duration: 1500,
+      loop: true,
+      loopDelay: 3000
+    });
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-sans overflow-x-hidden">
       {/* Pilot Hero Section */}
-      <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-primary/10 to-background">
-        <div className="container px-6 py-20 lg:py-32 text-center">
+      <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-primary/10 to-background pt-20 pb-32">
+        <div className="container px-6 text-center">
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="inline-flex items-center space-x-3 bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
-              <span className="text-xs font-black text-primary uppercase tracking-widest">Pilot Program: Join 10 Elite Shops</span>
+              <span className="text-xs font-black text-primary uppercase tracking-widest">Pilot Program Live</span>
             </div>
-            <h1 className="font-headline text-5xl md:text-8xl font-black leading-none tracking-tighter uppercase">
-              WhatsApp par Udhaar likho. <br/>
-              <span className="text-primary text-outline">Diary band.</span>
-            </h1>
+            
+            <AnimatedTitle text="DIARY BAND." />
+            
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl font-medium leading-relaxed mx-auto">
-              Replace manual registers with India's smartest <strong className="text-foreground">Digital Munim</strong>. No app typing needed. Just WhatsApp.
+              WhatsApp par Udhaar likho. Replace manual registers with India's smartest <strong className="text-foreground">Digital Munim</strong>.
             </p>
+            
             <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
               <Button
                 size="lg"
@@ -49,20 +100,34 @@ export default function LandingPage() {
                 <Link href="/login">Start 90-Day Free Trial <ArrowRight className="ml-2" /></Link>
               </Button>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="pt-8 flex flex-wrap justify-center items-center gap-8 border-t border-border/50">
-                <div className="flex items-center gap-2">
-                    <ShieldCheck className="text-success" size={18}/>
-                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">100% Private & Safe</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <BadgeCheck className="text-success" size={18}/>
-                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">GST-Ready Reports</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Smartphone className="text-success" size={18}/>
-                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">No App Required</span>
-                </div>
+      {/* Impact Loop Section */}
+      <section id="animation" className="py-24 bg-card overflow-hidden">
+        <div className="container">
+          <div className="large grid centered square-grid p-12 rounded-[3rem] border-2 border-primary/10 min-h-[400px] flex flex-col items-center justify-center text-center">
+            <h2 className="text-xl mb-12 text-primary font-black tracking-[0.2em]">APNA MUNIM OS</h2>
+            
+            <div className="grid md:grid-cols-3 gap-8 w-full max-w-4xl" ref={lifecycleRef}>
+              <div className="lifecycle-step bg-background p-8 rounded-[2rem] border-2 border-border shadow-subtle">
+                <Store className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h3 className="font-bold uppercase text-xs mb-2">1. Input Bill</h3>
+                <p className="text-[10px] text-muted-foreground uppercase font-black">Normal WhatsApp Text</p>
+              </div>
+              
+              <div className="lifecycle-step bg-primary/5 p-8 rounded-[2rem] border-2 border-primary/20 shadow-subtle">
+                <MessageCircle className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h3 className="font-bold uppercase text-xs mb-2">2. Welcome Msg</h3>
+                <p className="text-[10px] text-muted-foreground uppercase font-black">Automatic Grahak Care</p>
+              </div>
+              
+              <div className="lifecycle-step bg-secondary/5 p-8 rounded-[2rem] border-2 border-secondary/20 shadow-subtle">
+                <Cpu className="w-12 h-12 text-secondary mx-auto mb-4" />
+                <h3 className="font-bold uppercase text-xs mb-2">3. Agents Enabled</h3>
+                <p className="text-[10px] text-muted-foreground uppercase font-black">Munim AI takes control</p>
+              </div>
             </div>
           </div>
         </div>
@@ -145,35 +210,6 @@ export default function LandingPage() {
                     <p className="text-sm text-muted-foreground">Udhaar ki vasooli ke liye polite WhatsApp messages automatically jayenge.</p>
                 </div>
             </div>
-        </div>
-      </section>
-
-      {/* Comparison Section */}
-      <section className="py-24 border-b border-border">
-        <div className="container">
-          <div className="grid md:grid-cols-2 gap-8">
-            <Card className="border-4 border-destructive/10 bg-card rounded-[3rem] overflow-hidden grayscale opacity-60">
-              <div className="bg-destructive/5 p-8 border-b border-destructive/10">
-                <h3 className="font-black uppercase tracking-widest text-destructive">Purana Tareeka (Register)</h3>
-              </div>
-              <CardContent className="p-10 space-y-6">
-                <p className="flex items-center gap-4 text-lg text-muted-foreground"><XCircle className="text-destructive shrink-0" size={24}/> Calculation galti</p>
-                <p className="flex items-center gap-4 text-lg text-muted-foreground"><XCircle className="text-destructive shrink-0" size={24}/> Udhaar bhool jaana</p>
-                <p className="flex items-center gap-4 text-lg text-muted-foreground"><XCircle className="text-destructive shrink-0" size={24}/> Diary kho jaane ka darr</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-4 border-primary/20 bg-card rounded-[3rem] overflow-hidden shadow-heavy">
-              <div className="bg-primary/10 p-8 border-b border-primary/10">
-                <h3 className="font-black uppercase tracking-widest text-primary">Naya Tareeka (WhatsApp)</h3>
-              </div>
-              <CardContent className="p-10 space-y-6">
-                <p className="flex items-center gap-4 text-xl font-black text-foreground"><CheckCircle2 className="text-primary shrink-0" size={28}/> 100% Sahi accounting</p>
-                <p className="flex items-center gap-4 text-xl font-black text-foreground"><CheckCircle2 className="text-primary shrink-0" size={28}/> Automatic recovery</p>
-                <p className="flex items-center gap-4 text-xl font-black text-foreground"><CheckCircle2 className="text-primary shrink-0" size={28}/> Hamesha Cloud par safe</p>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </section>
 
