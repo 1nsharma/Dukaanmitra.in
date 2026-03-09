@@ -11,7 +11,6 @@ import crypto from 'crypto';
  * 
  * Simplified for MVP Pilot Testing. 
  * Focused on "Zero-Typing" speed and udhaar recovery signals.
- * Removed cryptographic hash-chaining to reduce pilot-phase latency.
  */
 export class LedgerService {
   static async addEntry(
@@ -27,9 +26,8 @@ export class LedgerService {
     },
     correlationId: string = crypto.randomUUID()
   ) {
-    // Multi-tenant isolation check
     if (actor.role !== 'super_admin' && actor.shopId !== shopId && actor.role !== 'system') {
-      throw new Error('[LedgerService] Tenant violation: Unauthorized shop access.');
+      throw new Error('[LedgerService] Tenant violation.');
     }
 
     const shopRef = adminDb.collection('shops').doc(shopId);
@@ -41,8 +39,6 @@ export class LedgerService {
       if (!shopDoc.exists) throw new Error('Shop not found');
       
       const shopData = shopDoc.data()!;
-      
-      // Simple revenue lock
       if (shopData.status === 'locked' || shopData.status === 'suspended') {
           throw new Error('[LedgerService] Subscription Required.');
       }
@@ -51,7 +47,7 @@ export class LedgerService {
       const customerRef = shopRef.collection('customers').doc(payload.customerPhone);
       const customerDoc = await transaction.get(customerRef);
 
-      // 1. Create ledger entry (Simple, No Chaining)
+      // 1. Create ledger entry
       transaction.set(ledgerRef, {
         id: entryId,
         shop_id: shopId,
@@ -66,7 +62,7 @@ export class LedgerService {
         createdAt: FieldValue.serverTimestamp(),
       });
 
-      // 2. Update Customer state (The "Memory Engine")
+      // 2. Update Customer state
       if (!customerDoc.exists) {
           transaction.set(customerRef, {
               shop_id: shopId,
@@ -91,7 +87,7 @@ export class LedgerService {
           });
       }
 
-      // 3. Update Pilot Metrics
+      // 3. Update Impact Metrics (Data Flywheel)
       transaction.update(shopRef, {
         lastActive: FieldValue.serverTimestamp(),
         "impact_metrics.total_entries": FieldValue.increment(1),
@@ -119,14 +115,5 @@ export class LedgerService {
 
         return result.entryId;
     });
-  }
-
-  /**
-   * Verified State: Check if merchant is active.
-   */
-  static async verifyIntegrity(shopId: string) {
-    const shopRef = adminDb.collection('shops').doc(shopId);
-    const shopDoc = await shopRef.get();
-    return { valid: shopDoc.exists && shopDoc.data()?.status !== 'suspended' };
   }
 }

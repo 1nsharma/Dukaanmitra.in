@@ -1,3 +1,4 @@
+
 "use client";
 
 import { collection, query, orderBy, limit, doc, deleteDoc } from "firebase/firestore";
@@ -43,7 +44,7 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
   const [isPending, startTransition] = useTransition();
 
   const insightsQuery = useMemoFirebase(() => {
-    if (!shopId) return null;
+    if (!shopId || !firestore) return null;
     return query(
       collection(firestore, "shops", shopId, "insights"),
       orderBy("createdAt", "desc"),
@@ -56,25 +57,26 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
   const handleAction = (insight: any) => {
       startTransition(async () => {
           try {
+              // This connects the 'Feedback' loop to 'Action'
               const result = await executeAction({
                   type: insight.action_type,
-                  payload: insight.action_payload
-              }, 'owner');
+                  payload: { ...insight.action_payload, shopId }
+              }, { id: 'owner', role: 'owner', shopId });
 
               if (result.success) {
-                  toast({ title: "Agent Action Success", description: "Entry updated by Munim AI." });
-                  await deleteDoc(doc(firestore, "shops", shopId, "insights", insight.id));
+                  toast({ title: "Action Successful", description: "Ledger updated." });
+                  await deleteDoc(doc(firestore!, "shops", shopId, "insights", insight.id));
               } else {
-                  toast({ title: "Execution Failed", description: result.message, variant: "destructive" });
+                  toast({ title: "Failed", description: result.message, variant: "destructive" });
               }
           } catch (e) {
-              toast({ title: "Error", description: "Failed to process agent action.", variant: "destructive" });
+              toast({ title: "Error", description: "Failed to process proposal.", variant: "destructive" });
           }
       });
   }
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
+    return <div className="flex justify-center p-12"><Loader2 className="animate-spin text-primary" /></div>;
   }
 
   return (
@@ -82,54 +84,54 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
             <Cpu size={20} className="text-primary animate-pulse" />
-            <h2 className="text-2xl font-black font-headline uppercase tracking-tighter">MitraOS Intelligence Feed</h2>
+            <h2 className="text-2xl font-black font-headline uppercase tracking-tighter">Apna Mitra Intelligence</h2>
         </div>
-        <p className="text-muted-foreground">Collaborative insights from Munim, Vyapar, and Grahak AI agents.</p>
+        <p className="text-muted-foreground text-sm">System proposals based on your WhatsApp data.</p>
       </div>
 
       {!insights?.length ? (
-        <Card className="bg-secondary/20 border-dashed">
+        <Card className="bg-secondary/20 border-dashed rounded-[2rem]">
           <CardContent className="flex flex-col items-center justify-center p-12 text-center">
-            <Lightbulb className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="font-bold uppercase">Waiting for Data</h3>
-            <p className="text-sm text-muted-foreground max-w-xs">Record your first WhatsApp entry to activate your AI agents.</p>
+            <Lightbulb className="h-12 w-12 text-muted-foreground/30 mb-4" />
+            <h3 className="font-bold uppercase text-xs tracking-widest text-muted-foreground">Waiting for Signals</h3>
+            <p className="text-[10px] text-muted-foreground max-w-[200px] mt-2">Record more WhatsApp entries to see Munim, Vyapar, and Grahak AI advice.</p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4">
           {insights.map((insight) => (
-            <Card key={insight.id} className="transition-all hover:border-primary/50 relative overflow-hidden">
+            <Card key={insight.id} className="rounded-[2rem] border-none shadow-sm relative overflow-hidden bg-card">
               <div className={`absolute top-0 left-0 w-1.5 h-full ${insight.type === 'ACTION_REQUIRED' ? 'bg-accent' : insight.type === 'RISK_ALERT' ? 'bg-destructive' : 'bg-primary'}`} />
               
               <CardHeader className="flex flex-row items-start gap-4 pb-2">
-                <div className="mt-1 p-2 bg-muted rounded-xl shadow-inner">
+                <div className="mt-1 p-2 bg-muted rounded-xl">
                   {renderIcon(insight.type)}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-bold tracking-tight">{insight.title}</CardTitle>
-                    <span className="text-[10px] font-mono text-muted-foreground">
-                      {format(insight.createdAt?.toDate?.() || new Date(), "HH:mm, PP")}
+                    <CardTitle className="text-sm font-bold">{insight.title}</CardTitle>
+                    <span className="text-[8px] font-bold text-muted-foreground uppercase">
+                      {format(insight.createdAt?.toDate?.() || new Date(), "HH:mm")}
                     </span>
                   </div>
-                  <div className="mt-1 flex items-center gap-2">
+                  <div className="mt-1">
                     {renderAgentBadge(insight.type)}
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-sm leading-relaxed mt-2">
+                <p className="text-muted-foreground text-xs leading-relaxed">
                   {insight.message}
                 </p>
                 
                 {insight.action_label && (
                     <div className="mt-4 pt-4 border-t border-dashed flex items-center justify-between">
-                        <p className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 uppercase tracking-wider">
-                            <Zap size={10} className="text-accent"/> Human-in-the-loop requirement
+                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-wider">
+                            Owner approval needed
                         </p>
                         <Button 
                             size="sm" 
-                            className="h-8 rounded-full text-xs font-black uppercase tracking-widest bg-accent hover:bg-accent/90"
+                            className="h-8 rounded-full text-[10px] font-black uppercase tracking-widest bg-accent hover:bg-accent/90"
                             onClick={() => handleAction(insight)}
                             disabled={isPending}
                         >

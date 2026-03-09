@@ -8,8 +8,6 @@ import crypto from 'crypto';
  * ActionEngine: The Multi-Layer Safety Boundary.
  * 
  * AI proposes -> Owner approves -> Service executes.
- * Injects correlation IDs into all domain service calls.
- * Enforces Integrity Locks at the routing layer.
  */
 
 type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH';
@@ -17,12 +15,11 @@ type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH';
 interface ActionPolicy {
     risk: RiskLevel;
     requiresApproval: boolean;
-    allowed: boolean;
 }
 
 const ACTION_POLICIES: Record<string, ActionPolicy> = {
-    'ADD_LEDGER_ENTRY': { risk: 'HIGH', requiresApproval: true, allowed: true },
-    'SEND_REMINDER': { risk: 'LOW', requiresApproval: false, allowed: true },
+    'ADD_LEDGER_ENTRY': { risk: 'HIGH', requiresApproval: true },
+    'SEND_REMINDER': { risk: 'LOW', requiresApproval: false },
 };
 
 export async function executeAction(
@@ -31,38 +28,25 @@ export async function executeAction(
   correlationId: string = crypto.randomUUID()
 ): Promise<{ success: boolean; message?: string }> {
   
-  console.log(`[ActionEngine] Executing action: ${action?.type} | Correlation: ${correlationId}`);
-
   if (!action?.type || !action?.payload) return { success: false, message: "Malformed action." };
 
   const shopId = action.payload.shopId;
-  if (!shopId) return { success: false, message: "Missing shopId in payload." };
-
-  // STRATEGIC GUARD: Enforcement of Revenue and Integrity state machine
   const shopDoc = await adminDb.collection('shops').doc(shopId).get();
   const shopData = shopDoc.data();
 
-  if (shopData?.status === 'integrity_lock') {
-      return { success: false, message: "CRITICAL: This shop is locked due to an integrity failure. Manual audit required." };
-  }
-
   if (shopData?.status === 'locked' || shopData?.status === 'suspended') {
-      return { success: false, message: "SUBSCRIPTION REQUIRED: Billing operations are suspended for this account." };
+      return { success: false, message: "Subscription required." };
   }
 
-  const policy = ACTION_POLICIES[action.type] || { risk: 'HIGH', requiresApproval: true, allowed: false };
+  const policy = ACTION_POLICIES[action.type] || { risk: 'HIGH', requiresApproval: true };
 
-  if (!policy.allowed) {
-      return { success: false, message: `Action '${action.type}' is restricted.` };
-  }
-
-  // Layer 1: Approval Gate (Human-in-the-loop)
+  // Layer 1: Proposal Logic (System-generated proposals)
   if (policy.requiresApproval && actor.role === 'system') {
-      await createActionableInsight(action, correlationId);
+      await createProposal(action, correlationId);
       return { success: true, message: "Aapka entry check ke liye dashboard par bhej diya gaya hai. 👍" };
   }
 
-  // Layer 2: Domain Execution (Source of Truth writes)
+  // Layer 2: Domain Execution
   try {
     if (action.type === 'ADD_LEDGER_ENTRY') {
         const { shopId, customerPhone, transaction } = action.payload;
@@ -79,12 +63,11 @@ export async function executeAction(
     return { success: true };
 
   } catch (error: any) {
-    console.error(`[ActionEngine] Execution failed [${correlationId}]:`, error);
     return { success: false, message: error.message || "Execution error." };
   }
 }
 
-async function createActionableInsight(action: any, correlationId: string) {
+async function createProposal(action: any, correlationId: string) {
     const { shopId, customerPhone, transaction } = action.payload;
     const insightRef = adminDb.collection('shops').doc(shopId).collection('insights').doc();
     
@@ -95,7 +78,7 @@ async function createActionableInsight(action: any, correlationId: string) {
         message: `${transaction.customer_name || customerPhone} ke liye ₹${transaction.amount} add karein?`,
         action_label: "Approve & Add",
         action_type: action.type,
-        action_payload: { ...action.payload, shopId },
+        action_payload: action.payload,
         correlationId,
         createdAt: FieldValue.serverTimestamp(),
         isRead: false
