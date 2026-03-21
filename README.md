@@ -6,7 +6,7 @@ This repository contains the full-stack Next.js application, the Genkit AI backe
 
 ## 🚀 Core Features
 - **WhatsApp Ledger**: Deterministic & AI-powered accounting via simple chat (e.g., "Ravi 500 udhaar").
-- **Automated Summaries**: Daily sales and credit reports sent directly to owners via WhatsApp.
+- **Automated Summaries**: Daily sales and credit reports sent directly to owners via WhatsApp in IST.
 - **Udhaar Reminders**: Automatic, polite collection reminders for pending credit.
 - **Super Admin**: Multi-tenant management and platform-wide metrics dashboard.
 - **24/7 AI Salesman**: Answers customer queries about prices and availability even when the shop is closed.
@@ -53,20 +53,19 @@ The system is built on a modern, serverless architecture centered around Next.js
 
 ### Core Design Principles
 - **WhatsApp-first UX**: Zero app installs for shop owners.
-- **Multi-tenant isolation**: Every shop runs in a secure data boundary.
+- **Multi-tenant isolation**: Every shop runs in a secure data boundary enforced by Firestore rules.
 - **No raw AI trust**: All actions pass through policy & validation layers (Action Engine).
 - **Scalable serverless**: No fixed infra cost as users grow.
 
 ---
 
 ## 🛠️ Tech Stack
-- **Framework**: [Next.js](https://nextjs.org/) (App Router)
-- **UI**: [React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/), [ShadCN UI](https://ui.shadcn.com/)
-- **Database**: [Google Firestore](https://firebase.google.com/docs/firestore)
-- **Authentication**: [Firebase Authentication](https://firebase.google.com/docs/auth)
-- **AI Engine**: [Google Genkit](https://firebase.google.com/docs/genkit)
-- **AI Model**: [Google Gemini](https://deepmind.google.com/technologies/gemini/)
-- **Payments**: [Razorpay](https://razorpay.com/)
+- **Framework**: Next.js 15 (App Router)
+- **UI**: React, Tailwind CSS, ShadCN UI, Anime.js v4
+- **Database**: Google Firestore (NoSQL)
+- **Authentication**: Firebase Authentication
+- **AI Engine**: Google Genkit + Gemini 2.5 Flash
+- **Payments**: Razorpay
 
 ---
 
@@ -107,8 +106,8 @@ FIREBASE_SERVICE_ACCOUNT_KEY='{"type": "service_account", ...}'
 ### Vercel (Public Marketing)
 The Vercel deployment acts as the "Public Face" (/, /features, /pricing). Access to `/dashboard` is blocked via middleware.
 
-### Firebase (App Engine)
-The Firebase deployment hosts the functional dashboard, secure APIs, and AI agents. The project includes an `apphosting.yaml` file for easy deployment on **Firebase App Hosting**.
+### Firebase (App Hosting)
+The Firebase deployment hosts the functional dashboard, secure APIs, and AI agents.
 
 ---
 

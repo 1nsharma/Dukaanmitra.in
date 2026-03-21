@@ -1,12 +1,131 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // WARNING: These rules are for testing purposes only.
-    // They allow any authenticated user to read and write to the entire database.
-    // Do not use these rules in a production environment.
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+
+    // =================================
+    // Helper Functions
+    // =================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function userProfileExists() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && userProfileExists() && getUserProfile().data.role == 'super_admin';
+    }
+    
+    function isFranchiseAdmin() {
+        return isAuthenticated() && userProfileExists() && getUserProfile().data.role == 'franchise_admin';
+    }
+
+    function isShopMember(shopId) {
+        if (!isAuthenticated() || !userProfileExists()) {
+            return false;
+        }
+        let profile = getUserProfile().data;
+        return profile.status == 'active' &&
+               profile.shopId == shopId &&
+               (profile.role == 'owner' || profile.role == 'staff');
+    }
+    
+    function isShopOwner(shopId) {
+        if (!isAuthenticated() || !userProfileExists()) {
+            return false;
+        }
+        let profile = getUserProfile().data;
+        return profile.status == 'active' &&
+               profile.shopId == shopId &&
+               profile.role == 'owner';
+    }
+
+    // =================================
+    // Root Collections
+    // =================================
+    
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin();
+      allow list: if isSuperAdmin() || isFranchiseAdmin();
+      allow create: if isOwner(userId) && request.resource.data.role == 'owner' && request.resource.data.status == 'active';
+      allow update: if isSuperAdmin() ||
+                    (isOwner(userId) && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])));
+      allow delete: if isSuperAdmin();
+    }
+
+    match /shops/{shopId} {
+      allow create: if isAuthenticated() && userProfileExists() && getUserProfile().data.status == 'active' && getUserProfile().data.role == 'owner' && request.auth.uid == request.resource.data.owner_id;
+      allow read: if isSuperAdmin() || isFranchiseAdmin() || isShopMember(shopId);
+      allow update, delete: if isSuperAdmin() || isShopOwner(shopId);
+      
+      match /customers/{customerId} {
+        allow write: if isShopMember(shopId);
+        allow read: if isShopMember(shopId) || isFranchiseAdmin() || isSuperAdmin();
+      }
+      
+      match /ledger/{ledgerId} {
+        allow create: if isShopMember(shopId);
+        allow read: if isShopMember(shopId) || isFranchiseAdmin() || isSuperAdmin();
+        allow update, delete: if false; // Immutable audit trail
+      }
+    }
+
+    match /orders/{orderId} {
+        allow create: if isOwner(request.resource.data.userId);
+        allow read: if isSuperAdmin() || isOwner(resource.data.userId);
+        allow update, delete: if false; 
+    }
+
+    match /posts/{postId} {
+      allow read: if true;
+      allow update: if (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.views == resource.data.views + 1) &&
+                      request.resource.data.diff(resource.data).affectedKeys().size() == 1;
+      allow create, delete: if isSuperAdmin();
+    }
+
+    match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isAuthenticated();
+        allow update, delete: if isSuperAdmin();
+    }
+    
+    match /contactFormSubmissions/{submissionId} {
+        allow create: if true;
+        allow read, update, delete: if isSuperAdmin();
+    }
+    
+    match /interactions/{interactionId} {
+      allow write: if false; 
+      allow read: if isSuperAdmin();
+    }
+
+    match /logs/{logId} {
+      allow write: if false;
+      allow read: if isSuperAdmin();
+    }
+    
+    match /auditLogs/{auditLogId} {
+        allow write: if false;
+        allow read: if isSuperAdmin() || isFranchiseAdmin();
+    }
+    
+    match /notifications/{notificationId} {
+      allow write: if false;
+      allow read: if isSuperAdmin() || isShopMember(resource.data.shopId);
+    }
+    
+    match /metrics/{docId=**} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
     }
   }
 }
