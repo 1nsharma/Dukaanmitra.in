@@ -1,0 +1,22 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "A smiling Indian kirana store owner holding a smartphone in front of shelves stocked with items.",
+      "imageUrl": "https://images.unsplash.com/photo-1620752763329-37f6d5c5b9f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraXJhbmElMjBzdG9yZSUyMG93bmVyJTIwcGhvbmV8ZW58MHx8fHwxNzcwMjE3OTM0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "kirana store owner"
+    },
+    {
+      "id": "whatsapp-demo",
+      "description": "A smartphone showing a WhatsApp chat interface with a digital receipt.",
+      "imageUrl": "https://images.unsplash.com/photo-1611746872915-64382b5c76da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+      "imageHint": "whatsapp chat"
+    },
+    {
+      "id": "dashboard-preview",
+      "description": "A clean retail analytics dashboard showing sales growth and customer data.",
+      "imageUrl": "https://images.unsplash.com/photo-1551288049-bbbda536339a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+      "imageHint": "sales dashboard"
+    }
+  ]
+}
