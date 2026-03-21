@@ -1,11 +1,9 @@
-
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import Razorpay from 'razorpay';
 import shortid from 'shortid';
 import { z } from 'zod';
 import { auth } from 'firebase-admin';
-import { addMonths } from 'date-fns';
 
 const { RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } = process.env;
 
@@ -23,9 +21,15 @@ export async function POST(request: Request) {
   try {
     // Use the pre-initialized adminDb instance
     const firestore = adminDb;
+    
+    if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+      console.error('Razorpay credentials missing');
+      return NextResponse.json({ message: 'Payment provider not configured' }, { status: 500 });
+    }
+
     const razorpay = new Razorpay({
-      key_id: RAZORPAY_KEY_ID!,
-      key_secret: RAZORPAY_KEY_SECRET!,
+      key_id: RAZORPAY_KEY_ID,
+      key_secret: RAZORPAY_KEY_SECRET,
     });
 
     // 1. Verify User Authentication
@@ -43,12 +47,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Invalid request body', errors: validation.error.errors }, { status: 400 });
     }
     const { shopId, plan } = validation.data;
+
+    // 3. Verify Ownership (Vulnerability Fix)
+    const shopDoc = await firestore.collection('shops').doc(shopId).get();
+    if (!shopDoc.exists) {
+      return NextResponse.json({ message: 'Shop not found' }, { status: 404 });
+    }
+    const shopData = shopDoc.data();
+    if (shopData?.owner_id !== userId) {
+      console.warn(`Unauthorized payment attempt by user ${userId} for shop ${shopId}`);
+      return NextResponse.json({ message: 'Forbidden: You do not own this shop' }, { status: 403 });
+    }
     
     const amount = planDetails[plan].amount;
     const amountInPaise = amount * 100;
     const currency = 'INR';
 
-    // 3. Create Razorpay Order
+    // 4. Create Razorpay Order
     const razorpayOrder = await razorpay.orders.create({
       amount: amountInPaise,
       currency,
@@ -60,7 +75,7 @@ export async function POST(request: Request) {
       }
     });
 
-    // 4. Create Order document in Firestore
+    // 5. Create Order document in Firestore
     const orderRef = firestore.collection('orders').doc();
     await orderRef.set({
       id: orderRef.id,
@@ -74,7 +89,7 @@ export async function POST(request: Request) {
       createdAt: new Date(),
     });
 
-    // 5. Return Razorpay order details to the client
+    // 6. Return Razorpay order details to the client
     return NextResponse.json(razorpayOrder, { status: 200 });
 
   } catch (error: any) {

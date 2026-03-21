@@ -127,5 +127,10 @@ service cloud.firestore {
       allow read: if isSuperAdmin();
       allow write: if false;
     }
+
+    // Catch-all deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }

@@ -61,7 +61,7 @@ The system is built on a modern, serverless architecture centered around Next.js
 
 ## 🛠️ Tech Stack
 - **Framework**: Next.js 15 (App Router)
-- **UI**: React, Tailwind CSS, ShadCN UI, Anime.js v4
+- **UI**: React, Tailwind CSS, ShadCN UI
 - **Database**: Google Firestore (NoSQL)
 - **Authentication**: Firebase Authentication
 - **AI Engine**: Google Genkit + Gemini 2.5 Flash
