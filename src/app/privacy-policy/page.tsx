@@ -1,4 +1,3 @@
-
 export default function PrivacyPolicyPage() {
   return (
     <div className="container max-w-4xl py-16 md:py-24">
@@ -55,7 +54,7 @@ export default function PrivacyPolicyPage() {
         <p>We may update this Privacy Policy from time to time. We will notify you of any significant changes and indicate the date of the last update at the top of this page.</p>
 
         <h2>9. Contact Information</h2>
-        <p>If you have any questions or concerns about our Privacy Policy, please contact us at <a href="mailto:support@dukaanmitra.ai">support@dukaanmitra.ai</a>.</p>
+        <p>If you have any questions or concerns about our Privacy Policy, please contact us at <a href="mailto:support@dukaanmitra.in">support@dukaanmitra.in</a>.</p>
       </div>
     </div>
   );

@@ -76,10 +76,10 @@ export default function Footer() {
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Form</Link></li>
               <li className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" />
-                <span>+91 12345 67890</span>
+                <span>+91 63937 41171</span>
               </li>
                <li className="flex items-center gap-2">
-                <span>support@dukaanmitra.ai</span>
+                <span>support@dukaanmitra.in</span>
               </li>
             </ul>
           </div>

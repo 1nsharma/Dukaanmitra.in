@@ -1,4 +1,3 @@
-
 export default function TermsOfServicePage() {
   return (
     <div className="container max-w-4xl py-16 md:py-24">
@@ -45,7 +44,7 @@ export default function TermsOfServicePage() {
         <p>These Terms shall be governed and construed in accordance with the laws of India. Any disputes arising from these Terms will be subject to the exclusive jurisdiction of the courts in Delhi, India.</p>
 
         <h2>10. Contact Details</h2>
-        <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@dukaanmitra.ai">support@dukaanmitra.ai</a>.</p>
+        <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@dukaanmitra.in">support@dukaanmitra.in</a>.</p>
       </div>
     </div>
   );

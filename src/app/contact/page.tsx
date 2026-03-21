@@ -1,4 +1,3 @@
-
 import ContactForm from '@/components/landing/contact-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, MessageSquare, Mail } from 'lucide-react';
@@ -20,21 +19,21 @@ export default function ContactPage() {
           <CardContent className="p-6">
             <Phone className="mx-auto mb-2 h-8 w-8 text-primary" />
             <h3 className="text-lg font-bold">Call Us</h3>
-            <p className="text-muted-foreground">+91 12345 67890</p>
+            <p className="text-muted-foreground">+91 63937 41171</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
             <MessageSquare className="mx-auto mb-2 h-8 w-8 text-primary" />
             <h3 className="text-lg font-bold">WhatsApp</h3>
-            <p className="text-muted-foreground">+91 12345 67890</p>
+            <p className="text-muted-foreground">+91 63937 41171</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
             <Mail className="mx-auto mb-2 h-8 w-8 text-primary" />
             <h3 className="text-lg font-bold">Email</h3>
-            <p className="text-muted-foreground">support@dukaanmitra.ai</p>
+            <p className="text-muted-foreground">support@dukaanmitra.in</p>
           </CardContent>
         </Card>
       </div>
