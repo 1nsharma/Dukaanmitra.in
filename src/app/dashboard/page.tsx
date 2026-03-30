@@ -46,9 +46,13 @@ export default function DashboardPage() {
         userId: user.uid,
         message: "Analyze my recent sales and give me 3 growth tips."
       });
+      const previewText =
+        typeof (result as any)?.final_answer === "string"
+          ? (result as any).final_answer
+          : String(result.summary || "");
       toast({
         title: "Munim Advice Ready!",
-        description: result.final_answer.substring(0, 100) + "...",
+        description: previewText.substring(0, 100) + "...",
       });
     } catch (error) {
       toast({

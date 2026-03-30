@@ -132,6 +132,15 @@ export type ShopInsight = {
   isRead: boolean;
 };
 
+export type AuditLog = {
+  id: string;
+  actorId: string;
+  actorRole: UserProfile['role'];
+  action: string;
+  targetType: string;
+  targetId: string;
+  createdAt?: any;
+};
 
 export type Post = {
   id: string;
@@ -143,14 +152,24 @@ export type Post = {
   imageUrl?: string;
   publishedAt?: any;
   tags?: string[];
+  // Legacy fields still used in blog UI
+  category?: string;
+  author?: string;
+  createdAt?: any;
+  views?: number;
+  likes?: number;
 };
 
 export type Comment = {
   id: string;
-  postId: string;
+  postId?: string;
   authorName?: string;
   authorEmail?: string;
-  content: string;
+  content?: string;
   createdAt?: any;
   status?: 'pending' | 'approved' | 'rejected';
+  // Legacy fields still used in blog UI
+  postSlug?: string;
+  name?: string;
+  message?: string;
 };

@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import type { Shop } from '@/docs/backend-types';
+import type { Shop, UserProfile } from '@/docs/backend-types';
 import { Loader2, MoreHorizontal, Eye, Edit, Lock, Unlock, AlertTriangle, ShieldCheck, ShieldAlert, Activity } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -98,11 +98,12 @@ export default function BusinessesTable() {
     const { data: shops, isLoading } = useCollection<Shop>(shopsQuery);
     
     const handleStatusChange = () => {
-        if (!currentUser || !shopToSuspend) return;
+        if (!currentUser?.role || !shopToSuspend) return;
+        const actorRole = currentUser.role as UserProfile['role'];
         const newStatus = shopToSuspend.status === 'suspended' ? 'active' : 'suspended';
         startTransition(async () => {
             try {
-                await updateShopStatus(firestore, { id: currentUser.uid, role: currentUser.role }, shopToSuspend.id, newStatus);
+                await updateShopStatus(firestore, { id: currentUser.uid, role: actorRole }, shopToSuspend.id, newStatus);
                 toast({
                     title: 'Success',
                     description: `Business has been ${newStatus}.`,
