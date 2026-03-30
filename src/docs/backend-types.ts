@@ -37,11 +37,14 @@ export type Shop = {
   mrr?: number;
   lastActive?: any;
   plan?: "free" | "basic" | "pro" | "enterprise";
-  status?: "active" | "trial" | "suspended" | "cancelled" | "locked";
+  status?: "active" | "trial" | "suspended" | "cancelled" | "locked" | "integrity_lock";
   trial_ends_at?: any;
   paid_till?: any;
   created_at?: any;
   updated_at?: any;
+  integrityStatus?: string;
+  lastVerifiedAt?: any;
+  ledgerRootHash?: string;
   settings?: {
     language?: "hi" | "en" | "hinglish";
     currency?: string;
@@ -127,4 +130,27 @@ export type ShopInsight = {
   action_payload?: object;
   createdAt: any;
   isRead: boolean;
+};
+
+
+export type Post = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string;
+  content?: string;
+  authorName?: string;
+  imageUrl?: string;
+  publishedAt?: any;
+  tags?: string[];
+};
+
+export type Comment = {
+  id: string;
+  postId: string;
+  authorName?: string;
+  authorEmail?: string;
+  content: string;
+  createdAt?: any;
+  status?: 'pending' | 'approved' | 'rejected';
 };
