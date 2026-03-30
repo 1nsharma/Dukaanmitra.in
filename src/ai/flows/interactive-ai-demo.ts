@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview Provides an AI-powered chat assistant for interactive product demos.
  *
@@ -10,12 +8,17 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {
-  InteractiveAIDemoInputSchema,
-  type InteractiveAIDemoInput,
-  InteractiveAIDemoOutputSchema,
-  type InteractiveAIDemoOutput,
-} from '@/ai/schemas';
+import {z} from 'genkit';
+
+const InteractiveAIDemoInputSchema = z.object({
+  query: z.string().describe('The user query for the product demo.'),
+});
+export type InteractiveAIDemoInput = z.infer<typeof InteractiveAIDemoInputSchema>;
+
+const InteractiveAIDemoOutputSchema = z.object({
+  response: z.string().describe('The AI response to the user query.'),
+});
+export type InteractiveAIDemoOutput = z.infer<typeof InteractiveAIDemoOutputSchema>;
 
 export async function interactiveAIDemo(input: InteractiveAIDemoInput): Promise<InteractiveAIDemoOutput> {
   return interactiveAIDemoFlow(input);
@@ -135,7 +138,7 @@ const interactiveAIDemoFlow = ai.defineFlow(
     outputSchema: InteractiveAIDemoOutputSchema,
   },
   async input => {
-    const result = await interactiveAIDemoPrompt(input);
-    return result.output!;
+    const {output} = await interactiveAIDemoPrompt(input);
+    return output!;
   }
 );
