@@ -160,29 +160,29 @@ export const useFirebase = (): FirebaseContextState => {
     return context;
 };
 
-/** Hook to access Firebase Auth instance. Returns null if the service is not available. */
-export const useAuth = (): Auth | null => {
+/** Hook to access Firebase Auth instance. Throws if unavailable. */
+export const useAuth = (): Auth => {
   const { auth, areServicesAvailable } = useFirebase();
-  if (!areServicesAvailable) {
-    return null;
+  if (!areServicesAvailable || !auth) {
+    throw new Error('Firebase Auth is not available in the current context.');
   }
   return auth;
 };
 
-/** Hook to access Firestore instance. Returns null if the service is not available. */
-export const useFirestore = (): Firestore | null => {
+/** Hook to access Firestore instance. Throws if unavailable. */
+export const useFirestore = (): Firestore => {
   const { firestore, areServicesAvailable } = useFirebase();
-  if (!areServicesAvailable) {
-    return null;
+  if (!areServicesAvailable || !firestore) {
+    throw new Error('Firestore is not available in the current context.');
   }
   return firestore;
 };
 
-/** Hook to access Firebase App instance. Returns null if the service is not available. */
-export const useFirebaseApp = (): FirebaseApp | null => {
+/** Hook to access Firebase App instance. Throws if unavailable. */
+export const useFirebaseApp = (): FirebaseApp => {
   const { firebaseApp, areServicesAvailable } = useFirebase();
-  if (!areServicesAvailable) {
-    return null;
+  if (!areServicesAvailable || !firebaseApp) {
+    throw new Error('Firebase App is not available in the current context.');
   }
   return firebaseApp;
 };

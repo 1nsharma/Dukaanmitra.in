@@ -102,7 +102,7 @@ export const anigravityAgent = ai.defineFlow(
     inputSchema: AgentInputSchema,
     outputSchema: AgentOutputSchema,
   },
-  async (input) => {
+  async (input): Promise<AgentOutput> => {
     const llmResponse = await anigravityAgentPrompt(input);
     const agentDecision = llmResponse.output;
 
@@ -134,3 +134,6 @@ export const anigravityAgent = ai.defineFlow(
     return agentDecision;
   }
 );
+
+
+export type { AgentInput, AgentOutput, SupportedIntent };

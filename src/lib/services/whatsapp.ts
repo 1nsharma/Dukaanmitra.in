@@ -26,7 +26,7 @@ export function handleWhatsAppMessage(body: any) {
                                     const interactionRef = adminDb.collection('interactions').doc(messageId);
                                     const interactionDoc = await interactionRef.get();
 
-                                    if (interactionDoc.exists()) {
+                                    if (interactionDoc.exists) {
                                         console.log(`[WhatsAppService] Duplicate interaction ID ${messageId} received. Ignoring.`);
                                         continue;
                                     }

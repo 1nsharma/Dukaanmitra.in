@@ -59,6 +59,7 @@ export const MarketTrendInputSchema = z.object({
 export const MarketTrendOutputSchema = z.object({
   demand_score: z.number(),
   trend_direction: z.enum(['up', 'down', 'stable']),
+  trend_duration_days: z.number(),
   seasonal_factor: z.number(),
 });
 
@@ -84,3 +85,21 @@ export const AgentOutputSchema = z.object({
 export type ShopContext = z.infer<typeof ShopContextSchema>;
 export type AgentOutput = z.infer<typeof AgentOutputSchema>;
 export type ParseTransactionOutput = z.infer<typeof ParseTransactionOutputSchema>;
+
+
+export const OrchestratorInputSchema = z.object({
+  message: z.string(),
+  userId: z.string(),
+});
+
+export const OrchestratorOutputSchema = z.object({
+  summary: z.string(),
+  recommendations: z.array(z.string()).default([]),
+  riskFlags: z.array(z.string()).default([]),
+  nextActions: z.array(z.string()).default([]),
+});
+
+export type AgentInput = z.infer<typeof AgentInputSchema>;
+export type SupportedIntent = z.infer<typeof SupportedIntentSchema>;
+export type OrchestratorInput = z.infer<typeof OrchestratorInputSchema>;
+export type OrchestratorOutput = z.infer<typeof OrchestratorOutputSchema>;
