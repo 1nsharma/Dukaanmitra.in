@@ -15,6 +15,17 @@ interface InsightsTabProps {
   shopId: string;
 }
 
+type InsightItem = {
+  id: string;
+  type?: string;
+  title?: string;
+  message?: string;
+  createdAt?: { toDate?: () => Date };
+  action_label?: string;
+  action_type?: string;
+  action_payload?: Record<string, unknown>;
+};
+
 const renderAgentBadge = (type: string) => {
     switch (type) {
         case 'SALES_DROP': 
@@ -41,6 +52,7 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [clientError, setClientError] = useState<string | null>(null);
 
   const insightsQuery = useMemoFirebase(() => {
     if (!shopId || !firestore) return null;
@@ -53,9 +65,17 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
 
   const { data: insights, isLoading } = useCollection(insightsQuery);
 
-  const handleAction = (insight: any) => {
+  const handleAction = (insight: InsightItem) => {
       startTransition(async () => {
           try {
+              setClientError(null);
+              if (!firestore || !shopId || !insight?.id || !insight?.action_type || !insight?.action_payload) {
+                const errorMessage = "Action details are incomplete. Please refresh and try again.";
+                console.error('[CLIENT_ERROR] Invalid insight action payload', { insightId: insight?.id });
+                toast({ title: "Failed", description: errorMessage, variant: "destructive" });
+                return;
+              }
+
               const response = await fetch('/api/execute-action', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -67,15 +87,20 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
                     actor: { id: 'owner', role: 'owner', shopId }
                   })
               });
-              const result = await response.json();
+              const result: { success?: boolean; message?: string } = await response.json().catch(() => ({}));
 
-              if (result.success) {
+              if (response.ok && result.success) {
                   toast({ title: "Action Successful", description: "Ledger updated." });
-                  await deleteDoc(doc(firestore!, "shops", shopId, "insights", insight.id));
+                  await deleteDoc(doc(firestore, "shops", shopId, "insights", insight.id));
               } else {
-                  toast({ title: "Failed", description: result.message, variant: "destructive" });
+                  const message = result.message || "Could not process action.";
+                  console.error('[CLIENT_ERROR] Failed to execute proposal action', { insightId: insight.id, status: response.status });
+                  setClientError(message);
+                  toast({ title: "Failed", description: message, variant: "destructive" });
               }
           } catch (e) {
+              console.error('[CLIENT_ERROR] Unexpected proposal handling error', e);
+              setClientError("Failed to process proposal.");
               toast({ title: "Error", description: "Failed to process proposal.", variant: "destructive" });
           }
       });
@@ -105,29 +130,34 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {insights.map((insight) => (
+          {clientError && (
+            <Card className="border-destructive/30 bg-destructive/5">
+              <CardContent className="p-4 text-xs text-destructive">{clientError}</CardContent>
+            </Card>
+          )}
+          {insights.map((insight: InsightItem) => (
             <Card key={insight.id} className="rounded-[2rem] border-none shadow-sm relative overflow-hidden bg-card">
               <div className={`absolute top-0 left-0 w-1.5 h-full ${insight.type === 'ACTION_REQUIRED' ? 'bg-accent' : insight.type === 'RISK_ALERT' ? 'bg-destructive' : 'bg-primary'}`} />
               
               <CardHeader className="flex flex-row items-start gap-4 pb-2">
                 <div className="mt-1 p-2 bg-muted rounded-xl">
-                  {renderIcon(insight.type)}
+                  {renderIcon(insight.type || 'UNKNOWN')}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-bold">{insight.title}</CardTitle>
+                    <CardTitle className="text-sm font-bold">{insight.title || 'Untitled insight'}</CardTitle>
                     <span className="text-[8px] font-bold text-muted-foreground uppercase">
                       {format(insight.createdAt?.toDate?.() || new Date(), "HH:mm")}
                     </span>
                   </div>
                   <div className="mt-1">
-                    {renderAgentBadge(insight.type)}
+                    {renderAgentBadge(insight.type || 'UNKNOWN')}
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-xs leading-relaxed">
-                  {insight.message}
+                  {insight.message || 'No details available for this insight.'}
                 </p>
                 
                 {insight.action_label && (
