@@ -65,10 +65,11 @@ export default function UsersTable() {
     const { data: users, isLoading } = useCollection<UserProfile>(usersQuery);
     
     const handleUpdateRole = (targetUid: string, newRole: UserProfile['role']) => {
-        if (!currentUser) return;
+        if (!currentUser?.role) return;
+        const actorRole = currentUser.role as UserProfile['role'];
         startTransition(async () => {
             try {
-                await updateUserRole(firestore, { id: currentUser.uid, role: currentUser.role }, targetUid, newRole);
+                await updateUserRole(firestore, { id: currentUser.uid, role: actorRole }, targetUid, newRole);
                 toast({
                     title: 'Success',
                     description: `User role has been updated to ${newRole}.`,
@@ -85,10 +86,11 @@ export default function UsersTable() {
     };
     
     const handleUpdateStatus = (targetUid: string, newStatus: UserProfile['status']) => {
-        if (!currentUser) return;
+        if (!currentUser?.role) return;
+        const actorRole = currentUser.role as UserProfile['role'];
         startTransition(async () => {
             try {
-                await updateUserStatus(firestore, { id: currentUser.uid, role: currentUser.role }, targetUid, newStatus);
+                await updateUserStatus(firestore, { id: currentUser.uid, role: actorRole }, targetUid, newStatus);
                 toast({
                     title: 'Success',
                     description: `User status has been updated to ${newStatus}.`,

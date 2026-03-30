@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { collection, query, orderBy, limit, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, where, type QueryConstraint } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Interaction } from '@/docs/backend-types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -20,7 +20,7 @@ export default function GlobalMessagesPage() {
 
   const interactionsQuery = useMemoFirebase(() => {
     let base = collection(firestore, "interactions");
-    let constraints = [orderBy("created_at", "desc"), limit(50)];
+    const constraints: QueryConstraint[] = [orderBy("created_at", "desc"), limit(50)];
     
     if (shopFilter) {
         constraints.unshift(where("shop_id", "==", shopFilter.toUpperCase()));

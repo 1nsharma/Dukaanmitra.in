@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { collection, query, where, doc, updateDoc, increment, addDoc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { Loader2, ThumbsUp, Eye, Send, User } from 'lucide-react';
@@ -165,7 +165,7 @@ export default function BlogPostPage() {
           </div>
         </header>
 
-        <div dangerouslySetInnerHTML={{ __html: post.content }} />
+        <div dangerouslySetInnerHTML={{ __html: post.content || '' }} />
         
         <footer className="mt-16 border-t border-border pt-8 space-y-4 text-center bg-card p-8 rounded-lg">
             <h3 className="text-xl font-bold">“Kya aap apni dukaan me yeh try karenge?”</h3>
@@ -187,10 +187,10 @@ export default function BlogPostPage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
-                    <p className="font-bold">{comment.name}</p>
+                    <p className="font-bold">{comment.name || comment.authorName || 'Anonymous'}</p>
                     <p className="text-xs text-muted-foreground">{formatDate(comment.createdAt)}</p>
                   </div>
-                  <p className="text-muted-foreground mt-1">{comment.message}</p>
+                  <p className="text-muted-foreground mt-1">{comment.message || comment.content}</p>
                 </div>
               </div>
             ))

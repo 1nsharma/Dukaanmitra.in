@@ -7,7 +7,7 @@ import * as z from 'zod';
 import { useTransition } from 'react';
 import { useFirestore, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { type Shop } from '@/docs/backend-types';
+import { type Shop, type UserProfile } from '@/docs/backend-types';
 import {
   Form,
   FormControl,
@@ -60,10 +60,11 @@ export default function EditBusinessForm({ shop, onFinished }: EditBusinessFormP
   });
 
   const onSubmit = (values: FormValues) => {
-    if (!currentUser) return;
+    if (!currentUser?.role) return;
+        const actorRole = currentUser.role as UserProfile['role'];
     startTransition(async () => {
       try {
-        await updateBusinessDetails(firestore, { id: currentUser.uid, role: currentUser.role }, shop.id, values);
+        await updateBusinessDetails(firestore, { id: currentUser.uid, role: actorRole }, shop.id, values);
         toast({
           title: 'Business Updated',
           description: `${shop.name} has been successfully updated.`,

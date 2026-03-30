@@ -41,7 +41,9 @@ export default function BlogPage() {
 
   const categories = useMemo(() => {
     if (!allPosts) return [];
-    const allCategories = allPosts.map(p => p.category);
+    const allCategories = allPosts
+      .map((p) => p.category)
+      .filter((category): category is string => Boolean(category));
     return ['All', ...Array.from(new Set(allCategories))];
   }, [allPosts]);
 

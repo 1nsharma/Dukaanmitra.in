@@ -1,7 +1,6 @@
 
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { headers } from 'next/headers';
 import crypto from 'crypto';
 
 /**
@@ -19,11 +18,14 @@ export class AuditService {
     correlationId?: string;
     before?: object;
     after?: object;
+    metadata?: {
+      ipAddress?: string;
+      userAgent?: string;
+    };
   }) {
     try {
-      const headerList = headers();
-      const ip = headerList.get('x-forwarded-for') || 'unknown';
-      const ua = headerList.get('user-agent') || 'unknown';
+      const ip = details.metadata?.ipAddress || 'unknown';
+      const ua = details.metadata?.userAgent || 'unknown';
 
       // Hash the snapshot for tamper detection
       const snapshotHash = crypto

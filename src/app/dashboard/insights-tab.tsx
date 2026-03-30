@@ -10,7 +10,6 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useState, useTransition } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { executeAction } from "@/lib/services/action-engine";
 
 interface InsightsTabProps {
   shopId: string;
@@ -57,10 +56,18 @@ export default function InsightsTab({ shopId }: InsightsTabProps) {
   const handleAction = (insight: any) => {
       startTransition(async () => {
           try {
-              const result = await executeAction({
-                  type: insight.action_type,
-                  payload: { ...insight.action_payload, shopId }
-              }, { id: 'owner', role: 'owner', shopId });
+              const response = await fetch('/api/execute-action', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    action: {
+                      type: insight.action_type,
+                      payload: { ...insight.action_payload, shopId }
+                    },
+                    actor: { id: 'owner', role: 'owner', shopId }
+                  })
+              });
+              const result = await response.json();
 
               if (result.success) {
                   toast({ title: "Action Successful", description: "Ledger updated." });
