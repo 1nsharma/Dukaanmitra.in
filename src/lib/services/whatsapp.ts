@@ -7,67 +7,119 @@ const { WHATSAPP_API_TOKEN, WHATSAPP_PHONE_NUMBER_ID } = process.env;
 
 /**
  * Handles the incoming WhatsApp message payload from the webhook.
- * This function runs asynchronously and should not be awaited by the webhook endpoint.
  * @param body - The parsed JSON body from the WhatsApp webhook.
  */
-export function handleWhatsAppMessage(body: any) {
-    new Promise<void>(async (resolve) => {
-        try {
-            console.log('[WhatsAppService] Received webhook payload:', JSON.stringify(body, null, 2));
+export async function handleWhatsAppMessage(body: any): Promise<void> {
+    console.log('[WhatsAppService] Received webhook payload:', JSON.stringify(body, null, 2));
 
-            if (body.object === 'whatsapp_business_account' && body.entry) {
-                for (const entry of body.entry) {
-                    if (entry.changes) {
-                        for (const change of entry.changes) {
-                            if (change.field === 'messages' && change.value.messages) {
-                                for (const message of change.value.messages) {
-                                    
-                                    const messageId = message.id;
-                                    const interactionRef = adminDb.collection('interactions').doc(messageId);
-                                    const interactionDoc = await interactionRef.get();
+    if (body.object !== 'whatsapp_business_account' || !body.entry) {
+        console.warn('[WhatsAppService] Unsupported webhook payload. Skipping processing.');
+        return;
+    }
 
-                                    if (interactionDoc.exists) {
-                                        console.log(`[WhatsAppService] Duplicate interaction ID ${messageId} received. Ignoring.`);
-                                        continue;
-                                    }
-                                    
-                                    if (message.type === 'text') {
-                                        const normalizedMessage = {
-                                            from: message.from,
-                                            to: change.value.metadata.display_phone_number,
-                                            text: message.text.body,
-                                            messageId: message.id,
-                                        };
+    const processingErrors: Array<{ interactionId: string; error: Error }> = [];
 
-                                        const shopCodeMatch = normalizedMessage.text.match(/#(\w+)/);
-                                        const shopId = shopCodeMatch ? shopCodeMatch[1].toUpperCase() : undefined;
-                                        
-                                        // Create a structured interaction log. This is the first write.
-                                        const interactionData = {
-                                            interactionId: messageId,
-                                            shop_id: shopId,
-                                            sender_phone: normalizedMessage.from,
-                                            sender_type: 'customer',
-                                            raw_message: normalizedMessage.text,
-                                            processing_status: 'received',
-                                            created_at: FieldValue.serverTimestamp(),
-                                        };
-                                        await interactionRef.set(interactionData);
-                                        
-                                        // Route to the unified message processor
-                                        await processMessage(normalizedMessage);
-                                    }
-                                }
-                            }
-                        }
+    for (const entry of body.entry) {
+        if (!entry.changes) continue;
+
+        for (const change of entry.changes) {
+            if (change.field !== 'messages' || !change.value.messages) continue;
+
+            for (const message of change.value.messages) {
+                if (message.type !== 'text') continue;
+
+                const messageId = message.id;
+                const interactionRef = adminDb.collection('interactions').doc(messageId);
+
+                const normalizedMessage = {
+                    from: message.from,
+                    to: change.value.metadata.display_phone_number,
+                    text: message.text.body,
+                    messageId: message.id,
+                };
+
+                const shopCodeMatch = normalizedMessage.text.match(/#(\w+)/);
+                const shopId = shopCodeMatch ? shopCodeMatch[1].toUpperCase() : undefined;
+
+                type ReservationResult = { shouldProcess: boolean; attempt: number; reason?: string };
+                const reservation = await adminDb.runTransaction<ReservationResult>(async (tx) => {
+                    const existingDoc = await tx.get(interactionRef);
+
+                    if (!existingDoc.exists) {
+                        tx.set(interactionRef, {
+                            interactionId: messageId,
+                            shop_id: shopId,
+                            sender_phone: normalizedMessage.from,
+                            sender_type: 'customer',
+                            raw_message: normalizedMessage.text,
+                            processing_status: 'processing',
+                            processing_attempts: 1,
+                            created_at: FieldValue.serverTimestamp(),
+                            updated_at: FieldValue.serverTimestamp(),
+                        });
+                        return { shouldProcess: true, attempt: 1 };
                     }
+
+                    const existingData = existingDoc.data() || {};
+                    const existingStatus = existingData.processing_status;
+
+                    if (existingStatus === 'completed' || existingStatus === 'processing') {
+                        return { shouldProcess: false, attempt: existingData.processing_attempts ?? 1, reason: existingStatus };
+                    }
+
+                    const nextAttempt = (existingData.processing_attempts ?? 0) + 1;
+                    tx.set(interactionRef, {
+                        processing_status: 'processing',
+                        processing_attempts: nextAttempt,
+                        updated_at: FieldValue.serverTimestamp(),
+                        last_error: null,
+                    }, { merge: true });
+                    return { shouldProcess: true, attempt: nextAttempt };
+                });
+
+                if (!reservation.shouldProcess) {
+                    console.log(
+                        `[WhatsAppService] Interaction ${messageId} already marked as ${reservation.reason}. Skipping duplicate retry.`
+                    );
+                    continue;
+                }
+
+                try {
+                    await processMessage(normalizedMessage);
+                    await interactionRef.set({
+                        processing_status: 'completed',
+                        processed_at: FieldValue.serverTimestamp(),
+                        updated_at: FieldValue.serverTimestamp(),
+                        last_error: null,
+                    }, { merge: true });
+                    console.log(`[WhatsAppService] Interaction ${messageId} processed successfully (attempt ${reservation.attempt}).`);
+                } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.error(
+                        `[WhatsAppService] Processing failed for interaction ${messageId} on attempt ${reservation.attempt}.`,
+                        error
+                    );
+
+                    await interactionRef.set({
+                        processing_status: 'failed',
+                        failed_at: FieldValue.serverTimestamp(),
+                        updated_at: FieldValue.serverTimestamp(),
+                        last_error: errorMessage,
+                    }, { merge: true });
+
+                    processingErrors.push({
+                        interactionId: messageId,
+                        error: error instanceof Error ? error : new Error(errorMessage),
+                    });
                 }
             }
-        } catch (error) {
-            console.error('[WhatsAppService] Error in handleWhatsAppMessage:', error);
         }
-        resolve();
-    }).catch(e => console.error('[WhatsAppService] Unhandled promise rejection in handleWhatsAppMessage:', e));
+    }
+
+    if (processingErrors.length > 0) {
+        const failedIds = processingErrors.map((e) => e.interactionId).join(', ');
+        throw new Error(`[WhatsAppService] Failed interactions: ${failedIds}`);
+    }
 }
 
 
