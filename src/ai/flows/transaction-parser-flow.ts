@@ -1,4 +1,3 @@
-'use server';
 
 /**
  * @fileOverview Parses natural language transaction strings into structured data.
@@ -16,7 +15,7 @@ const ParseTransactionInputSchema = z.object({
 });
 export type ParseTransactionInput = z.infer<typeof ParseTransactionInputSchema>;
 
-const ParseTransactionOutputSchema = z.object({
+export const ParseTransactionOutputSchema = z.object({
   phone: z.string().optional().describe("The customer's 10-digit phone number, if mentioned."),
   customer_name: z.string().describe("The name of the customer. If no name is found, defaults to 'Customer'."),
   amount: z.number().describe('The transaction amount as an integer.'),

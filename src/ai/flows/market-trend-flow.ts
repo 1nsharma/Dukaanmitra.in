@@ -1,4 +1,3 @@
-'use server';
 
 /**
  * @fileOverview A tool to fetch market trend data for a given product and region.

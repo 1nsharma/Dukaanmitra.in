@@ -1,4 +1,3 @@
-'use server';
 
 /**
  * @fileOverview Provides an AI-powered analysis of retail operations.

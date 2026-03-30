@@ -1,4 +1,3 @@
-'use server';
 
 /**
  * @fileOverview Provides an AI-powered chat assistant for interactive product demos.

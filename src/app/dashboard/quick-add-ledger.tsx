@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { parseTransaction } from "@/ai/flows/transaction-parser-flow";
 
 const formSchema = z.object({
   query: z.string().min(3, "Please enter a transaction, e.g., '98... Ravi 500 udhaar'"),
@@ -40,7 +39,24 @@ export default function QuickAddLedger({ shopId, onEntryAdded }: QuickAddLedgerP
     startTransition(async () => {
       try {
         // 1. Parse the natural language query
-        const parsed = await parseTransaction({ query: values.query });
+        const parseResponse = await fetch('/api/parse-transaction', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: values.query }),
+        });
+
+        if (!parseResponse.ok) {
+          throw new Error('Failed to parse transaction');
+        }
+
+        const parsed = await parseResponse.json() as {
+          phone?: string;
+          customer_name: string;
+          amount: number;
+          items: string;
+          type: 'credit' | 'payment';
+          confidence_score: number;
+        };
         
         if (parsed.confidence_score < 0.7) {
             toast({
