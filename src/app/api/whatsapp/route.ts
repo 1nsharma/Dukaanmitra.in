@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyWebhook, handleWhatsAppMessage } from '@/lib/services/whatsapp';
+import { handleWhatsAppMessage } from '@/lib/services/whatsapp';
 import crypto from 'crypto';
 
 /**
@@ -55,18 +55,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = JSON.parse(rawBody);
-    
-    // 2. Immediately acknowledge receipt with a 200 OK
-    // The actual processing happens asynchronously below.
-    // This is crucial to prevent Meta from retrying the webhook.
-    
-    // 3. Asynchronously handle the message processing
-    handleWhatsAppMessage(body);
+    await handleWhatsAppMessage(body);
 
     return new NextResponse('OK', { status: 200 });
 
   } catch (error) {
-    console.error('Error processing WhatsApp webhook:', error);
+    console.error('Error processing WhatsApp webhook request. Returning 500 so Meta can retry.', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
