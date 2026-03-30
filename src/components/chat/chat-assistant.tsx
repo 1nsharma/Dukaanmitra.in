@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { interactiveAIDemo } from "@/ai/flows/interactive-ai-demo";
 import { cn } from "@/lib/utils";
 import { uiEmitter } from "@/lib/ui-event-emitter";
 
@@ -50,7 +49,17 @@ export default function ChatAssistant() {
     setIsLoading(true);
 
     try {
-      const result = await interactiveAIDemo({ query: input });
+      const response = await fetch('/api/interactive-demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: input }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Interactive demo request failed');
+      }
+
+      const result = await response.json() as { response: string };
       const assistantMessage: Message = {
         role: "assistant",
         content: result.response,

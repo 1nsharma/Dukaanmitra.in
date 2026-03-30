@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview The core DukaanMitra AI Agent.
  */
