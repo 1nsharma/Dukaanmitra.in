@@ -6,6 +6,7 @@ import Footer from '@/components/layout/footer';
 import { Toaster } from "@/components/ui/toaster"
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { ThemeProvider } from '@/components/theme-provider';
+import HoldVerificationGate from '@/components/security/hold-verification-gate';
 import dynamic from 'next/dynamic';
 
 // Dynamically load heavy interactive components to improve initial page load speed
@@ -84,12 +85,14 @@ export default function RootLayout({
             disableTransitionOnChange
         >
             <FirebaseClientProvider>
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Footer />
-                <ChatAssistant />
-                <Mitraa />
-                <Toaster />
+                <HoldVerificationGate>
+                  <Header />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                  <ChatAssistant />
+                  <Mitraa />
+                  <Toaster />
+                </HoldVerificationGate>
             </FirebaseClientProvider>
         </ThemeProvider>
       </body>
