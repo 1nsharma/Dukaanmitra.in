@@ -55,6 +55,20 @@ const nextConfig = {
       },
     ],
   },
+
+  webpack: (config, { isServer }) => {
+    // Suppress noisy dynamic-require warnings emitted by OpenTelemetry/Genkit internals on server builds.
+    // These are expected from upstream packages and don't affect runtime behavior.
+    if (isServer) {
+      config.ignoreWarnings = [
+        ...(config.ignoreWarnings || []),
+        { module: /@opentelemetry\/instrumentation/ },
+        { module: /require-in-the-middle/ },
+      ];
+    }
+
+    return config;
+  },
 };
 
 module.exports = withNextIntl(nextConfig);
