@@ -59,44 +59,42 @@
   }
 }
 
-/* Character level animation class */
-.char-span {
-  display: inline-block;
-  will-change: transform;
-}
-
-/* createLayout grid demo styles */
-.grid-layout {
-  display: grid;
-  gap: 1.5rem;
-  transition: all 0.5s ease;
-}
-
-[data-grid="1"] {
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
-}
-[data-grid="1"] .item:nth-child(1) { grid-column: 1; grid-row: 1 / 3; }
-[data-grid="1"] .item:nth-child(2) { grid-column: 2; grid-row: 1; }
-[data-grid="1"] .item:nth-child(3) { grid-column: 1; grid-row: 3; }
-[data-grid="1"] .item:nth-child(4) { grid-column: 2; grid-row: 2 / 4; }
-
-[data-grid="2"] {
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 1fr 1fr;
-}
-[data-grid="2"] .item:nth-child(1),
-[data-grid="2"] .item:nth-child(4) { grid-row: 1 / 3; }
-
-[data-grid="3"] {
-  grid-template-columns: 1fr 1fr;
-}
-[data-grid="3"] .item:nth-child(odd) { transform: translateY(20px); }
-
-[data-grid="4"] {
-  grid-template-columns: repeat(6, 1fr);
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-2xl border border-white/5;
+  }
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-white via-white to-white/40;
+  }
+  .glow-primary {
+    @apply shadow-[0_0_50px_-12px_rgba(37,211,102,0.3)];
+  }
+  .noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.05;
+    pointer-events: none;
+  }
 }
 
 html {
   scroll-behavior: smooth;
+  @apply antialiased;
+}
+
+body {
+  @apply selection:bg-primary/30 selection:text-primary;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
 }

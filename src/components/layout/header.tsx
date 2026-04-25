@@ -60,14 +60,14 @@ export default function Header() {
   }
 
   return (
-    <header className="px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-lg z-[100] border-b border-border shadow-sm">
+    <header className="px-6 lg:px-8 py-4 flex items-center justify-between fixed top-0 left-0 right-0 z-[100] transition-all duration-300 glass-dark border-none">
         <Link href="/" className="flex items-center gap-3 cursor-pointer">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/10">
-             <span className="text-primary-foreground text-2xl font-black">M</span>
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg glow-primary">
+             <span className="text-black text-2xl font-black">M</span>
           </div>
           <div className="flex flex-col leading-tight">
-            <h1 className="text-2xl font-black tracking-tighter text-foreground">MitraOS</h1>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Powered by DukaanMitra</span>
+            <h1 className="text-2xl font-black tracking-tighter text-white uppercase">MitraOS</h1>
+            <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-primary">Powered by DukaanMitra</span>
           </div>
         </Link>
         

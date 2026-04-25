@@ -70,24 +70,74 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   // JSON-LD Structured Data for SEO
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "DukaanMitra (MitraOS)",
-    "description": "AI-Powered WhatsApp Digital Munim and Udhaar App for Indian Kirana Stores.",
-    "url": "https://dukaanmitra.in",
-    "applicationCategory": "BusinessApplication",
-    "operatingSystem": "All",
-    "offers": {
-      "@type": "Offer",
-      "price": "1999",
-      "priceCurrency": "INR"
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "DukaanMitra (MitraOS)",
+      "description": "AI-Powered WhatsApp Digital Munim and Udhaar App for Indian Kirana Stores.",
+      "url": "https://dukaanmitra.in",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "1999",
+        "priceCurrency": "INR"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "MitraOS Technologies"
+      }
     },
-    "author": {
-      "@type": "Organization",
-      "name": "MitraOS Technologies"
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "DukaanMitra",
+      "operatingSystem": "Any",
+      "applicationCategory": "BusinessApplication",
+      "description": "India's first AI-powered WhatsApp Munim for Kirana stores. Manage udhaar, sales, and inventory via WhatsApp.",
+      "softwareVersion": "2.0.0",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Amit Sharma"
+      },
+      "featureList": [
+        "WhatsApp-First Interface",
+        "AI-Powered Transaction Extraction",
+        "Automated Ledger Management",
+        "Real-time Udhaar Tracking",
+        "Daily Sales Reports",
+        "Retail Intelligence Insights"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I start using DukaanMitra?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Simply send 'START' to our WhatsApp number +91 63937 41171. No app download is required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my data safe?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, we use enterprise-grade encryption and secure cloud storage (Firebase) to ensure your shop's data is always protected."
+          }
+        }
+      ]
     }
-  };
+  ];
 
   return (
     <html lang={locale} className="!scroll-smooth" suppressHydrationWarning>
