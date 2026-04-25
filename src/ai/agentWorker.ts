@@ -4,7 +4,7 @@ import { Tool, Thought, Action, Observation, AgentConfig } from "./types";
 import { toolRegistry } from "./toolRegistry";
 import { MemoryManager } from "./memoryManager";
 import { ai } from "./genkit";
-import { gemini25Flash } from "@genkit-ai/google-genai";
+import { gemini15Flash } from "@genkit-ai/google-genai";
 import { z } from "zod";
 
 const ThoughtSchema = z.object({
@@ -164,7 +164,7 @@ Respond as a ${mode}.`;
     const schema = mode === "thought" ? ThoughtSchema : ActionSchema;
 
     const response = await ai.generate({
-      model: gemini25Flash,
+      model: gemini15Flash,
       prompt,
       output: { schema }
     });
@@ -177,7 +177,7 @@ Respond as a ${mode}.`;
     logEvent({
       type: "llm_usage",
       agentId: this.config.agentId,
-      model: "gemini25Flash",
+      model: "gemini15Flash",
       usage,
       cost
     });

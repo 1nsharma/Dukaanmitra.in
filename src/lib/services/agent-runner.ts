@@ -6,6 +6,7 @@ import { executeAction } from './action-engine';
 import { adminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { LedgerService } from '@/lib/modules/ledger/services/ledger-service';
+import { DeterministicAgent } from '@/ai/free/deterministic-agent';
 
 interface NormalizedMessage {
     from: string;
@@ -79,33 +80,35 @@ export async function processMessage(message: NormalizedMessage) {
         }
 
         // 1. ATTEMPT DETERMINISTIC PARSING (Fast, Free, High Integrity)
-        const simpleBill = parseSimpleBill(cleanedQuery);
+        const deterministicResult = await DeterministicAgent.process({ query: cleanedQuery, shopContext });
 
-        if (simpleBill) {
+        if (deterministicResult) {
             console.log(`[Processor] Using deterministic path for ${message.messageId}`);
             
-            // Unified High-Integrity Write Path
-            await LedgerService.addEntry({ 
-                id: 'system', 
-                role: 'system', 
-                shopId: shopCode 
-            }, shopCode, {
-                customerPhone: message.from,
-                customerName: `Customer ${message.from.slice(-4)}`,
-                amount: simpleBill.amount,
-                item: simpleBill.items,
-                type: simpleBill.type,
-                source: 'whatsapp'
-            }, correlationId);
+            if (deterministicResult.action && deterministicResult.action.type === 'ADD_LEDGER_ENTRY') {
+                const tx = deterministicResult.action.payload.transaction;
+                await LedgerService.addEntry({ 
+                    id: 'system', 
+                    role: 'system', 
+                    shopId: shopCode 
+                }, shopCode, {
+                    customerPhone: message.from,
+                    customerName: tx.customer_name || `Customer ${message.from.slice(-4)}`,
+                    amount: tx.amount,
+                    item: tx.items,
+                    type: tx.type,
+                    source: 'whatsapp'
+                }, correlationId);
+            }
 
-            const reply = `Ji Namaste 🙏\n\n₹${simpleBill.amount} record ho gaya hai. ✅\n\nShukriya!`;
+            const reply = deterministicResult.response || "Ji Namaste 🙏 Kaam ho gaya hai. ✅";
             await sendWhatsAppMessage(message.from, reply);
             
             await interactionRef.update({ 
                 processing_status: 'processed', 
                 system_response: reply, 
-                detected_intent: 'ledger_entry_simple',
-                processing_path: 'deterministic',
+                detected_intent: deterministicResult.intent,
+                processing_path: 'deterministic_agent',
             });
         
         } else {

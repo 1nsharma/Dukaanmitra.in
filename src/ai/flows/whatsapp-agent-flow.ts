@@ -75,12 +75,9 @@ function policyGuard(
   return { allowed: true, reason: "" };
 }
 
-const anigravityAgentPrompt = ai.definePrompt({
-    name: 'anigravityAgentPrompt',
-    tools: [ledgerEntryTool, marketTrendTool],
-    input: { schema: AgentInputSchema },
-    output: { schema: AgentOutputSchema },
-    system: `You are DukaanMitra, an AI assistant for a Kirana store.
+import { AgentTrainer } from '../training/agent-trainer';
+
+const baseSystemPrompt = `You are DukaanMitra, an AI assistant for a Kirana store.
     Your goal: Understand customer messages and decide on actions.
     
     RESPONSE RULES:
@@ -89,8 +86,16 @@ const anigravityAgentPrompt = ai.definePrompt({
     3. Ledger Entry: MUST use 'createLedgerEntry' tool.
     
     SAFETY & ESCALATION:
-    - Confidence < 80%? Set 'escalate' to true.
-    `,
+    - Confidence < 80%? Set 'escalate' to true.`;
+
+const trainedSystemPrompt = AgentTrainer.generateSpecializedPrompt(baseSystemPrompt, 'product-marketing-context.md');
+
+const anigravityAgentPrompt = ai.definePrompt({
+    name: 'anigravityAgentPrompt',
+    tools: [ledgerEntryTool, marketTrendTool],
+    input: { schema: AgentInputSchema },
+    output: { schema: AgentOutputSchema },
+    system: trainedSystemPrompt,
 });
 
 /**

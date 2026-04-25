@@ -8,6 +8,11 @@
 import { toolRegistry } from "./toolRegistry";
 import { verifyHumanTool } from "./tools/verifyHuman";
 import { shopSearchTool } from "./tools/shopSearch";
+import { Orchestrator } from "./orchestrator";
+import { AgentTrainer } from "./training/agent-trainer";
+import { DeterministicAgent } from "./free/deterministic-agent";
+
+export { Orchestrator, AgentTrainer, DeterministicAgent };
 
 // Register core tools – add new imports above and call register() here.
 export function registerAiTools() {

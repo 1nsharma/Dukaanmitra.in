@@ -43,23 +43,28 @@ export default function LandingPage() {
 
           <MunimFlow />
 
+
           {/* Stats Section */}
           <div className="container px-6">
-            <div className="glass-dark rounded-[3rem] p-12 md:p-20 flex flex-wrap justify-between gap-12 items-center">
+            <div className="ledger-card p-12 md:p-20 flex flex-wrap justify-between gap-12 items-center bg-zinc-50 dark:bg-zinc-950">
               {[
-                { label: "Active Shops", val: "10,000+", sub: "Growing daily" },
-                { label: "Ledger Entries", val: "INR 500Cr+", sub: "Processed safely" },
-                { label: "Language Support", val: "12+", sub: "Local dialects" },
-                { label: "Uptime", val: "99.9%", sub: "Enterprise grade" }
+                { label: "Active Shops", val: "10,000+", sub: "Verified Merchants" },
+                { label: "Ledger Entries", val: "₹500Cr+", sub: "Total Volume" },
+                { label: "Language Support", val: "12+", sub: "Indic Dialects" },
+                { label: "Precision", val: "99.9%", sub: "AI Extraction Rate" }
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col">
-                  <span className="text-4xl md:text-6xl font-black tracking-tighter text-primary">{stat.val}</span>
-                  <span className="text-xs font-bold uppercase tracking-widest mt-2">{stat.label}</span>
-                  <span className="text-[10px] text-muted-foreground uppercase mt-1">{stat.sub}</span>
+                  <span className="text-4xl md:text-7xl font-display font-medium tracking-tighter text-secondary">{stat.val}</span>
+                  <span className="text-[10px] font-mono-ledger font-bold uppercase tracking-widest mt-4 text-foreground/80">{stat.label}</span>
+                  <span className="text-[10px] font-mono-ledger text-muted-foreground uppercase mt-1 opacity-50">{stat.sub}</span>
                 </div>
               ))}
+              
+              {/* Background Detail */}
+              <div className="absolute inset-0 grid-pattern opacity-[0.05] pointer-events-none" />
             </div>
           </div>
+
 
           <Pricing />
 
