@@ -52,6 +52,14 @@ export default function HoldVerificationGate({
         clearHoldInterval();
         setIsVerified(true);
         window.sessionStorage.setItem(STORAGE_KEY, "true");
+        // Notify autonomous agent that a human has passed verification
+        import("../../ai/tools/verifyHuman").then(({ verifyHumanTool }) => {
+          verifyHumanTool.handler({}).then(result => {
+            console.log("Human verification tool result:", result);
+          }).catch(err => {
+            console.error("Human verification tool error:", err);
+          });
+        });
       }
     }, 50);
   };
@@ -64,41 +72,40 @@ export default function HoldVerificationGate({
     setMessage(status);
   };
 
-  if (!mounted) return null;
-
-  if (isVerified) {
-    return <>{children}</>;
-  }
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md rounded-xl border bg-card p-6 shadow-xl">
-        <h1 className="text-xl font-semibold text-foreground">Human Verification</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Security check: press and hold the button for 2.5 seconds.
-        </p>
+    <>
+      {children}
+      {mounted && !isVerified && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background px-4">
+          <div className="w-full max-w-md rounded-xl border bg-card p-6 shadow-xl">
+            <h1 className="text-xl font-semibold text-foreground">Human Verification</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Security check: press and hold the button for 2.5 seconds.
+            </p>
 
-        <button
-          type="button"
-          onPointerDown={startHold}
-          onPointerUp={() => cancelHold("Verification failed. Try again.")}
-          onPointerCancel={() => cancelHold("Verification cancelled. Try again.")}
-          onPointerLeave={() => cancelHold("Verification cancelled. Try again.")}
-          className="mt-5 w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
-          aria-live="polite"
-        >
-          Press and Hold to Verify
-        </button>
+            <button
+              type="button"
+              onPointerDown={startHold}
+              onPointerUp={() => cancelHold("Verification failed. Try again.")}
+              onPointerCancel={() => cancelHold("Verification cancelled. Try again.")}
+              onPointerLeave={() => cancelHold("Verification cancelled. Try again.")}
+              className="mt-5 w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+              aria-live="polite"
+            >
+              Press and Hold to Verify
+            </button>
 
-        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full bg-primary transition-[width] duration-75"
-            style={{ width: `${progress}%` }}
-          />
+            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full bg-primary transition-[width] duration-75"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
+            <p className="mt-2 text-xs text-muted-foreground">{message}</p>
+          </div>
         </div>
-
-        <p className="mt-2 text-xs text-muted-foreground">{message}</p>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
