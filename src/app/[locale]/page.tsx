@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { Card } from '@/components/ui/card';
 import { 
   Smartphone, 
@@ -15,6 +15,7 @@ import {
   Move,
   ArrowRight
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 /**
  * DukaanMitra - Senior Engineer Implementation
@@ -23,6 +24,7 @@ import {
 
 export default function LandingPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations('LandingPage');
 
   useEffect(() => {
     // FIX: Using (0, eval) to hide the dynamic import from Next.js bundler
@@ -162,22 +164,25 @@ export default function LandingPage() {
       <section className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#25D366]/10 border border-[#25D366]/20">
           <Zap size={14} className="text-[#25D366]" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#25D366]">Anime.js v4 Modular Engine</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#25D366]">{t('hero.badge')}</span>
         </div>
         <h1 className="hero-headline font-headline text-6xl md:text-[9rem] font-black tracking-tighter leading-[0.85] uppercase mb-8">
-          BILLBOOK FEKO<br/>
-          <span className="text-[#25D366]">WHATSAPP CHALAO</span>
+          {t.rich('hero.headline', {
+            br: () => <br />,
+            span: (chunks) => <span className="text-[#25D366]">{chunks}</span>
+          })}
         </h1>
         <p className="max-w-xl text-lg md:text-xl text-muted-foreground font-medium mb-10 leading-relaxed">
-          AI-powered WhatsApp Munim for Kirana stores. <br/>
-          Built with high-fidelity deterministic animation.
+          {t.rich('hero.description', {
+            br: () => <br />
+          })}
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
           <Button size="lg" className="h-16 px-10 rounded-full bg-[#25D366] hover:bg-[#20ba56] text-black font-black uppercase text-lg" asChild>
-            <Link href="/login">Start Free Trial</Link>
+            <Link href="/login">{t('hero.cta.trial')}</Link>
           </Button>
           <Button size="lg" variant="outline" className="h-16 px-10 rounded-full border-white/10 hover:bg-white/5 font-black uppercase text-lg">
-            View Live Demo
+            {t('hero.cta.demo')}
           </Button>
         </div>
       </section>
@@ -185,21 +190,23 @@ export default function LandingPage() {
       {/* 2. FEATURES SECTION (onScroll) */}
       <section className="min-h-screen py-32 container">
         <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-20 text-center">
-          CORE <span className="text-[#25D366]">MODULES</span>
+          {t.rich('features.title', {
+            span: (chunks) => <span className="text-[#25D366]">{chunks}</span>
+          })}
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { title: "WhatsApp Entry", icon: <MessageCircle />, desc: "Pure text-to-ledger extraction with 99% accuracy." },
-            { title: "AI Munim", icon: <Bot />, desc: "Context-aware processing for local Hinglish slang." },
-            { title: "Digital Ledger", icon: <LayoutGrid />, desc: "Real-time state updates with deterministic math." },
-            { title: "Smart Reports", icon: <Zap />, desc: "Automated end-of-day analytics via WhatsApp." }
+            { id: "whatsapp", icon: <MessageCircle /> },
+            { id: "aimunim", icon: <Bot /> },
+            { id: "ledger", icon: <LayoutGrid /> },
+            { id: "reports", icon: <Zap /> }
           ].map((f, i) => (
             <Card key={i} className="feature-card p-10 bg-[#1b1b1b] border-none rounded-[2.5rem] hover:bg-[#222] transition-colors group">
               <div className="w-14 h-14 rounded-2xl bg-[#25D366]/10 flex items-center justify-center text-[#25D366] mb-6 group-hover:scale-110 transition-transform">
                 {f.icon}
               </div>
-              <h3 className="text-xl font-black uppercase mb-2 tracking-tight">{f.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed font-medium">{f.desc}</p>
+              <h3 className="text-xl font-black uppercase mb-2 tracking-tight">{t(`features.items.${f.id}.title`)}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed font-medium">{t(`features.items.${f.id}.desc`)}</p>
             </Card>
           ))}
         </div>
@@ -332,15 +339,17 @@ export default function LandingPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#25D366]/10 blur-[120px] rounded-full -z-10" />
         <div className="container relative z-10">
           <h2 className="text-6xl md:text-[10rem] font-black uppercase tracking-tighter leading-[0.85] mb-12">
-            READY TO<br/> <span className="text-[#25D366]">UPGRADE?</span>
+            {t.rich('cta.title', {
+              span: (chunks) => <span className="text-[#25D366]">{chunks}</span>
+            })}
           </h2>
           <Button size="lg" className="h-24 px-16 rounded-full bg-[#25D366] hover:bg-[#20ba56] text-black font-black uppercase text-3xl shadow-heavy shadow-[#25D366]/20 transition-all active:scale-95" asChild>
             <Link href="/login">
-              START FREE TRIAL 🚀
+              {t('cta.button')}
             </Link>
           </Button>
           <div className="mt-12 flex flex-col items-center gap-2">
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">Secured by Indian Sovereign Infrastructure</p>
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">{t('cta.security')}</p>
             <div className="flex gap-4 opacity-30 grayscale mt-4">
               <span className="font-bold">UP KIRANA</span>
               <span className="font-bold">DELHI RETAIL</span>

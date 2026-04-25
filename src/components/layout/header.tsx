@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { Link, useRouter, usePathname } from "@/i18n/routing";
 import { ChevronDown, Menu, LogOut, LayoutDashboard, UserCircle, Shield } from "lucide-react";
 import { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +17,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useUser, useAuth } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ThemeToggle } from "../theme-toggle";
+import LocaleSwitcher from "../i18n/locale-switcher";
 
 const navLinks = [
   { href: "/features", label: "AI Modules" },
@@ -46,7 +46,7 @@ export default function Header() {
   const NavLink = ({ href, label }: { href: string, label: string }) => {
     return (
         <Link 
-            href={href} 
+            href={href as any} 
             className="hover:text-primary transition-colors"
             onClick={() => setMobileMenuOpen(false)}
         >
@@ -112,6 +112,7 @@ export default function Header() {
                     )}
                     </>
                 )}
+                 <LocaleSwitcher />
                  <ThemeToggle />
             </div>
 
@@ -146,7 +147,14 @@ export default function Header() {
                   {navLinks.map((link) => <NavLink key={link.href} {...link} />)}
                 </nav>
                 <div className="mt-auto flex flex-col gap-4 border-t border-border pt-6">
-                    <ThemeToggle />
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Language</span>
+                        <LocaleSwitcher />
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Appearance</span>
+                        <ThemeToggle />
+                    </div>
                 </div>
               </div>
             </SheetContent>

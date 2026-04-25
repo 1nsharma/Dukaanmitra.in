@@ -1,6 +1,9 @@
-
+import createMiddleware from 'next-intl/middleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { routing } from './i18n/routing';
+
+const intlMiddleware = createMiddleware(routing);
 
 /**
  * MitraOS Production Security Middleware
@@ -31,17 +34,24 @@ export function middleware(request: NextRequest) {
     '/api/cron'
   ];
   
-  const isProtected = protectedPaths.some(path => url.pathname.startsWith(path));
+  // Strip locale prefix if present for path check
+  const pathname = url.pathname;
+  const pathnameWithoutLocale = routing.locales.some(locale => pathname.startsWith(`/${locale}/`))
+    ? pathname.replace(/^\/[^\/]+/, '')
+    : pathname;
+
+  const isProtected = protectedPaths.some(path => pathnameWithoutLocale.startsWith(path));
 
   if (isProductionFrontend && isProtected) {
     // Force redirect to homepage for any SaaS or Admin routes on Vercel deployments
-    // This preserves marketing storytelling while hiding app operations.
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  return NextResponse.next();
+  // Handle i18n
+  return intlMiddleware(request);
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Match only internationalized pathnames
+  matcher: ['/', '/(hi|en|mr)/:path*', '/((?!api|_next|_vercel|.*\\..*).*)'],
 };
