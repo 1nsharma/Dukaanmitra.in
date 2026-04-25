@@ -44,11 +44,11 @@ export default function LandingPage() {
           <MunimFlow />
 
           {/* Stats Section */}
-          <section className="container px-6">
+          <div className="container px-6">
             <div className="glass-dark rounded-[3rem] p-12 md:p-20 flex flex-wrap justify-between gap-12 items-center">
               {[
                 { label: "Active Shops", val: "10,000+", sub: "Growing daily" },
-                { label: "Ledger Entries", val: "₹500Cr+", sub: "Processed safely" },
+                { label: "Ledger Entries", val: "INR 500Cr+", sub: "Processed safely" },
                 { label: "Language Support", val: "12+", sub: "Local dialects" },
                 { label: "Uptime", val: "99.9%", sub: "Enterprise grade" }
               ].map((stat, i) => (
@@ -59,7 +59,7 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-          </section>
+          </div>
 
           <Pricing />
 

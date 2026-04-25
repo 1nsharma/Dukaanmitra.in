@@ -4,16 +4,14 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Link, useRouter } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
 import { Zap, ArrowRight } from 'lucide-react';
 import { WhatsAppSimulation } from './whatsapp-simulation';
 
-export function LandingHero() {
-  const t = useTranslations('LandingPage');
+export const LandingHero = () => {
   const router = useRouter();
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 overflow-hidden">
+    <div className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 overflow-hidden">
       {/* Background Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full" />
@@ -51,13 +49,13 @@ export function LandingHero() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 w-full sm:w-auto">
-              <Button size="xl" className="h-20 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-black font-black uppercase group transition-all glow-primary text-xl" asChild>
+              <Button size="lg" className="h-20 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-black font-black uppercase group transition-all glow-primary text-xl" asChild>
                 <Link href="/login" className="flex items-center gap-3">
                   START MANAGING DUKAAN
                   <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
                 </Link>
               </Button>
-              <Button size="xl" variant="outline" className="h-20 px-10 rounded-2xl border-white/10 hover:bg-white/5 font-black uppercase backdrop-blur-sm text-xl" onClick={() => router.push('/demo')}>
+              <Button size="lg" variant="outline" className="h-20 px-10 rounded-2xl border-white/10 hover:bg-white/5 font-black uppercase backdrop-blur-sm text-xl" onClick={() => router.push('/demo')}>
                 VIEW DEMO 📊
               </Button>
             </div>
@@ -94,7 +92,7 @@ export function LandingHero() {
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="absolute -top-10 -right-10 glass p-6 rounded-[2rem] z-30 shadow-2xl border-primary/20"
             >
-              <div className="text-primary font-black text-3xl tracking-tighter">₹12,500</div>
+              <div className="text-primary font-black text-3xl tracking-tighter">INR 12,500</div>
               <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Today's Sales</div>
             </motion.div>
 
@@ -108,9 +106,9 @@ export function LandingHero() {
                 <div className="text-white font-black text-xs uppercase tracking-[0.2em]">AI Parsing Active</div>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
       </div>
-    </section>
+    </div>
   );
-}
+};
