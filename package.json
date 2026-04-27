@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@genkit-ai/google-genai": "^1.33.0",
     "@google-cloud/pubsub": "^4.4.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.0",
