@@ -6,10 +6,10 @@
 @layer base {
   :root {
     /* Modern Mercantile Palette */
-    --mercantile-ink: #05070A;
-    --mercantile-paper: #F9F9F7;
-    --mercantile-gold: #C5A059;
-    --mercantile-mint: #25D366;
+    --mercantile-ink: 216 45% 3%;
+    --mercantile-paper: 60 11% 97%;
+    --mercantile-gold: 40 48% 56%;
+    --mercantile-mint: 142 70% 49%;
     
     --background: 0 0% 98%; /* Paper White */
     --foreground: 220 20% 4%; /* Ink Black */

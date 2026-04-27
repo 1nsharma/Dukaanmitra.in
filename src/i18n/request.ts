@@ -3,10 +3,15 @@ import {notFound} from 'next/navigation';
 import {routing} from './routing';
 
 export default getRequestConfig(async ({locale}) => {
+  console.log('getRequestConfig processing locale:', locale);
   // Validate that the incoming `locale` parameter is valid
-  if (!routing.locales.includes(locale as any)) notFound();
+  if (locale && !routing.locales.includes(locale as any)) {
+    console.log('Invalid locale:', locale);
+    notFound();
+  }
 
   return {
-    messages: (await import(`../../messages/${locale}.json`)).default
+    locale: locale || routing.defaultLocale,
+    messages: (await import(`../../messages/${locale || routing.defaultLocale}.json`)).default
   };
 });

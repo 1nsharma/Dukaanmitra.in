@@ -64,6 +64,8 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        'mercantile-ink': 'hsl(var(--mercantile-ink))',
+        'mercantile-gold': 'hsl(var(--mercantile-gold))',
       },
       borderRadius: {
         lg: 'var(--radius)',
