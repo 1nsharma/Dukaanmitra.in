@@ -33,14 +33,14 @@ import { Switch } from '@/components/ui/switch';
 const formSchema = z.object({
   name: z.string().min(2, "Shop name must be at least 2 characters."),
   phone: z.string().min(10, "Please enter a valid phone number."),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  pincode: z.string().optional(),
+  address: z.string().optional().default(""),
+  city: z.string().optional().default(""),
+  state: z.string().optional().default(""),
+  pincode: z.string().optional().default(""),
   settings_allow_credit: z.boolean().default(true),
   settings_credit_limit_per_transaction: z.coerce.number().positive().default(5000),
-  settings_working_hours_start: z.string().optional(),
-  settings_working_hours_end: z.string().optional(),
+  settings_working_hours_start: z.string().optional().default(""),
+  settings_working_hours_end: z.string().optional().default(""),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -63,7 +63,7 @@ export default function ShopDetails({ shop }: ShopDetailsProps) {
   const auth = useAuth();
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: shop.name || "",
       phone: shop.phone || "",

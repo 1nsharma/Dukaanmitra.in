@@ -13,7 +13,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function PublicVerificationPage() {
   const params = useParams();
-  const shopId = params.shopId as string;
+  const shopId = params?.shopId as string;
   const firestore = useFirestore();
 
   const shopRef = useMemoFirebase(() => {

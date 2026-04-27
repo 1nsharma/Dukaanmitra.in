@@ -67,7 +67,7 @@ export function Pricing() {
                 <p className="text-xs font-medium tracking-tight leading-relaxed">{p.bestFor}</p>
               </div>
               <Button 
-                variant={p.popular ? "primary" : "outline"} 
+                variant={p.popular ? "default" : "outline"} 
                 className={`w-full h-16 rounded-2xl font-black uppercase text-lg italic ${p.popular ? 'glow-primary' : ''}`}
               >
                 CHOOSE PLAN

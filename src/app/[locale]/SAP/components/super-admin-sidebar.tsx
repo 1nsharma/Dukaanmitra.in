@@ -44,7 +44,7 @@ export default function SuperAdminSidebar() {
       </div>
       <nav className="flex flex-col gap-2">
         {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.href);
+          const isActive = pathname?.startsWith(item.href);
           return (
             <Link
               key={item.href}

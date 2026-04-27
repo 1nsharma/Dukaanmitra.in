@@ -21,7 +21,7 @@ export default function BlogPostPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const params = useParams();
-  const slug = params.slug as string;
+  const slug = params?.slug as string;
 
   const [post, setPost] = useState<Post | null>(null);
   const [viewCounted, setViewCounted] = useState(false);
