@@ -1,7 +1,8 @@
 /**
  * Server-side catalog of optional DukaanMitra integration modules.
  * Catalog visibility does not assert an integration is implemented.
- * Optional modules remain disabled until source implementation is reviewed and marked implemented,\n * then require an explicit server flag.
+ * Optional modules remain disabled until source implementation is reviewed and marked implemented,
+ * then require an explicit server flag.
  */
 const MODULES = Object.freeze([
   { id:"shared-ai-brain", name:"Shared AI Brain", category:"platform", sourceProjects:["Dukaanmitra.in","Dukaanmitra-MitraOS","hiresaathi"], description:"Channel-neutral AI orchestration with server-side policy checks and auditable proposals.", flag:"DUKAANMITRA_MODULE_SHARED_AI_BRAIN", defaultEnabled:false, risk:"high", status:"planned" },
