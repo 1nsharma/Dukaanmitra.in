@@ -10,7 +10,7 @@ test("optional modules are disabled unless explicitly enabled", () => {
   assert.ok(modules.every((module) => module.enabled === false));
 });
 
-test("only exact string true enables an eligible feature flag", () => {
+test("feature flags cannot enable modules before implementation is reviewed", () => {
   const modules = getModuleCatalog({
     DUKAANMITRA_MODULE_SHARED_AI_BRAIN: "true",
     DUKAANMITRA_MODULE_BUSINESS_GROWTH: "1",
