@@ -15,7 +15,7 @@ test("feature flags cannot enable modules before implementation is reviewed", ()
     DUKAANMITRA_MODULE_SHARED_AI_BRAIN: "true",
     DUKAANMITRA_MODULE_BUSINESS_GROWTH: "1",
   });
-  assert.equal(modules.find((module) => module.id === "shared-ai-brain").enabled, true);
+  assert.equal(modules.find((module) => module.id === "shared-ai-brain").enabled, false);
   assert.equal(modules.find((module) => module.id === "business-growth").enabled, false);
 });
 
