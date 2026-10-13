@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "name": "dukaanmitra-os",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://api.dukaanmitra.in/api/v1/:path*"
+    },
+    {
+      "source": "/webhook",
+      "destination": "https://api.dukaanmitra.in/webhook"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://api.dukaanmitra.in/admin/:path*"
+    }
+  ]
+}

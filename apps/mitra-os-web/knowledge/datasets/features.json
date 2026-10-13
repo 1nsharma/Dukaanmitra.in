@@ -1,0 +1,20 @@
+{
+  "features": [
+    "WhatsApp-first shop management without app download",
+    "AI-powered transaction parsing from natural language messages",
+    "Automatic customer, amount, and item extraction from entries like 'Rahul 500 Chini'",
+    "Real-time digital ledger updates in Google Sheets or SQL databases",
+    "Udhaar tracking with instant customer statements",
+    "Automated WhatsApp reminders for credit recovery",
+    "End-of-day sales, udhaar, and inventory summaries on WhatsApp",
+    "Smart inventory tracking with low-stock alerts",
+    "Retail intelligence on stock trends and customer behaviour",
+    "GST-ready billing on paid plans",
+    "Google Business setup for merchant visibility",
+    "Advanced FMCG analytics for established stores",
+    "B2B supply chain leads and distributor referrals",
+    "Secure cloud storage with Firebase and enterprise-grade encryption",
+    "Free onboarding and 24/7 WhatsApp support"
+  ],
+  "last_updated": "2026-04-29"
+}

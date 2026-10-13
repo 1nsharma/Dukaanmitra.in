@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a101d"/>
+      <stop offset="100%" stop-color="#04060b"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ade80"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+    <linearGradient id="shadowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(0,0,0,0.5)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGrad)" stroke="#ffffff" stroke-width="12" />
+
+  <!-- Inner elements translated for centering -->
+  <g transform="translate(136, 126)">
+    
+    <!-- Bag Handle (The lock ring) -->
+    <!-- It's a thick arch on top -->
+    <path d="M 50 110 L 50 60 C 50 10, 190 10, 190 60 L 190 110 L 140 110 L 140 60 C 140 40, 100 40, 100 60 L 100 110 Z" fill="url(#greenGrad)" />
+    
+    <!-- Letter D (Left Side) -->
+    <!-- It's wide, with a gap on top left, but let's make it a solid shape -->
+    <!-- Drawing D with a folded look -->
+    <path d="M 0 130 L 100 130 C 140 130, 140 190, 100 190 L 50 190 L 50 260 L 0 260 Z" fill="url(#greenGrad)" />
+    <!-- The hole in D -->
+    <path d="M 50 155 L 85 155 C 95 155, 95 170, 85 170 L 50 170 Z" fill="url(#bgGrad)" />
+
+    <!-- Shadow under D overlap -->
+    <path d="M 100 190 L 100 260 L 130 260 Z" fill="url(#shadowGrad)" />
+
+    <!-- Letter M (Right Side) -->
+    <!-- Interlocks with D -->
+    <path d="M 100 130 L 140 130 L 180 200 L 210 130 L 250 130 L 250 260 L 200 260 L 200 190 L 180 230 L 150 190 L 150 260 L 100 260 Z" fill="url(#greenGrad)" />
+    
+  </g>
+</svg>

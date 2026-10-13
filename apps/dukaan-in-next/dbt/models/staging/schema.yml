@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: dukaanmitra
+    database: postgres # This will be overridden by the profile
+    schema: public
+    tables:
+      - name: ingestion_events
+        description: "Raw events ingested via the web API and Firebase CDC"
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+          - name: event_type
+            tests:
+              - not_null
+          - name: shop_id
+            description: "The unique identifier for the shop. Can be null for global events."

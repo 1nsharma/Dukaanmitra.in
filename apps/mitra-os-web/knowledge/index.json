@@ -1,0 +1,29 @@
+{
+  "name": "DukaanMitra AI Knowledge Graph Index",
+  "version": "1.0",
+  "description": "Master index of all AI-readable structured content for SEO, GEO, and AEO optimization.",
+  "last_updated": "2026-04-29",
+  "entities": {
+    "brand": "/knowledge/entities/dukaanmitra.json",
+    "founder": "/knowledge/entities/founder.json",
+    "product": "/knowledge/entities/product.json",
+    "competitors": "/knowledge/entities/competitors.json",
+    "audience": "/knowledge/entities/audience-persona.json"
+  },
+  "sources": "/knowledge/sources/sources.json",
+  "faq": "/knowledge/faq/faqs.json",
+  "datasets": {
+    "market_data": "/knowledge/datasets/market-data.json",
+    "geo_seo_factors": "/knowledge/datasets/geo-seo-factors.json",
+    "features": "/knowledge/datasets/features.json",
+    "prompts_monitored": "/knowledge/datasets/prompts-to-monitor.json"
+  },
+  "articles": {
+    "geo_seo_guide": "/knowledge/articles/geo-seo.md",
+    "what_is_geo_seo": "/knowledge/articles/what-is-geo-seo.md",
+    "local_seo": "/knowledge/articles/local-seo.md",
+    "ai_marketing": "/knowledge/articles/ai-marketing.md",
+    "brand_identity": "/knowledge/articles/brand-identity.md"
+  },
+  "glossary": "/knowledge/glossary/terms.json"
+}

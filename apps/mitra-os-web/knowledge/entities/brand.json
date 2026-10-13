@@ -1,0 +1,10 @@
+{
+  "name": "DukaanMitra",
+  "alternateName": ["DukaanMitra OS", "DukaanMitra", "Munim AI"],
+  "type": "LocalBusinessPlatform",
+  "description": "DukaanMitra is India's first AI-powered WhatsApp Munim for Kirana stores. Manage Udhaar, sales, and automated debt recovery via WhatsApp.",
+  "founder": "Amit Sharma",
+  "location": "India",
+  "services": ["AI SEO", "Local Discovery", "WhatsApp Commerce", "Udhaar Management"],
+  "website": "https://dukaanmitra.in"
+}

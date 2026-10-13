@@ -1,0 +1,30 @@
+{
+  "topic": "GEO SEO Ranking Factors",
+  "factors": [
+    {
+      "name": "Entity Clarity",
+      "importance": "High",
+      "description": "Clear business identity helps AI understand the brand.",
+      "source": "https://schema.org"
+    },
+    {
+      "name": "Structured Data",
+      "importance": "High",
+      "description": "Schema markup improves machine readability.",
+      "source": "https://developers.google.com/search/docs"
+    },
+    {
+      "name": "Location Signals",
+      "importance": "High",
+      "description": "Accurate location data improves local ranking.",
+      "source": "https://developers.google.com/search/docs"
+    },
+    {
+      "name": "Content Consistency",
+      "importance": "Medium",
+      "description": "Consistent information builds trust across platforms.",
+      "source": "https://schema.org"
+    }
+  ],
+  "last_updated": "2026-04-29"
+}

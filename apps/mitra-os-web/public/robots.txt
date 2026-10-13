@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /__/auth/
+
+Sitemap: https://dukaanmitra.in/sitemap.xml

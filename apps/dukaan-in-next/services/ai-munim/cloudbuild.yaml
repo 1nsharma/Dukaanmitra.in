@@ -1,0 +1,33 @@
+steps:
+  # 1. Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/ai-munim:$COMMIT_SHA', '.']
+
+  # 2. Push the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/ai-munim:$COMMIT_SHA']
+
+  # 3. Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'ai-munim'
+      - '--image=gcr.io/$PROJECT_ID/ai-munim:$COMMIT_SHA'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      # Memory and CPU configuration for LLM workloads
+      - '--memory=2Gi'
+      - '--cpu=2'
+      # Production optimizations from skill
+      - '--min-instances=1'
+      - '--max-instances=10'
+      - '--concurrency=80'
+      - '--cpu-boost'
+      - '--no-cpu-throttling'
+      - '--execution-environment=gen2'
+
+images:
+  - 'gcr.io/$PROJECT_ID/ai-munim:$COMMIT_SHA'

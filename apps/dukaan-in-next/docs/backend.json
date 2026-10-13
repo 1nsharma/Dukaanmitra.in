@@ -1,0 +1,200 @@
+
+{
+  "entities": {
+    "ContactFormSubmission": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContactFormSubmission",
+      "type": "object",
+      "description": "Represents a contact form submission from the website.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "submittedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "email", "subject", "message", "submittedAt"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's public profile information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "shopId": { "type": "string" },
+        "role": { "type": "string", "enum": ["owner", "staff", "franchise_admin", "super_admin"] },
+        "status": { "type": "string", "enum": ["active", "pending", "suspended"] },
+        "lastLogin": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "createdAt", "role", "status"]
+    },
+    "Shop": {
+      "title": "Shop",
+      "description": "Represents a Kirana store in the system.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "owner_name": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "pincode": { "type": "string" },
+        "mrr": { "type": "number" },
+        "lastActive": { "type": "string", "format": "date-time" },
+        "plan": { "type": "string", "enum": ["free", "basic", "pro", "enterprise"] },
+        "status": { "type": "string", "enum": ["active", "trial", "suspended", "cancelled", "locked"] },
+        "trial_ends_at": { "type": "string", "format": "date-time" },
+        "paid_till": { "type": "string", "format": "date-time" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "language": { "type": "string", "enum": ["hi", "en", "hinglish"] },
+            "currency": { "type": "string" },
+            "timezone": { "type": "string" },
+            "allow_credit": { "type": "boolean" },
+            "credit_limit_per_transaction": { "type": "number" },
+            "working_hours": {
+              "type": "object",
+              "properties": {
+                "start": { "type": "string", "format": "time" },
+                "end": { "type": "string", "format": "time" }
+              }
+            }
+          }
+        }
+      },
+      "required": ["id", "owner_id", "name", "phone"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Represents a customer of a specific shop.",
+      "type": "object",
+      "properties": {
+        "shop_id": { "type": "string" },
+        "phone": { "type": "string" },
+        "name": { "type": "string" },
+        "first_visit": { "type": "string", "format": "date-time" },
+        "last_visit": { "type": "string", "format": "date-time" },
+        "lastPaymentDate": { "type": "string", "format": "date-time" },
+        "visit_count": { "type": "number" },
+        "total_spent": { "type": "number" },
+        "totalUdhaar": { "type": "number" },
+        "status": { "type": "string", "enum": ["NEW", "REPEAT", "LOYAL", "churned", "blocked"] },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "lastReminderSentAt": { "type": "string", "format": "date-time" },
+        "reminderCount": { "type": "number" }
+      },
+      "required": ["shop_id", "phone"]
+    },
+    "LedgerEntry": {
+      "title": "Ledger Entry",
+      "description": "Represents a single transaction.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "shop_id": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "customerName": { "type": "string" },
+        "amount": { "type": "number" },
+        "item": { "type": "string" },
+        "type": { "type": "string", "enum": ["credit", "payment"] },
+        "source": { "type": "string", "enum": ["whatsapp", "app", "manual", "app-ai", "whatsapp-ai"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "raw_text": { "type": "string", "description": "The original unmodified message text." },
+        "source_model_version": { "type": "string" },
+        "source_confidence": { "type": "number" }
+      },
+      "required": ["id", "shop_id", "amount", "type", "customerPhone"]
+    },
+    "Interaction": {
+      "title": "Interaction Log",
+      "description": "Stores every raw incoming message and the system's reaction for auditing and AI training (Data Flywheel).",
+      "type": "object",
+      "properties": {
+        "interactionId": { "type": "string" },
+        "shop_id": { "type": "string" },
+        "sender_type": { "type": "string", "enum": ["customer", "shopkeeper", "system"] },
+        "sender_phone": { "type": "string" },
+        "raw_message": { "type": "string" },
+        "detected_intent": { "type": "string" },
+        "extracted_entities": { "type": "object" },
+        "system_response": { "type": "string" },
+        "response_time_ms": { "type": "number" },
+        "queue_delay_ms": { "type": "number" },
+        "decision_confidence": { "type": "number" },
+        "processing_status": { "type": "string", "enum": ["received", "processing", "processed", "failed", "escalated"] },
+        "processing_path": {
+          "type": "string",
+          "enum": ["deterministic", "ai_fallback"],
+          "description": "The processing path taken."
+        },
+        "shop_context_snapshot": { "type": "object", "description": "What the AI saw during inference." },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["interactionId", "sender_phone", "created_at"]
+    },
+    "GlobalMetrics": {
+      "title": "Global Metrics",
+      "description": "Aggregated platform metrics.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": "number" },
+        "mrr": { "type": "number" },
+        "activeSubscriptions": { "type": "number" },
+        "activeTrials": { "type": "number" },
+        "churnedShops": { "type": "number" },
+        "totalShops": { "type": "number" },
+        "trialToPaidConversionRate": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "updatedAt"]
+    },
+    "ShopInsight": {
+      "title": "Shop Insight",
+      "description": "Operator Intelligence Feed item.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["SALES_DROP", "GROWTH_TIP", "RISK_ALERT", "SUCCESS", "ACTION_REQUIRED"] },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "action_label": { "type": "string" },
+        "action_type": { "type": "string" },
+        "action_payload": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isRead": { "type": "boolean" }
+      },
+      "required": ["id", "type", "title", "message", "createdAt"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password", "anonymous"]
+  },
+  "firestore": {
+    "structure": [
+      { "path": "/users/{userId}", "definition": { "schema": { "$ref": "#/entities/UserProfile" } } },
+      { "path": "/shops/{shopId}", "definition": { "schema": { "$ref": "#/entities/Shop" } } },
+      { "path": "/shops/{shopId}/customers/{customerPhone}", "definition": { "schema": { "$ref": "#/entities/Customer" } } },
+      { "path": "/shops/{shopId}/ledger/{ledgerId}", "definition": { "schema": { "$ref": "#/entities/LedgerEntry" } } },
+      { "path": "/shops/{shopId}/insights/{insightId}", "definition": { "schema": { "$ref": "#/entities/ShopInsight" } } },
+      { "path": "/contactFormSubmissions/{submissionId}", "definition": { "schema": { "$ref": "#/entities/ContactFormSubmission" } } },
+      { "path": "/interactions/{interactionId}", "definition": { "schema": { "$ref": "#/entities/Interaction" } } },
+      { "path": "/metrics/{metricId}", "definition": { "schema": { "$ref": "#/entities/GlobalMetrics" } } },
+      { "path": "/cron_locks/{lockId}", "definition": { "schema": { "type": "object" } } },
+      { "path": "/whatsapp_outbox/{hash}", "definition": { "schema": { "type": "object" } } }
+    ]
+  }
+}

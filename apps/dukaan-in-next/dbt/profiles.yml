@@ -1,0 +1,21 @@
+dukaanmitra:
+  outputs:
+    dev:
+      type: postgres
+      threads: 4
+      host: "{{ env_var('SUPABASE_DB_HOST') }}"
+      port: 5432
+      user: postgres
+      pass: "{{ env_var('SUPABASE_DB_PASSWORD') }}"
+      dbname: postgres
+      schema: public
+    prod:
+      type: postgres
+      threads: 8
+      host: "{{ env_var('SUPABASE_DB_HOST_PROD') }}"
+      port: 5432
+      user: postgres
+      pass: "{{ env_var('SUPABASE_DB_PASSWORD_PROD') }}"
+      dbname: postgres
+      schema: public
+  target: dev

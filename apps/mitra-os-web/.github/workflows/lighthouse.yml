@@ -1,0 +1,44 @@
+name: Lighthouse Audit
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight to monitor site performance
+  workflow_dispatch:      # Enable manual execution
+
+jobs:
+  audit:
+    name: Run PageSpeed Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Lighthouse CLI
+        run: npm install -g lighthouse
+
+      - name: Run Lighthouse Audit on Production Endpoint
+        run: |
+          mkdir -p reports
+          lighthouse https://dukaanmitra.in/ --output=json --output-path=./reports/report.json --chrome-flags="--headless"
+
+      - name: Run Performance Notification Alert
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -f "./scripts/notify-performance-status.js" ]; then
+            node ./scripts/notify-performance-status.js ./reports/report.json
+          else
+            echo "⚠️ Performance alert notifier script not found. Skipping notifications."
+          fi
+
+      - name: Upload Audit Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report-json
+          path: ./reports/report.json

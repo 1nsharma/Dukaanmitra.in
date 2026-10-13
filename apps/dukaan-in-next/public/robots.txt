@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /features
+Allow: /pricing
+Allow: /blog
+Allow: /contact
+Allow: /docs
+Disallow: /dashboard
+Disallow: /SAP
+Disallow: /api
+Disallow: /login
+
+Sitemap: https://dukaanmitra.in/sitemap.xml

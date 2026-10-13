@@ -1,0 +1,268 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  type      String
+  source    String
+  payload   Json
+  metadata  Json?
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([source])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Customer {
+  id                String    @id @default(cuid())
+  phone             String    @unique
+  name              String?
+  totalSales        Float     @default(0)
+  totalOrders       Int       @default(0)
+  lastOrderAt       DateTime?
+  preferredMode     String?
+  averageOrderValue Float     @default(0)
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  sales Sale[]
+
+  @@index([phone])
+}
+
+model Sale {
+  id         String    @id @default(cuid())
+  storeId    String?
+  store      Store?    @relation(fields: [storeId], references: [id])
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  amount     Float
+  mode       String
+  source     String
+  confidence Float?
+  eventId    String?
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+
+  items SaleItem[]
+
+  @@index([customerId])
+  @@index([source])
+  @@index([createdAt])
+  @@index([storeId])
+}
+
+// Line items link sales to inventory so stock decrements deterministically.
+model SaleItem {
+  id        String  @id @default(cuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Float
+  unitPrice Float
+  lineTotal Float
+
+  @@index([saleId])
+  @@index([productId])
+}
+
+model WhatsAppMessage {
+  id          String   @id @default(cuid())
+  messageId   String   @unique
+  phone       String
+  direction   String
+  content     String
+  contentType String   @default("text")
+  status      String   @default("RECEIVED")
+  eventId     String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([phone])
+  @@index([messageId])
+  @@index([direction])
+}
+
+// ─── Business Templates (pre-generated, editable) ───────────────────────────
+// Every business type (kirana, pharmacy, salon, restaurant, garage, tuition...)
+// ships as a template: default inventory SKUs, services, workflows, onboarding
+// flow. Merchants pick a template during UPI-like onboarding and edit anything.
+
+model BusinessTemplate {
+  id          String   @id @default(cuid())
+  key         String   @unique // e.g. "kirana", "pharmacy", "salon"
+  name        String // display name, e.g. "Kirana / General Store"
+  category    String // retail | services | food | health | education | auto | other
+  description String?
+  config      Json // default SKUs, services, tax rules, low-stock thresholds, workflows
+  onboarding  Json // guided steps: verify phone -> pick template -> confirm starter inventory -> done
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  stores Store[]
+
+  @@index([category])
+  @@index([key])
+}
+
+model Store {
+  id          String            @id @default(cuid())
+  name        String
+  phone       String            @unique // owner/merchant WhatsApp or app number
+  ownerId     String?
+  templateId  String?
+  template    BusinessTemplate? @relation(fields: [templateId], references: [id])
+  type        String            @default("retail") // retail | services | hybrid
+  address     String?
+  gstin       String?
+  currency    String            @default("INR")
+  settings    Json? // per-store overrides of template config
+  onboardedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  products       Product[]
+  stockMovements StockMovement[]
+  mediaAssets    MediaAsset[]
+  annotations    Annotation[]
+  knowledgeDocs  KnowledgeDoc[]
+  sales          Sale[]
+
+  @@index([templateId])
+  @@index([type])
+}
+
+// ─── Inventory: pre-generated from template + fully editable by AI/merchant ─
+
+model Product {
+  id            String   @id @default(cuid())
+  storeId       String
+  store         Store    @relation(fields: [storeId], references: [id])
+  sku           String // internal code
+  name          String
+  hsn           String? // GST HSN code
+  category      String?
+  unit          String   @default("pcs") // pcs | kg | litre | ml | packet | service
+  packSize      Float    @default(1)
+  costPrice     Float    @default(0)
+  sellPrice     Float    @default(0)
+  taxRate       Float    @default(0)
+  openingStock  Float    @default(0)
+  currentStock  Float    @default(0)
+  lowStockAlert Float    @default(5)
+  barcode       String?
+  imageUrl      String?
+  isService     Boolean  @default(false)
+  source        String   @default("TEMPLATE") // TEMPLATE | MANUAL | OCR | VOICE | PHOTO
+  confidence    Float? // AI-extracted fields carry confidence
+  metadata      Json?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  movements StockMovement[]
+  items     SaleItem[]
+
+  @@unique([storeId, sku])
+  @@index([storeId, category])
+  @@index([storeId, isActive])
+}
+
+model StockMovement {
+  id         String   @id @default(cuid())
+  storeId    String
+  store      Store    @relation(fields: [storeId], references: [id])
+  productId  String?
+  product    Product? @relation(fields: [productId], references: [id])
+  type       String // PURCHASE_IN | SALE_OUT | ADJUSTMENT | RETURN | OPENING
+  quantity   Float // signed: + in, - out
+  balance    Float? // stock after movement
+  refType    String? // SALE | PURCHASE | EVENT | MANUAL
+  refId      String?
+  eventId    String?
+  source     String   @default("SYSTEM") // APP | WHATSAPP | VOICE | OCR | PHOTO | SYSTEM
+  confidence Float?
+  note       String?
+  createdAt  DateTime @default(now())
+
+  @@index([storeId, createdAt])
+  @@index([productId])
+  @@index([eventId])
+}
+
+// ─── Multi-modal capture: voice, photo, OCR, detection, annotation ──────────
+
+model MediaAsset {
+  id         String   @id @default(cuid())
+  storeId    String
+  store      Store    @relation(fields: [storeId], references: [id])
+  kind       String // image | audio | video
+  url        String
+  thumbUrl   String?
+  mimeType   String?
+  source     String // WHATSAPP | APP | VOICE_NOTE
+  transcript String? // STT output for audio/video
+  ocrText    String? // raw OCR output for images
+  detections Json? // detected objects/products with boxes + confidence
+  parsed     Json? // structured parse result (bill/inventory entry)
+  confidence Float?
+  processed  Boolean  @default(false)
+  eventId    String?
+  createdAt  DateTime @default(now())
+
+  annotations Annotation[]
+
+  @@index([storeId, kind])
+  @@index([processed])
+}
+
+model Annotation {
+  id         String      @id @default(cuid())
+  storeId    String
+  store      Store       @relation(fields: [storeId], references: [id])
+  assetId    String?
+  asset      MediaAsset? @relation(fields: [assetId], references: [id])
+  target     String // MEDIA | PRODUCT | KNOWLEDGE_DOC
+  targetId   String?
+  label      String // e.g. "shelf-3", "damaged-pack", "price-tag-mismatch"
+  box        Json? // {x,y,w,h} normalized detection box
+  note       String?
+  createdBy  String      @default("AI") // AI | MERCHANT
+  confidence Float?
+  createdAt  DateTime    @default(now())
+
+  @@index([storeId, target])
+  @@index([assetId])
+}
+
+// ─── Store knowledge base (everything the AI knows about this shop) ─────────
+
+model KnowledgeDoc {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id])
+  kind      String // policy | price_note | customer_pref | supplier | faq | transcript | recipe
+  title     String
+  content   String
+  tags      String[] @default([])
+  source    String   @default("MANUAL") // MANUAL | VOICE | OCR | CHAT | IMPORT
+  embedding String? // vector placeholder; wired to pgvector in production
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId, kind])
+}

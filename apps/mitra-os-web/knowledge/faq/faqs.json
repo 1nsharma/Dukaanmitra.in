@@ -1,0 +1,18 @@
+{
+  "faqs": [
+    {
+      "question": "GEO SEO kya hai?",
+      "answer": "GEO SEO ek technique hai jisme location-based optimization kiya jata hai taaki business AI aur search engines me local results me dikhe."
+    },
+    {
+      "question": "AEO ka kya use hai?",
+      "answer": "AEO (Answer Engine Optimization) AI assistants aur voice search me direct answers dene ke liye content ko optimize karta hai."
+    },
+    {
+      "question": "DukaanMitra kya karta hai?",
+      "answer": "DukaanMitra AI tools ke through local businesses ko online visible banata hai aur SEO, GEO aur automation provide karta hai."
+    }
+  ],
+  "source": "https://github.com/your-repo",
+  "last_updated": "2026-04-29"
+}

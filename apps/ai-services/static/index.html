@@ -1,0 +1,1015 @@
+﻿<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1068eb">
+<link rel="manifest" href="/static/manifest.json">
+<title>DukaanMitra AI Technologies Pvt. Ltd. | Retail Superintelligence OS</title>
+<style>
+:root {
+  --primary: #1068eb;
+  --primary-hover: #0c52be;
+  --accent: #ff6f00;
+  --bg: #f4f6fa;
+  --card-bg: #ffffff;
+  --text: #1a202c;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
+body { background: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 40px; }
+header { background: #0f172a; color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.logo-group { display: flex; align-items: center; gap: 12px; }
+.logo-badge { background: linear-gradient(135deg, #2563eb, #38bdf8); color: white; font-weight: 800; font-size: 18px; padding: 6px 12px; border-radius: 8px; }
+.corp-title { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; }
+.corp-sub { font-size: 12px; color: #94a3b8; }
+.nav-tabs { display: flex; background: #1e293b; padding: 4px; border-radius: 8px; gap: 4px; overflow-x: auto; max-width: 100%; }
+.tab-btn { background: transparent; border: none; color: #94a3b8; padding: 8px 14px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+.tab-btn.active, .tab-btn:hover { background: var(--primary); color: white; }
+.container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.card { background: var(--card-bg); border-radius: var(--radius); padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); margin-bottom: 20px; }
+.card h2 { font-size: 17px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.row { display: flex; gap: 10px; align-items: center; }
+input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; margin-top: 4px; margin-bottom: 12px; font-size: 14px; outline: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--primary); ring: 2px solid rgba(16,104,235,0.2); }
+button { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+button:hover { background: var(--primary-hover); }
+button.secondary { background: #f1f5f9; color: #334155; border: 1px solid var(--border); }
+button.secondary:hover { background: #e2e8f0; }
+.stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-pill { background: white; padding: 14px; border-radius: 10px; border: 1px solid var(--border); }
+.stat-val { font-size: 22px; font-weight: 800; color: var(--primary); margin-top: 4px; }
+.stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.badge-green { background: #dcfce7; color: var(--success); }
+.badge-blue { background: #dbeafe; color: var(--primary); }
+.badge-amber { background: #fef3c7; color: var(--accent); }
+.chat-window { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px; min-height: 90px; margin-bottom: 12px; font-size: 14px; white-space: pre-wrap; }
+.proposal-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-weight: 600; }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.pricing-card { background: white; border-radius: 12px; padding: 24px; border: 1px solid var(--border); text-align: center; }
+.pricing-card.featured { border: 2px solid var(--primary); position: relative; }
+.pricing-card .price { font-size: 28px; font-weight: 800; margin: 12px 0; color: #0f172a; }
+.pricing-card ul { text-align: left; list-style: none; margin: 16px 0; font-size: 13px; color: #475569; }
+.pricing-card ul li { padding: 6px 0; border-bottom: 1px dashed var(--border); }
+.hidden { display: none !important; }
+@media (max-width: 768px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  header { flex-direction: column; align-items: flex-start; }
+  .nav-tabs { width: 100%; }
+}
+
+/* WhatsApp Dev Console & Phone Simulator Styles */
+.wa-container { display: grid; grid-template-columns: 460px 1fr; gap: 24px; align-items: start; }
+@media (max-width: 960px) { .wa-container { grid-template-columns: 1fr; } }
+.wa-phone { background: #efeae2; border: 12px solid #1e293b; border-radius: 36px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; height: 680px; position: relative; }
+.wa-notch { width: 140px; height: 18px; background: #1e293b; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; margin: 0 auto; }
+.wa-header { background: #075e54; color: white; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
+.wa-header-left { display: flex; align-items: center; gap: 10px; }
+.wa-avatar { width: 38px; height: 38px; border-radius: 50%; background: #128c7e; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; border: 2px solid white; }
+.wa-name { font-size: 14px; font-weight: 700; }
+.wa-status { font-size: 11px; color: #a7f3d0; }
+.wa-body { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background-color: #efeae2; background-image: radial-gradient(#d1d5db 1px, transparent 1px); background-size: 16px 16px; }
+.wa-msg { max-width: 82%; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.4; position: relative; word-wrap: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.1); white-space: pre-wrap; }
+.wa-msg-in { align-self: flex-end; background: #d9fdd3; color: #111b21; border-top-right-radius: 2px; }
+.wa-msg-out { align-self: flex-start; background: #ffffff; color: #111b21; border-top-left-radius: 2px; }
+.wa-msg-time { font-size: 10px; color: #667781; text-align: right; margin-top: 4px; display: flex; align-items: center; justify-content: flex-end; gap: 3px; }
+.wa-ticks { color: #53bdeb; font-size: 12px; }
+.wa-presets { padding: 8px 12px; background: #f0f2f5; border-top: 1px solid #e2e8f0; display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; }
+.wa-preset-btn { background: white; border: 1px solid #cbd5e1; border-radius: 14px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; color: #1e293b; transition: all 0.15s; }
+.wa-preset-btn:hover { background: #075e54; color: white; border-color: #075e54; }
+.wa-footer { background: #f0f2f5; padding: 10px; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; align-items: center; }
+.wa-input { flex: 1; border: none; background: white; border-radius: 20px; padding: 10px 14px; font-size: 13px; outline: none; margin: 0; }
+.wa-send-btn { width: 38px; height: 38px; border-radius: 50%; background: #00a884; color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; flex-shrink: 0; }
+.wa-send-btn:hover { background: #075e54; }
+.code-box { background: #0f172a; color: #38bdf8; font-family: monospace; font-size: 12px; padding: 14px; border-radius: 8px; overflow-x: auto; max-height: 240px; border: 1px solid #334155; }
+.telemetry-tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+.tag-amber { background: #fef3c7; color: #b45309; }
+.tag-green { background: #dcfce7; color: #15803d; }
+.tag-blue { background: #e0f2fe; color: #0369a1; }
+
+</style>
+</head>
+<body>
+<div id="pwaBanner" style="background:linear-gradient(90deg, #1e3a8a, #2563eb); color:white; padding:8px 16px; display:flex; align-items:center; justify-content:space-between; font-size:13px;">
+  <span>📲 <b>Install DukaanMitra App</b> on your Phone or Tablet</span>
+  <div>
+    <button onclick="installPWA()" style="background:#fff; color:#1e3a8a; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer;">Install App</button>
+    <button onclick="document.getElementById('pwaBanner').style.display='none'" style="background:transparent; color:#fff; border:none; margin-left:8px; cursor:pointer;">✕</button>
+  </div>
+</div>
+
+
+<header>
+  <div class="logo-group">
+    <div class="logo-badge">DM</div>
+    <div>
+      <div class="corp-title">DukaanMitra AI Technologies Pvt. Ltd.</div>
+      <div class="corp-sub">India’s Retail Superintelligence Operating System · CIN: U72900DL2026PTC998877</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="showTab('tab-pos')">🏪 Dukaan POS & AI</button>
+    <button class="tab-btn" onclick="showTab('tab-verify')">🔍 Public Verification</button>
+    <button class="tab-btn" onclick="showTab('tab-access')">🔑 Merchant Access</button>
+    <button class="tab-btn" onclick="showTab('tab-whatsapp')">💬 AI WhatsApp Bot</button>
+    <button class="tab-btn" onclick="showTab('tab-company')">🏢 Corporate Entity</button>
+    <button class="tab-btn" onclick="showTab('tab-modules')">✨ Ecosystem Tools</button>
+    <button class="tab-btn" onclick="showTab('tab-pricing')">🚀 Launch Plans</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TAB 1: DUKAAN POS & AI BRAIN -->
+  <div id="tab-pos" class="tab-content">
+    <div class="stats-bar">
+      <div class="stat-pill"><div class="stat-label">Active Shop</div><div class="stat-val" id="dispShopName">Kirana Central</div></div>
+      <div class="stat-pill"><div class="stat-label">Total SKUs</div><div class="stat-val" id="dispTotalSkus">12</div></div>
+      <div class="stat-pill"><div class="stat-label">Today's Sales</div><div class="stat-val">₹4,850</div></div>
+      <div class="stat-pill"><div class="stat-label">Security Shield</div><div class="stat-val"><span class="badge badge-green">L3 Active</span></div></div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <h2>🧠 Shared AI Brain (Voice & Hinglish) <span class="badge badge-blue">FastAPI :8000</span></h2>
+          <div class="chat-window" id="aiChatWindow">Try commands:
+• "Gopal Das ki 450 udhari likho"
+• "Aaj ki total sales batao"
+• "10 packet bread stock mein daal do"</div>
+          <textarea id="aiInput" rows="2" placeholder="Bolkar ya likhkar command dein (Hindi/Hinglish/English)..."></textarea>
+          <div class="row">
+            <button onclick="sendAICommand()" style="flex:1">Send to AI Brain</button>
+            <button class="secondary" onclick="startVoiceInput()" title="Voice input">🎙️ Voice</button>
+          </div>
+          <div id="aiProposalArea"></div>
+        </div>
+
+        <div class="card">
+          <h2>📦 Add / Edit Inventory SKU</h2>
+          <form onsubmit="handleQuickAddProduct(event)">
+            <label>Product Name</label>
+            <input id="qProdName" required placeholder="e.g. Tata Salt 1kg">
+            <div class="row">
+              <div style="flex:1"><label>SKU Code</label><input id="qProdSku" placeholder="TATA-SLT-1"></div>
+              <div style="flex:1"><label>Selling Price (₹)</label><input id="qProdPrice" type="number" step="any" placeholder="28.00"></div>
+              <div style="flex:1"><label>Stock Qty</label><input id="qProdQty" type="number" step="any" value="25"></div>
+            </div>
+            <button type="submit">Save to Inventory</button>
+          </form>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <h2>📋 Active Ledger & Inventory Items</h2>
+          <table>
+            <thead><tr><th>Product / Customer</th><th>Category / Phone</th><th>Balance / Stock</th><th>Status</th></tr></thead>
+            <tbody id="inventoryTable">
+              <tr><td><b>Aashirvaad Atta 5kg</b></td><td>Flour / Grocery</td><td>18 bags</td><td><span class="badge badge-green">In Stock</span></td></tr>
+              <tr><td><b>Fortune Mustard Oil 1L</b></td><td>Edible Oil</td><td>4 pouches</td><td><span class="badge badge-amber">Low Stock</span></td></tr>
+              <tr><td><b>Maggi 2-Minute Noodles</b></td><td>Snacks</td><td>42 pcs</td><td><span class="badge badge-green">In Stock</span></td></tr>
+              <tr><td><b>Gopal Das</b></td><td>9988776655</td><td>₹450 Udhaar</td><td><span class="badge badge-blue">Active</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2>📱 WhatsApp Cloud API Status</h2>
+          <p style="font-size:13px; color:var(--muted); margin-bottom:10px;">
+            Dual Webhook Router is active on port <code>3000</code>. Verified HMAC-SHA256 signature enforcement enabled.
+          </p>
+          <div class="row">
+            <span class="badge badge-green">Webhook: /webhook</span>
+            <span class="badge badge-blue">Mode: In-Memory / Redis Queue</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: CORPORATE ENTITY & GOVERNANCE -->
+  <div id="tab-company" class="tab-content hidden">
+    <div class="card">
+      <h2>🏛️ Corporate Profile & Statutory Registry</h2>
+      <div class="grid-2" style="margin-top:10px;">
+        <div>
+          <table>
+            <tr><th>Legal Entity</th><td><b>DukaanMitra AI Technologies Private Limited</b></td></tr>
+            <tr><th>Trade Brand</th><td>DukaanMitra OS / दुकानमित्र</td></tr>
+            <tr><th>CIN</th><td><code>U72900DL2026PTC998877</code></td></tr>
+            <tr><th>GSTIN</th><td><code>07AAAAA0000A1Z5</code> (Delhi State)</td></tr>
+            <tr><th>MSME Udyam</th><td><code>UDYAM-DL-01-0012345</code> (Micro Category)</td></tr>
+            <tr><th>DPIIT Startup India</th><td><code>DIPP98765</code> (Tax Exempt Sec 80-IAC)</td></tr>
+          </table>
+        </div>
+        <div>
+          <table>
+            <tr><th>Permanent A/C (PAN)</th><td><code>AAAAA0000A</code></td></tr>
+            <tr><th>Tax Deduction (TAN)</th><td><code>DELA00000A</code></td></tr>
+            <tr><th>Registered Office</th><td>New Delhi, India</td></tr>
+            <tr><th>Status</th><td><span class="badge badge-green">Active & Compliant</span></td></tr>
+            <tr><th>Bank Stack</th><td>ICICI Bank Current A/c + Cashfree/Razorpay UPI</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>📊 Founding Cap Table & Shareholding</h2>
+        <table>
+          <thead><tr><th>Shareholder</th><th>Designation</th><th>Shares</th><th>Ownership</th></tr></thead>
+          <tbody>
+            <tr><td><b>Amit Sharma</b></td><td>Founder, MD & CEO</td><td>8,50,000</td><td><b>85.0%</b></td></tr>
+            <tr><td><b>ESOP Pool</b></td><td>Key Hires & Advisors</td><td>1,50,000</td><td><b>15.0%</b></td></tr>
+            <tr><th>Total</th><th></th><th>10,00,000</th><th>100.0%</th></tr>
+          </tbody>
+        </table>
+        <p style="font-size:12px; color:var(--muted); margin-top:8px;">*Standard 48-month vesting schedule with 12-month initial cliff.</p>
+      </div>
+
+      <div class="card">
+        <h2>📅 Statutory Compliance Calendar (ROC & GST)</h2>
+        <table>
+          <thead><tr><th>Task</th><th>Type</th><th>Due Date</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Monthly GSTR-1 Return</td><td>GST</td><td>11th of Month</td><td><span class="badge badge-green">Scheduled</span></td></tr>
+            <tr><td>Monthly GSTR-3B Summary</td><td>GST</td><td>20th of Month</td><td><span class="badge badge-green">Scheduled</span></td></tr>
+            <tr><td>Quarterly TDS Challan 281</td><td>TDS</td><td>07th of Quarter</td><td><span class="badge badge-green">Scheduled</span></td></tr>
+            <tr><td>ROC Annual AOC-4 & MGT-7</td><td>ROC</td><td>30th Oct 2026</td><td><span class="badge badge-green">Prepared</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: ECOSYSTEM TOOLS -->
+  <div id="tab-modules" class="tab-content hidden">
+    <div class="grid-2">
+      <div class="card">
+        <h2>🎨 AI Studio: Marketing Copy Generator</h2>
+        <label>Product Name</label>
+        <input id="toolProdName" value="Basmati Biryani Rice 5kg">
+        <label>Price (₹)</label>
+        <input id="toolPrice" type="number" value="450">
+        <button onclick="runMarketingGen()">Generate WhatsApp Promo</button>
+        <div class="chat-window" id="toolMarketingOut" style="margin-top:10px;">Click generate to create Hinglish WhatsApp copy & banner prompt.</div>
+      </div>
+
+      <div class="card">
+        <h2>🛡️ CallGuard & Scam Shield</h2>
+        <label>Suspicious SMS or WhatsApp Message</label>
+        <textarea id="toolScamText" rows="2">You have won a lottery of 5 Lakhs! Send OTP to claim now.</textarea>
+        <button class="secondary" onclick="runSafetyScan()">Scan Threat Markers</button>
+        <div class="chat-window" id="toolScamOut" style="margin-top:10px;">Threat analysis will appear here.</div>
+      </div>
+
+      <div class="card">
+        <h2>📱 Dynamic UPI QR Intent Builder</h2>
+        <label>Payee VPA (Virtual Payment Address)</label>
+        <input id="toolVpa" value="dukaanmitra@icici">
+        <label>Amount (₹)</label>
+        <input id="toolUpiAmt" type="number" value="450.00">
+        <button onclick="generateUpiPayload()">Generate UPI Intent URI</button>
+        <div class="chat-window" id="toolUpiOut" style="margin-top:10px; word-break:break-all;">URI will display here.</div>
+      </div>
+
+      <div class="card">
+        <h2>🏗️ Vertical Estimator: Civil Construction</h2>
+        <label>Area (Sq Ft)</label>
+        <input id="toolArea" type="number" value="1200">
+        <label>Rate / Sq Ft (₹)</label>
+        <input id="toolRate" type="number" value="1650">
+        <button class="secondary" onclick="runCivilEstimate()">Calculate Breakdown (60% Material / 40% Labor + 18% GST)</button>
+        <div class="chat-window" id="toolCivilOut" style="margin-top:10px;">Cost estimation breakdown.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: LAUNCH PRICING PLANS -->
+  <div id="tab-pricing" class="tab-content hidden">
+    <div class="card" style="text-align:center; padding:30px 20px;">
+      <h1 style="font-size:24px; margin-bottom:8px;">Ready for Commercial Retail Rollout</h1>
+      <p style="color:var(--muted); max-width:600px; margin:0 auto 24px;">
+        Designed for 6.3 Crore Indian Kirana Stores & MSMEs. Zero complicated setup, 100% WhatsApp & Voice friendly.
+      </p>
+
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <h3>Kirana Starter</h3>
+          <p style="color:var(--muted); font-size:12px;">Single-counter retail shops</p>
+          <div class="price">₹0 <span style="font-size:14px; font-weight:normal;">/ forever</span></div>
+          <ul>
+            <li>✓ Voice Stock-in & Add Product</li>
+            <li>✓ WhatsApp Digital Receipts</li>
+            <li>✓ Up to 100 Monthly Transactions</li>
+            <li>✓ 1 Counter / Staff Login</li>
+          </ul>
+          <button class="secondary" style="width:100%;">Get Started Free</button>
+        </div>
+
+        <div class="pricing-card featured">
+          <span class="badge badge-amber" style="position:absolute; top:-10px; right:20px;">MOST POPULAR</span>
+          <h3>Retailer Pro</h3>
+          <p style="color:var(--muted); font-size:12px;">Busy general stores & pharmacies</p>
+          <div class="price">₹499 <span style="font-size:14px; font-weight:normal;">/ month</span></div>
+          <ul>
+            <li>✓ Unlimited Invoices & Barcode Billing</li>
+            <li>✓ Full Statutory GST E-Invoicing & GSTR-1</li>
+            <li>✓ Smart Udhaar Khata & Auto-Reminders</li>
+            <li>✓ Multi-Counter Staff RBAC</li>
+            <li>✓ AI Marketing Studio & Promos</li>
+          </ul>
+          <button style="width:100%;">Subscribe Pro</button>
+        </div>
+
+        <div class="pricing-card">
+          <h3>Enterprise Chain</h3>
+          <p style="color:var(--muted); font-size:12px;">Multi-branch retail networks</p>
+          <div class="price">₹2,499 <span style="font-size:14px; font-weight:normal;">/ store / mo</span></div>
+          <ul>
+            <li>✓ Central Warehouse ERP Synchronization</li>
+            <li>✓ Custom Franchise Hierarchy</li>
+            <li>✓ CallGuard & Anti-Fraud Shield</li>
+            <li>✓ Dedicated Priority 24/7 Account Manager</li>
+            <li>✓ Custom On-Prem / Cloud Deployment</li>
+          </ul>
+          <button class="secondary" style="width:100%;">Contact Enterprise</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- TAB: WHATSAPP ADMIN TESTING DEV CONSOLE -->
+  <div id="tab-whatsapp" class="tab-content hidden">
+    <div class="card" style="margin-bottom:16px; background:linear-gradient(90deg, #075e54, #128c7e); color:white;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div>
+          <h1 style="font-size:20px; margin-bottom:4px;">?? WhatsApp Admin Testing & Dev Console</h1>
+          <p style="font-size:13px; color:#d1fae5;">Interactive Dual-Router Simulation, Meta Cloud Webhook Payloads, Session State & Maker-Checker Tracing</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="secondary" onclick="resetAdminSession()" style="background:white; color:#075e54; font-weight:700;">?? Reset Test Session</button>
+          <button class="secondary" onclick="loadAdminTelemetry()" style="background:#022c22; color:white; border-color:#064e3b;">?? Refresh Telemetry</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="wa-container">
+      <!-- Left: WhatsApp Interactive Mobile Device -->
+      <div>
+        <div class="wa-phone">
+          <div class="wa-notch"></div>
+          <div class="wa-header">
+            <div class="wa-header-left">
+              <div class="wa-avatar">DM</div>
+              <div>
+                <div class="wa-name">DukaanMitra AI Munim</div>
+                <div class="wa-status" id="waHeaderStatus">?? online | FastAPI :8000 & Core :3000</div>
+              </div>
+            </div>
+            <div style="font-size:12px; opacity:0.8;">Admin Dev Mode</div>
+          </div>
+
+          <div style="background:#fff; padding:6px 12px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:8px; font-size:12px;">
+            <span style="color:#64748b; font-weight:600;">Tester Phone:</span>
+            <input id="waSenderPhone" value="919988776655" style="width:140px; margin:0; padding:4px 8px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px;">
+            <span class="telemetry-tag tag-blue" id="dispSessionBadge">IDLE</span>
+          </div>
+
+          <div class="wa-body" id="waChatBody">
+            <div class="wa-msg wa-msg-out">
+              Namaste! Main DukaanMitra AI Munim hoon. Aap text, voice ya bill photo bhejkar ledger, sales aur stock manage kar sakte hain.
+              <div class="wa-msg-time">10:00 AM <span class="wa-ticks">??</span></div>
+            </div>
+          </div>
+
+          <div class="wa-presets">
+            <button class="wa-preset-btn" onclick="sendPresetMessage('Gopal Das ki 450 udhari likho')">?? Gopal Das ?450 Udhaar</button>
+            <button class="wa-preset-btn" onclick="sendPresetMessage('10 packet bread stock mein daal do')">?? 10 Pkt Bread Stock-in</button>
+            <button class="wa-preset-btn" onclick="sendPresetMessage('Maggi ka rate 14 rupaye kar do')">??? Maggi Rate ?14</button>
+            <button class="wa-preset-btn" onclick="sendPresetMessage('Aaj ki total sales aur udhari report batao')">?? Daily Sales Report</button>
+            <button class="wa-preset-btn" onclick="sendPresetMessage('1')" style="background:#dcfce7; border-color:#86efac; color:#166534;">? 1 (Approve)</button>
+            <button class="wa-preset-btn" onclick="sendPresetMessage('2')" style="background:#fee2e2; border-color:#fca5a5; color:#991b1b;">? 2 (Reject)</button>
+            <button class="wa-preset-btn" onclick="simulateBillPhotoDev()">?? Scan Bill OCR</button>
+          </div>
+
+          <div class="wa-footer">
+            <select id="waMediaKind" style="width:90px; margin:0; padding:8px; font-size:11px; border-radius:12px;">
+              <option value="text">Text</option>
+              <option value="voice">Voice</option>
+              <option value="image">Bill OCR</option>
+            </select>
+            <input class="wa-input" id="waMessageText" placeholder="Type Hindi/Hinglish message..." onkeydown="if(event.key==='Enter') executeWhatsAppDevMessage()">
+            <button class="wa-send-btn" onclick="executeWhatsAppDevMessage()" title="Send Inbound Message">?</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Admin Dev Telemetry & Payload Inspector -->
+      <div>
+        <!-- Card 1: Active Bot Session & Maker-Checker State -->
+        <div class="card">
+          <h2>
+            <span>?? Active Session & Maker-Checker State</span>
+            <span class="badge badge-green" id="telemetryStatusBadge">Synced</span>
+          </h2>
+          <div id="makerCheckerCard" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:12px;">
+            <div style="font-size:13px; color:#475569;">No proposal currently pending confirmation. Type or click <b>"Gopal Das ki 450 udhari likho"</b> to trigger a high-risk financial write proposal.</div>
+          </div>
+          <div class="grid-2" style="font-size:12px;">
+            <div>
+              <b>Current Sender:</b> <code id="dispTelPhone">919988776655</code><br>
+              <b>Business ID:</b> <code id="dispTelBiz">biz_default</code><br>
+              <b>Security Shield:</b> <span class="badge badge-blue">L3 Safe Mode</span>
+            </div>
+            <div>
+              <b>Last Intent:</b> <code id="dispTelIntent">None</code><br>
+              <b>Pending Proposal ID:</b> <code id="dispTelPropId">None</code><br>
+              <b>Dual Router Webhook:</b> <code>/api/v1/whatsapp/webhook</code>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Meta Cloud API Webhook Payload Inspector -->
+        <div class="card">
+          <h2>
+            <span>?? Meta WhatsApp Cloud API Webhook Inspector</span>
+            <button class="secondary" onclick="copyWebhookPayload()" style="padding:4px 10px; font-size:12px;">?? Copy Payload</button>
+          </h2>
+          <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">
+            Live generated JSON payload mirroring standard Meta Cloud API <code>whatsapp_business_account</code> events dispatched to <code>/webhook</code>:
+          </p>
+          <pre class="code-box" id="dispWebhookPayload">// Meta Webhook payload will generate here upon message dispatch</pre>
+          <div style="margin-top:8px; display:flex; gap:8px;">
+            <button onclick="sendRawMetaWebhook()" style="font-size:12px; padding:8px 12px;">?? Post as Raw Meta Webhook to /webhook</button>
+          </div>
+        </div>
+
+        <!-- Card 3: Recent Audit & Ledger Mutations -->
+        <div class="card">
+          <h2>
+            <span>?? Live Audit & Execution Stream</span>
+            <span class="badge badge-blue" id="dispAuditCount">0 Logs</span>
+          </h2>
+          <div style="max-height:220px; overflow-y:auto;">
+            <table>
+              <thead><tr><th>Time</th><th>Action</th><th>Resource / ID</th><th>Diff Summary</th></tr></thead>
+              <tbody id="auditTableBody">
+                <tr><td colspan="4" style="text-align:center; color:#94a3b8;">Click Refresh Telemetry to fetch live audit records</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PUBLIC VERIFICATION SYSTEM -->
+  <div id="tab-verify" class="tab-content hidden">
+    <div class="grid-2">
+      <div class="card">
+        <h2>??? Verify Certified DukaanMitra Merchant</h2>
+        <p style="font-size:13px; color:var(--muted); margin-bottom:12px;">
+          Search official MCA-recognized merchants by Shop Name, Phone Number, or Business ID.
+        </p>
+        <div class="row">
+          <input id="verifyQueryInput" placeholder="Enter Shop Name, Phone or ID (e.g. Kirana Central, 9988776655)..." style="flex:1;">
+          <button onclick="runMerchantVerification()">Verify Merchant</button>
+        </div>
+        <div id="verificationResultArea" style="margin-top:14px;"></div>
+      </div>
+
+      <div class="card">
+        <h2>??? Corporate Entity Statutory Credential</h2>
+        <p style="font-size:13px; color:var(--muted); margin-bottom:12px;">
+          DukaanMitra AI Technologies Private Limited Certificate & Cryptographic Hash.
+        </p>
+        <button onclick="loadCorporateCert()" style="width:100%; margin-bottom:12px;">Inspect Live Government Certificate</button>
+        <div id="corpCertArea">
+          <table>
+            <tr><th>Legal Entity</th><td><b>DukaanMitra AI Technologies Private Limited</b></td></tr>
+            <tr><th>CIN</th><td><code>U72900DL2026PTC998877</code></td></tr>
+            <tr><th>GSTIN</th><td><code>07AAAAA0000A1Z5</code></td></tr>
+            <tr><th>Canonical Domain</th><td><a href="https://dukaanmitra.in" target="_blank">dukaanmitra.in</a></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: MERCHANT ACCESS & ONBOARDING -->
+  <div id="tab-access" class="tab-content hidden">
+    <div class="card" style="max-width:650px; margin:0 auto;">
+      <h2>?? Self-Serve 30-Second Merchant Provisioning</h2>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">
+        Instant phone & OTP onboarding. Connect your Dukaan in 3 steps with zero paperwork.
+      </p>
+
+      <div id="accessStep1">
+        <label>Mobile Number (WhatsApp Enabled)</label>
+        <input id="onboardPhone" placeholder="+91 99887 76655" value="919988776655">
+        <button onclick="requestMerchantOtp()" style="width:100%;">Send Verification OTP</button>
+      </div>
+
+      <div id="accessStep2" class="hidden">
+        <div style="background:#e0f2fe; padding:10px; border-radius:8px; font-size:13px; margin-bottom:12px; color:#0369a1;">
+          OTP sent to <b id="dispTargetPhone"></b> (Simulation Code: <code>123456</code>)
+        </div>
+        <label>Enter 6-Digit OTP</label>
+        <input id="onboardOtp" placeholder="123456" value="123456">
+        <button onclick="verifyMerchantOtp()" style="width:100%;">Verify & Continue</button>
+      </div>
+
+      <div id="accessStep3" class="hidden">
+        <label>Shop / Dukaan Name</label>
+        <input id="onboardShopName" placeholder="e.g. Sharma Kirana & General Store" value="Sharma General Store">
+        <label>Owner Name</label>
+        <input id="onboardOwnerName" placeholder="e.g. Ramesh Sharma" value="Ramesh Sharma">
+        <label>Business Type</label>
+        <select id="onboardBizKind">
+          <option value="kirana">Kirana / Grocery</option>
+          <option value="pharmacy">Pharmacy / Medical</option>
+          <option value="restaurant">Restaurant / Dhaba</option>
+          <option value="mobile-shop">Mobile & Electronics</option>
+          <option value="salon">Salon & Parlour</option>
+        </select>
+        <button onclick="provisionMerchantShop()" style="width:100%;">Activate DukaanMitra OS</button>
+      </div>
+
+      <div id="accessCredentialsArea" style="margin-top:16px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// -----------------------------------------------------------------------------
+// WhatsApp Admin Dev Console & Telemetry Logic
+// -----------------------------------------------------------------------------
+async function executeWhatsAppDevMessage() {
+  const phone = document.getElementById('waSenderPhone').value.trim() || '919988776655';
+  const text = document.getElementById('waMessageText').value.trim();
+  const mediaKind = document.getElementById('waMediaKind').value;
+  if (!text && mediaKind === 'text') return;
+
+  const body = document.getElementById('waChatBody');
+  const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  // Add outgoing message bubble
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'wa-msg wa-msg-in';
+  msgDiv.innerHTML = (mediaKind !== 'text' ? `[${mediaKind.toUpperCase()}] ` : '') + escapeHtml(text) +
+    `<div class="wa-msg-time">${now} <span class="wa-ticks">??</span></div>`;
+  body.appendChild(msgDiv);
+  body.scrollTop = body.scrollHeight;
+
+  document.getElementById('waMessageText').value = '';
+
+  try {
+    const res = await fetch('/api/v1/whatsapp/admin/simulate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, message: text, media_kind: mediaKind === 'text' ? null : mediaKind })
+    });
+    const d = await res.json();
+    
+    // Add incoming bot reply bubble
+    const replyDiv = document.createElement('div');
+    replyDiv.className = 'wa-msg wa-msg-out';
+    const replyText = d.gateway_result ? d.gateway_result.whatsapp_reply : (d.whatsapp_reply || JSON.stringify(d));
+    replyDiv.innerHTML = formatWhatsAppMarkdown(replyText) + `<div class="wa-msg-time">${now} <span class="wa-ticks">??</span></div>`;
+    body.appendChild(replyDiv);
+    body.scrollTop = body.scrollHeight;
+
+    // Update Webhook Inspector
+    if (d.meta_cloud_webhook_payload) {
+      document.getElementById('dispWebhookPayload').textContent = JSON.stringify(d.meta_cloud_webhook_payload, null, 2);
+    }
+
+    // Refresh telemetry cards
+    loadAdminTelemetry();
+  } catch(err) {
+    const errDiv = document.createElement('div');
+    errDiv.className = 'wa-msg wa-msg-out';
+    errDiv.innerHTML = `<span style="color:red;">Error: ${escapeHtml(err.message)}</span>`;
+    body.appendChild(errDiv);
+  }
+}
+
+function sendPresetMessage(text) {
+  document.getElementById('waMessageText').value = text;
+  document.getElementById('waMediaKind').value = 'text';
+  executeWhatsAppDevMessage();
+}
+
+function simulateBillPhotoDev() {
+  document.getElementById('waMessageText').value = 'Atta 5kg (x10) @ 200, Mustard Oil 1L (x15) @ 140, Total: 4100';
+  document.getElementById('waMediaKind').value = 'image';
+  executeWhatsAppDevMessage();
+}
+
+async function resetAdminSession() {
+  const phone = document.getElementById('waSenderPhone').value.trim() || '919988776655';
+  try {
+    await fetch('/api/v1/whatsapp/admin/reset-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    const body = document.getElementById('waChatBody');
+    body.innerHTML = `<div class="wa-msg wa-msg-out">Session reset successful. DukaanMitra AI Munim is ready for new commands!<div class="wa-msg-time">Just now <span class="wa-ticks">??</span></div></div>`;
+    loadAdminTelemetry();
+    alert("Session cleared for " + phone);
+  } catch(e) {
+    alert("Reset failed: " + e.message);
+  }
+}
+
+async function loadAdminTelemetry() {
+  try {
+    const res = await fetch('/api/v1/whatsapp/admin/telemetry');
+    const data = await res.json();
+
+    const sessRes = await fetch('/api/v1/whatsapp/admin/sessions');
+    const sessions = await sessRes.json();
+
+    const currentPhone = (document.getElementById('waSenderPhone').value.trim() || '919988776655').replace(/\D/g, '');
+    const currentSession = sessions.find(s => s.phone === currentPhone) || (sessions.length > 0 ? sessions[0] : null);
+
+    const makerBox = document.getElementById('makerCheckerCard');
+    const badge = document.getElementById('dispSessionBadge');
+
+    if (currentSession && currentSession.pending_proposal_id) {
+      badge.textContent = 'AWAITING APPROVAL';
+      badge.className = 'telemetry-tag tag-amber';
+      makerBox.innerHTML = `
+        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:10px;">
+          <div style="font-weight:700; color:#92400e; font-size:13px;">?? Pending Financial Proposal: ${escapeHtml(currentSession.action_title || 'Ledger Entry')}</div>
+          <div style="font-size:12px; margin:4px 0;">Amount: <b>?${currentSession.amount || 0}</b> | Status: <code>${currentSession.proposal_status || 'PENDING'}</code></div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button onclick="sendPresetMessage('1')" style="background:#16a34a; font-size:12px; padding:6px 12px;">? Approve (Send 1)</button>
+            <button onclick="sendPresetMessage('2')" class="secondary" style="background:#dc2626; color:white; font-size:12px; padding:6px 12px; border:none;">? Reject (Send 2)</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('dispTelPropId').textContent = currentSession.pending_proposal_id;
+      document.getElementById('dispTelIntent').textContent = currentSession.last_intent || 'financial_write';
+    } else {
+      badge.textContent = 'IDLE';
+      badge.className = 'telemetry-tag tag-green';
+      makerBox.innerHTML = `<div style="font-size:12px; color:#64748b;">No pending proposal. System is idle and ready for voice, text, or bill scans.</div>`;
+      document.getElementById('dispTelPropId').textContent = 'None';
+      document.getElementById('dispTelIntent').textContent = currentSession ? currentSession.last_intent : 'None';
+    }
+
+    if (currentSession) {
+      document.getElementById('dispTelPhone').textContent = currentSession.phone;
+      document.getElementById('dispTelBiz').textContent = currentSession.business_id;
+    }
+
+    // Populate audit logs
+    const auditTbody = document.getElementById('auditTableBody');
+    if (data.recent_audit_logs && data.recent_audit_logs.length > 0) {
+      document.getElementById('dispAuditCount').textContent = data.recent_audit_logs.length + ' Logs';
+      auditTbody.innerHTML = data.recent_audit_logs.map(log => {
+        const time = (log.timestamp || '').split('T')[1]?.split('.')[0] || log.timestamp;
+        return `<tr>
+          <td><code>${time}</code></td>
+          <td><b>${escapeHtml(log.action)}</b></td>
+          <td><code>${escapeHtml(log.resource_type)}</code></td>
+          <td style="font-size:11px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(log.diff_json || '')}</td>
+        </tr>`;
+      }).join('');
+    }
+  } catch(e) {
+    console.warn("Failed to load telemetry:", e);
+  }
+}
+
+async function sendRawMetaWebhook() {
+  const payloadStr = document.getElementById('dispWebhookPayload').textContent;
+  try {
+    const payload = JSON.parse(payloadStr);
+    const res = await fetch('/api/v1/whatsapp/webhook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const d = await res.json();
+    alert("Meta Cloud Webhook delivered successfully! Status: " + JSON.stringify(d));
+    loadAdminTelemetry();
+  } catch(e) {
+    alert("Webhook dispatch error: " + e.message);
+  }
+}
+
+function copyWebhookPayload() {
+  const text = document.getElementById('dispWebhookPayload').textContent;
+  navigator.clipboard.writeText(text).then(() => alert("Webhook payload copied to clipboard!"));
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function formatWhatsAppMarkdown(text) {
+  if (!text) return '';
+  let s = escapeHtml(text);
+  s = s.replace(/\*([^\*]+)\*/g, '<b>$1</b>');
+  s = s.replace(/_([^_]+)_/g, '<i>$1</i>');
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  return s;
+}
+
+// Auto-load telemetry on startup
+document.addEventListener('DOMContentLoaded', () => {
+  loadAdminTelemetry();
+  if (window.location.pathname.includes('admin') || window.location.pathname.includes('dev-console')) {
+    showTab('tab-whatsapp');
+  }
+});
+
+
+function showTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.remove('hidden');
+  event.target.classList.add('active');
+}
+
+async function sendAICommand() {
+  const cmd = document.getElementById('aiInput').value.trim();
+  if (!cmd) return;
+  const chat = document.getElementById('aiChatWindow');
+  chat.textContent = "Processing via Shared AI Brain...";
+  try {
+    const res = await fetch('/api/v1/ai/command', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        business_id: 'biz_default',
+        command: cmd,
+        actor_id: 'usr_owner_default'
+      })
+    });
+    const d = await res.json();
+    if (d.type === 'proposal_created') {
+      chat.textContent = "Proposal created: " + d.proposal.action_title;
+      document.getElementById('aiProposalArea').innerHTML = `
+        <div class="proposal-box">
+          <b>Pending Approval:</b> ${d.proposal.action_title} (₹${d.proposal.amount})
+          <div class="row" style="margin-top:8px;">
+            <button onclick="alert('Proposal recorded in audit queue')">Approve Change</button>
+            <button class="secondary" onclick="document.getElementById('aiProposalArea').innerHTML=''">Reject</button>
+          </div>
+        </div>`;
+    } else {
+      chat.textContent = d.message || JSON.stringify(d);
+      document.getElementById('aiProposalArea').innerHTML = '';
+    }
+  } catch(e) {
+    chat.textContent = "Error: " + e.message;
+  }
+}
+
+function startVoiceInput() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return alert("Speech recognition not supported in this browser.");
+  const r = new SR();
+  r.lang = 'hi-IN';
+  r.onresult = e => { document.getElementById('aiInput').value = e.results[0][0].transcript; };
+  r.start();
+}
+
+function handleQuickAddProduct(e) {
+  e.preventDefault();
+  const name = document.getElementById('qProdName').value;
+  const price = document.getElementById('qProdPrice').value || 0;
+  const qty = document.getElementById('qProdQty').value || 1;
+  const sku = document.getElementById('qProdSku').value || 'GEN-SKU';
+  
+  const tbody = document.getElementById('inventoryTable');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><b>${name}</b></td><td>${sku}</td><td>${qty} pcs @ ₹${price}</td><td><span class="badge badge-green">Saved</span></td>`;
+  tbody.prepend(tr);
+  alert("Product " + name + " added to catalog!");
+  e.target.reset();
+}
+
+async function runMarketingGen() {
+  const pName = document.getElementById('toolProdName').value;
+  const price = parseFloat(document.getElementById('toolPrice').value || 0);
+  const out = document.getElementById('toolMarketingOut');
+  try {
+    const res = await fetch('/api/v1/modules/marketing/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_name: pName, price: price, language: 'hinglish' })
+    });
+    const d = await res.json();
+    out.textContent = "Caption:\n" + d.whatsapp_caption + "\n\nBanner Prompt:\n" + d.banner_image_prompt;
+  } catch (err) {
+    out.textContent = "Error: " + err.message;
+  }
+}
+
+async function runSafetyScan() {
+  const text = document.getElementById('toolScamText').value;
+  const out = document.getElementById('toolScamOut');
+  try {
+    const res = await fetch('/api/v1/modules/safety/call-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: text })
+    });
+    const d = await res.json();
+    out.textContent = "Threat Level: " + d.threat_level + "\nSafe: " + d.is_safe + "\nRecommendation: " + d.recommendation;
+  } catch (err) {
+    out.textContent = "Error: " + err.message;
+  }
+}
+
+function generateUpiPayload() {
+  const vpa = document.getElementById('toolVpa').value;
+  const amt = document.getElementById('toolUpiAmt').value;
+  const uri = `upi://pay?pa=${vpa}&pn=DukaanMitra%20Merchant&am=${amt}&cu=INR&tn=Retail%20Payment`;
+  document.getElementById('toolUpiOut').textContent = uri;
+}
+
+async function runCivilEstimate() {
+  const area = parseFloat(document.getElementById('toolArea').value || 0);
+  const rate = parseFloat(document.getElementById('toolRate').value || 0);
+  const out = document.getElementById('toolCivilOut');
+  try {
+    const res = await fetch('/api/v1/modules/verticals/construction-estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ area_sqft: area, rate_per_sqft: rate, include_material: true })
+    });
+    const d = await res.json();
+    out.textContent = `Total Area: ${d.area_sqft} sqft\nMaterial Cost (60%): ₹${d.material_cost}\nLabor Cost (40%): ₹${d.labor_cost}\n18% Works GST: ₹${d.gst_18pct}\nEstimated Grand Total: ₹${d.estimated_grand_total}`;
+  } catch (err) {
+    out.textContent = "Error: " + err.message;
+  }
+}
+
+// PWA Registration & Install
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/static/sw.js').catch(e => console.warn(e));
+}
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); deferredPrompt = e;
+  const b = document.getElementById('pwaBanner'); if (b) b.style.display = 'flex';
+});
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt = null;
+  } else {
+    alert("DukaanMitra App: Tap Add to Home Screen in your browser settings!");
+  }
+}
+
+// Public Verification
+async function runMerchantVerification() {
+  const q = document.getElementById('verifyQueryInput').value.trim();
+  if (!q) return alert("Enter business ID, name or phone");
+  const area = document.getElementById('verificationResultArea');
+  area.innerHTML = "<p>Searching registry...</p>";
+  try {
+    const res = await fetch('/api/v1/public/verify/merchant?q=' + encodeURIComponent(q));
+    const d = await res.json();
+    if (d.verified) {
+      area.innerHTML = '<div style="background:#f0fdf4; border:2px dashed #86efac; border-radius:10px; padding:16px; text-align:center;">' +
+        '<h3 style="color:#166534;">✓ CERTIFIED DUKAANMITRA MERCHANT</h3>' +
+        '<p><b>' + d.merchant.shop_name + '</b> (' + d.merchant.business_type.toUpperCase() + ')</p>' +
+        '<div style="font-size:12px; color:#4b5563; margin-top:6px;">Trust Badge: <code>' + d.trust_badge + '</code> | Security: ' + d.security_tier + '</div></div>';
+    } else {
+      area.innerHTML = '<p style="color:red;">' + d.message + '</p>';
+    }
+  } catch(e) { area.innerHTML = '<p style="color:red;">Error: ' + e.message + '</p>'; }
+}
+
+async function loadCorporateCert() {
+  const area = document.getElementById('verificationResultArea');
+  try {
+    const res = await fetch('/api/v1/public/verify/corporate');
+    const d = await res.json();
+    area.innerHTML = '<div style="background:#f0fdf4; border:2px dashed #86efac; border-radius:10px; padding:16px; text-align:center;">' +
+      '<h3 style="color:#166534;">✓ GOVERNMENT INCORPORATED CORPORATE ENTITY</h3>' +
+      '<p><b>' + d.corporate_profile.legal_name + '</b></p>' +
+      '<div style="font-size:12px; color:#4b5563; margin-top:6px;">CIN: <code>' + d.corporate_profile.cin + '</code> | GSTIN: <code>' + d.corporate_profile.gstin + '</code><br>Hash: <code>' + d.certificate_hash + '</code></div></div>';
+  } catch(e) { area.innerHTML = '<p style="color:red;">Error: ' + e.message + '</p>'; }
+}
+
+// Merchant Access & OTP
+let verifiedPhone = "";
+async function requestMerchantOtp() {
+  const phone = document.getElementById('onboardPhone').value.trim();
+  try {
+    const res = await fetch('/api/v1/access/otp-request', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    const d = await res.json();
+    verifiedPhone = d.phone;
+    document.getElementById('dispTargetPhone').textContent = verifiedPhone;
+    document.getElementById('accessStep1').classList.add('hidden');
+    document.getElementById('accessStep2').classList.remove('hidden');
+  } catch(e) { alert("Error: " + e.message); }
+}
+
+async function verifyMerchantOtp() {
+  const otp = document.getElementById('onboardOtp').value.trim();
+  try {
+    const res = await fetch('/api/v1/access/otp-verify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: verifiedPhone, otp })
+    });
+    const d = await res.json();
+    if (d.existing_merchant) {
+      renderAccessSession(d.merchant_session);
+    } else {
+      document.getElementById('accessStep2').classList.add('hidden');
+      document.getElementById('accessStep3').classList.remove('hidden');
+    }
+  } catch(e) { alert("Invalid OTP: " + e.message); }
+}
+
+async function provisionMerchantShop() {
+  const shop_name = document.getElementById('onboardShopName').value.trim();
+  const owner_name = document.getElementById('onboardOwnerName').value.trim();
+  const business_kind = document.getElementById('onboardBizKind').value;
+  try {
+    const res = await fetch('/api/v1/access/provision', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: verifiedPhone, shop_name, owner_name, business_kind })
+    });
+    const d = await res.json();
+    document.getElementById('accessStep3').classList.add('hidden');
+    renderAccessSession(d);
+  } catch(e) { alert("Provisioning error: " + e.message); }
+}
+
+function renderAccessSession(s) {
+  document.getElementById('accessCredentialsArea').innerHTML = '<div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:14px;">' +
+    '<h3>' + s.shop_name + ' Live!</h3>' +
+    '<p style="font-size:12px; margin:6px 0;">Shop ID: <code>' + s.business_id + '</code><br>API Key: <code>' + (s.api_key || 'live_token') + '</code></p>' +
+    '<button onclick="window.location.reload()" style="margin-top:8px;">Open Shop Dashboard</button></div>';
+}
+
+// WhatsApp Simulator
+async function simulateWhatsAppInbound() {
+  const phone = document.getElementById('waSenderPhone').value.trim();
+  const msg = document.getElementById('waMessageText').value.trim();
+  if (!msg) return;
+  const box = document.getElementById('waChatBox');
+  box.textContent += "\n\n[Merchant]: " + msg;
+  document.getElementById('waMessageText').value = '';
+  try {
+    const res = await fetch('/webhook', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, message: msg })
+    });
+    const d = await res.json();
+    box.textContent += "\n[DukaanMitra Bot]:\n" + d.whatsapp_reply;
+    box.scrollTop = box.scrollHeight;
+  } catch(e) { box.textContent += "\n[Error]: " + e.message; }
+}
+
+function replyWhatsAppOption(opt) {
+  document.getElementById('waMessageText').value = opt;
+  simulateWhatsAppInbound();
+}
+
+async function simulateBillPhoto() {
+  const phone = document.getElementById('waSenderPhone').value.trim();
+  const box = document.getElementById('waChatBox');
+  box.textContent += "\n\n[Merchant]: 📸 [Sent Purchase Bill Photo]";
+  try {
+    const res = await fetch('/webhook', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, message: "OCR_BILL_PHOTO", media_kind: "image" })
+    });
+    const d = await res.json();
+    box.textContent += "\n[DukaanMitra Bot]:\n" + d.whatsapp_reply;
+    box.scrollTop = box.scrollHeight;
+  } catch(e) { box.textContent += "\n[Error]: " + e.message; }
+}
+
+</script>
+</body>
+</html>

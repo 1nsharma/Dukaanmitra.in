@@ -1,0 +1,5 @@
+# Cloudflare Pages SPA Routing Fallback
+# All client-side routes will resolve to index.html with a 200 status code
+# This ensures React Router can handle clean URLs without returning 404 errors
+
+/*    /index.html   200

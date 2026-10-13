@@ -1,0 +1,77 @@
+{
+  "entities": {
+    "Store": {
+      "title": "Store",
+      "description": "Represents a small local shop on the platform.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "ownerUid": { "type": "string" },
+        "whatsappNumber": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "totalSales": { "type": "number" },
+        "totalUdhaar": { "type": "number" }
+      },
+      "required": ["id", "name", "ownerUid", "whatsappNumber"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "A single sale, credit (udhaar), or payment entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "storeId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "type": { "type": "string", "enum": ["sale", "udhaar", "payment"] },
+        "amount": { "type": "number" },
+        "description": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "storeId", "type", "amount", "timestamp"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "A customer of a specific store.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "storeId": { "type": "string" },
+        "name": { "type": "string" },
+        "whatsappNumber": { "type": "string" },
+        "balance": { "type": "number" },
+        "lastTransactionAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "storeId", "name"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Platform super admin.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["superadmin"] }
+      },
+      "required": ["uid", "email", "role"]
+    }
+  },
+  "firestore": {
+    "stores": {
+      "schema": "Store",
+      "description": "Collection of all stores."
+    },
+    "stores/{storeId}/transactions": {
+      "schema": "Transaction",
+      "description": "Sub-collection of transactions for a specific store."
+    },
+    "stores/{storeId}/customers": {
+      "schema": "Customer",
+      "description": "Sub-collection of customers for a specific store."
+    },
+    "admins": {
+      "schema": "Admin",
+      "description": "Collection of super admins."
+    }
+  }
+}

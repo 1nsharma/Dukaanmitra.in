@@ -1,0 +1,12 @@
+{
+  "name": "DukaanMitra",
+  "description": "India's AI Business Operating System. Manage inventory, billing, purchases, udhaar, and customers via WhatsApp and AI for any inventory-driven business.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

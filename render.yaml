@@ -1,0 +1,56 @@
+services:
+  # 1. DukaanMitra Core & Superintelligence Unified Runner (Node.js 20 + Python 3.11)
+  - type: web
+    name: dukaanmitra-os-enterprise
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: singapore
+    branch: main
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: AI_BRAIN_PORT
+        value: 8000
+      - key: BASE_DOMAIN
+        value: dukaanmitra.in
+    disk:
+      name: dukaanmitra-data
+      mountPath: /app/data
+      sizeGB: 10
+
+  # 2. DukaanMitra MitraOS Web Console (Vite + React 19 SPA)
+  - type: web
+    name: dukaanmitra-mitraos-console
+    runtime: static
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm --prefix apps/mitra-os-web install && npm --prefix apps/mitra-os-web run build
+    staticPublishPath: ./apps/mitra-os-web/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # 3. DukaanMitra.in Commercial Next.js Portal (Next.js 14)
+  - type: web
+    name: dukaanmitra-commercial-portal
+    runtime: node
+    plan: starter
+    region: singapore
+    branch: main
+    buildCommand: npm --prefix apps/dukaan-in-next install && npm --prefix apps/dukaan-in-next run build
+    startCommand: npm --prefix apps/dukaan-in-next start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3002
+      - key: NEXT_PUBLIC_API_URL
+        value: https://api.dukaanmitra.in

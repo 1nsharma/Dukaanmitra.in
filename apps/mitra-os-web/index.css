@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --app-height: 100%;
+}
+
+html, body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+#root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.gradient-bg { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%); }
+.whatsapp-float { position: fixed; bottom: 20px; right: 20px; z-index: 100; }
+.marquee { animation: scroll 20s linear infinite; }
+@keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+/* Advanced Multi-Device Resizer Frame */
+.device-frame {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #020617;
+  position: relative;
+  border: 12px solid #0f172a;
+  box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5), 0 0 40px rgba(79,70,229,0.1);
+}
+.device-frame.mode-mobile {
+  aspect-ratio: 9 / 19.5;
+  width: 100%;
+  max-width: 380px;
+  border-radius: 4rem;
+}
+.device-frame.mode-tablet {
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  max-width: 768px;
+  border-radius: 2.5rem;
+  border-width: 20px;
+}
+.device-frame.mode-desktop {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-width: 1200px;
+  border-radius: 1.5rem;
+  border-width: 10px;
+}
+.device-content {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #efe7de;
+  display: flex;
+  flex-direction: column;
+  transition: border-radius 0.5s ease;
+}
+.mode-mobile .device-content { border-radius: 3.2rem; }
+.mode-tablet .device-content { border-radius: 1.5rem; }
+.mode-desktop .device-content { border-radius: 0.8rem; }
+@media (max-width: 1024px) {
+  .device-frame.mode-mobile { max-height: 70vh; }
+  .device-frame.mode-tablet { max-height: 60vh; }
+  .device-frame.mode-desktop { max-height: 50vh; }
+}

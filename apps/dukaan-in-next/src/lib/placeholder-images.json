@@ -1,0 +1,40 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "A smiling Indian shop owner in his store, looking at his smartphone which displays marketing messages for his business.",
+      "imageUrl": "https://images.unsplash.com/photo-1620752763329-37f6d5c5b9f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraXJhbmElMjBzdG9yZSUyMG93bmVyJTIwcGhvbmV8ZW58MHx8fHwxNzcwMjE3OTM0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "kirana store owner phone"
+    },
+    {
+      "id": "feature-whatsapp",
+      "description": "Close-up of a smartphone screen showing a WhatsApp chat with a customer order.",
+      "imageUrl": "https://images.unsplash.com/photo-1769072058037-7ff8fc9c8e20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjaGF0JTIwbW9iaWxlfGVufDB8fHx8MTc2OTYxODA0Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "chat mobile"
+    },
+    {
+      "id": "feature-mobile",
+      "description": "A person holding a smartphone that displays the DukaanMitra mobile app dashboard.",
+      "imageUrl": "https://images.unsplash.com/photo-1514575110897-1253ff7b2ccb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtb2JpbGUlMjBhcHB8ZW58MHx8fHwxNzY5NTk0NjIxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mobile app"
+    },
+    {
+      "id": "feature-admin",
+      "description": "A clean and modern admin panel dashboard on a laptop screen, showing sales analytics.",
+      "imageUrl": "https://images.unsplash.com/photo-1761850167081-473019536383?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxkYXNoYm9hcmQlMjBjaGFydHxlbnwwfHx8fDE3Njk1MDA2MzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dashboard chart"
+    },
+    {
+      "id": "feature-ai",
+      "description": "Abstract visualization of AI data processing for business intelligence.",
+      "imageUrl": "https://images.unsplash.com/photo-1662558274454-4b1fc87719d6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxyb2JvdCUyMGJyYWlufGVufDB8fHx8MTc2OTUzMzM5M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "robot brain"
+    },
+    {
+      "id": "login-background",
+      "description": "A blurred background image of a bustling market.",
+      "imageUrl": "https://images.unsplash.com/photo-1608479709386-98826dbb642b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtYXJrZXQlMjBibHVyfGVufDB8fHx8MTc2OTYxODA0Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "market blur"
+    }
+  ]
+}

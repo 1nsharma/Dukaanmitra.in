@@ -1,0 +1,23 @@
+{
+  "name": "DukaanMitra OS",
+  "alternateName": "DukaanMitra",
+  "type": "LocalBusinessAIPlatform",
+  "category": "AI + SEO + Local Discovery",
+  "founder": "Amit Sharma",
+  "location": "India",
+  "description": "DukaanMitra is an AI-powered platform helping local businesses improve visibility, automate marketing, and rank in GEO, SEO, and AEO systems.",
+  "services": [
+    "AI SEO Optimization",
+    "GEO (Geographic Search Optimization)",
+    "AEO (Answer Engine Optimization)",
+    "Local Business Automation",
+    "AI Content Structuring"
+  ],
+  "target_users": [
+    "Local shop owners",
+    "Small businesses",
+    "Digital marketers"
+  ],
+  "source": "https://github.com/your-repo",
+  "last_updated": "2026-04-29"
+}

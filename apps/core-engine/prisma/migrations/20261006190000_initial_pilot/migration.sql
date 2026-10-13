@@ -1,0 +1,28 @@
+-- Initial schema for an empty pilot database.
+CREATE TABLE "Event" ("id" TEXT NOT NULL, "type" TEXT NOT NULL, "source" TEXT NOT NULL, "payload" JSONB NOT NULL, "metadata" JSONB, "status" TEXT NOT NULL DEFAULT 'PENDING', "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL, CONSTRAINT "Event_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "Customer" ("id" TEXT NOT NULL, "phone" TEXT NOT NULL, "name" TEXT, "totalSales" DOUBLE PRECISION NOT NULL DEFAULT 0, "totalOrders" INTEGER NOT NULL DEFAULT 0, "lastOrderAt" TIMESTAMP(3), "preferredMode" TEXT, "averageOrderValue" DOUBLE PRECISION NOT NULL DEFAULT 0, "metadata" JSONB, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL, CONSTRAINT "Customer_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "Sale" ("id" TEXT NOT NULL, "customerId" TEXT, "amount" DOUBLE PRECISION NOT NULL, "mode" TEXT NOT NULL, "source" TEXT NOT NULL, "confidence" DOUBLE PRECISION, "eventId" TEXT, "metadata" JSONB, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "Sale_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "WhatsAppMessage" ("id" TEXT NOT NULL, "messageId" TEXT NOT NULL, "phone" TEXT NOT NULL, "direction" TEXT NOT NULL, "content" TEXT NOT NULL, "contentType" TEXT NOT NULL DEFAULT 'text', "status" TEXT NOT NULL DEFAULT 'RECEIVED', "eventId" TEXT, "metadata" JSONB, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "WhatsAppMessage_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "Store" ("id" TEXT NOT NULL, "name" TEXT NOT NULL, "phone" TEXT, "category" TEXT, "currency" TEXT NOT NULL DEFAULT 'INR', "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL, CONSTRAINT "Store_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "Product" ("id" TEXT NOT NULL, "storeId" TEXT NOT NULL, "name" TEXT NOT NULL, "sku" TEXT NOT NULL, "unit" TEXT NOT NULL DEFAULT 'piece', "sellingPrice" DOUBLE PRECISION NOT NULL, "reorderLevel" INTEGER NOT NULL DEFAULT 0, "quantityOnHand" INTEGER NOT NULL DEFAULT 0, "imageUrl" TEXT, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL, CONSTRAINT "Product_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "InventoryMovement" ("id" TEXT NOT NULL, "productId" TEXT NOT NULL, "quantity" INTEGER NOT NULL, "reason" TEXT NOT NULL, "note" TEXT, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "InventoryMovement_pkey" PRIMARY KEY ("id"));
+CREATE INDEX "Event_type_idx" ON "Event"("type");
+CREATE INDEX "Event_source_idx" ON "Event"("source");
+CREATE INDEX "Event_status_idx" ON "Event"("status");
+CREATE INDEX "Event_createdAt_idx" ON "Event"("createdAt");
+CREATE UNIQUE INDEX "Customer_phone_key" ON "Customer"("phone");
+CREATE INDEX "Customer_phone_idx" ON "Customer"("phone");
+CREATE INDEX "Sale_customerId_idx" ON "Sale"("customerId");
+CREATE INDEX "Sale_source_idx" ON "Sale"("source");
+CREATE INDEX "Sale_createdAt_idx" ON "Sale"("createdAt");
+CREATE UNIQUE INDEX "WhatsAppMessage_messageId_key" ON "WhatsAppMessage"("messageId");
+CREATE INDEX "WhatsAppMessage_phone_idx" ON "WhatsAppMessage"("phone");
+CREATE INDEX "WhatsAppMessage_messageId_idx" ON "WhatsAppMessage"("messageId");
+CREATE INDEX "WhatsAppMessage_direction_idx" ON "WhatsAppMessage"("direction");
+CREATE UNIQUE INDEX "Store_phone_key" ON "Store"("phone");
+CREATE INDEX "Product_storeId_name_idx" ON "Product"("storeId", "name");
+CREATE UNIQUE INDEX "Product_storeId_sku_key" ON "Product"("storeId", "sku");
+CREATE INDEX "InventoryMovement_productId_createdAt_idx" ON "InventoryMovement"("productId", "createdAt");
+ALTER TABLE "Sale" ADD CONSTRAINT "Sale_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD CONSTRAINT "Product_storeId_fkey" FOREIGN KEY ("storeId") REFERENCES "Store"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "InventoryMovement" ADD CONSTRAINT "InventoryMovement_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;

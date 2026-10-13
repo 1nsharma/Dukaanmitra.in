@@ -1,0 +1,26 @@
+{
+  "competitors": [
+    {
+      "name": "myBillBook",
+      "url": "https://mybillbook.in"
+    },
+    {
+      "name": "Vyapar",
+      "url": "https://vyaparapp.in"
+    },
+    {
+      "name": "Khatabook",
+      "url": "https://khatabook.com"
+    },
+    {
+      "name": "OkCredit",
+      "url": "https://okcredit.in"
+    },
+    {
+      "name": "Bizom",
+      "url": "https://bizom.in"
+    }
+  ],
+  "differentiation": "DukaanMitra is WhatsApp-native, requiring no separate app downloads, which reduces the learning curve for non-technical merchants compared to traditional billing apps and SME ERP tools.",
+  "last_updated": "2026-04-29"
+}

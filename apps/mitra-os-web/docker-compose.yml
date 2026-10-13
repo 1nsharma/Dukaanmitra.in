@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Development Service
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+
+  # Production Simulation Service
+  app-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:3000"
+    env_file:
+      - .env.production
+    environment:
+      - NODE_ENV=production

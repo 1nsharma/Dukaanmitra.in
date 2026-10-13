@@ -1,0 +1,126 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Modern Mercantile Palette */
+    --mercantile-ink: 216 45% 3%;
+    --mercantile-paper: 60 11% 97%;
+    --mercantile-gold: 40 48% 56%;
+    --mercantile-mint: 142 70% 49%;
+    
+    --background: 0 0% 98%; /* Paper White */
+    --foreground: 220 20% 4%; /* Ink Black */
+    
+    --muted: 60 5% 90%;
+    --muted-foreground: 220 5% 45%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 4%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 4%;
+    
+    --border: 220 5% 85%;
+    --input: 220 5% 85%;
+    
+    --primary: 220 20% 4%; /* Ink is Primary */
+    --primary-foreground: 0 0% 98%;
+    
+    --secondary: 40 45% 55%; /* Gold is Secondary */
+    --secondary-foreground: 0 0% 98%;
+    
+    --accent: 142.1 76.2% 36.3%; /* WhatsApp Mint */
+    --accent-foreground: 0 0% 98%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --ring: 220 20% 4%;
+    --radius: 0.25rem; /* Sharper, more industrial corners */
+  }
+
+  .dark {
+    --background: 220 20% 2%;
+    --foreground: 0 0% 98%;
+    
+    --muted: 220 10% 15%;
+    --muted-foreground: 220 5% 65%;
+    
+    --popover: 220 20% 2%;
+    --popover-foreground: 0 0% 98%;
+    
+    --card: 220 20% 4%;
+    --card-foreground: 0 0% 98%;
+    
+    --border: 220 10% 15%;
+    --input: 220 10% 15%;
+    
+    --primary: 0 0% 98%;
+    --primary-foreground: 220 20% 2%;
+    
+    --secondary: 40 45% 55%;
+    --secondary-foreground: 0 0% 98%;
+    
+    --accent: 142.1 76.2% 36.3%;
+    --accent-foreground: 0 0% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans selection:bg-mercantile-gold/30 selection:text-mercantile-ink;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Fraunces', serif;
+  }
+  .font-mono-ledger {
+    font-family: 'Space Mono', monospace;
+  }
+  
+  .ledger-card {
+    @apply relative overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition-all duration-500 hover:shadow-xl;
+    box-shadow: 0 4px 0 0 rgba(0,0,0,0.05);
+  }
+  
+  .heritage-border {
+    border-style: double;
+    border-width: 3px;
+  }
+
+  .noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+  }
+
+  .grid-pattern {
+    background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  
+  .text-ink {
+    color: var(--mercantile-ink);
+  }
+  .text-gold {
+    color: var(--mercantile-gold);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  @apply antialiased;
+}
+

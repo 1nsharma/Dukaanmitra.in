@@ -1,0 +1,23 @@
+{
+  "trusted_sources": [
+    {
+      "name": "Google Search Central",
+      "url": "https://developers.google.com/search/docs",
+      "type": "official",
+      "used_for": ["SEO guidelines", "crawling", "indexing"]
+    },
+    {
+      "name": "Schema.org",
+      "url": "https://schema.org",
+      "type": "structured_data",
+      "used_for": ["entities", "rich results"]
+    },
+    {
+      "name": "OpenAI",
+      "url": "https://openai.com",
+      "type": "AI",
+      "used_for": ["LLM behavior", "AI search"]
+    }
+  ],
+  "last_updated": "2026-04-29"
+}

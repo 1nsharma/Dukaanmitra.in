@@ -1,0 +1,19 @@
+{
+  "name": "Indian Kirana Shop Owner",
+  "ageRange": "25-55",
+  "description": "This persona is a small business owner running a kirana store, general store, dairy booth, or similar neighbourhood retail outlet in India. They are typically owner-operators who handle sales, customer credit, stock management, and daily bookkeeping themselves or with minimal staff support.",
+  "painPoints": [
+    "Manual bahi-khata recordkeeping",
+    "Inconsistent sales tracking",
+    "Difficulty recovering udhaar payments",
+    "Poor visibility into inventory movement",
+    "Limited time to learn complex software"
+  ],
+  "behavior": [
+    "Highly mobile-first",
+    "Already comfortable using WhatsApp in day-to-day business",
+    "Prefer low-friction tools that work in Hindi or English without training"
+  ],
+  "value_proposition": "DukaanMitra turns familiar WhatsApp messages into structured business records, giving them digital bookkeeping, alerts, reports, and AI-led insights in a format they can adopt quickly.",
+  "last_updated": "2026-04-29"
+}

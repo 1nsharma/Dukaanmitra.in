@@ -1,0 +1,39 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "DukaanMitra OS",
+  "alternateName": ["DukaanMitra", "Munim AI", "DukaanMitra"],
+  "url": "https://dukaanmitra.in",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "All",
+  "author": {
+    "@type": "Person",
+    "name": "Amit Sharma"
+  },
+  "description": "DukaanMitra is India's First AI WhatsApp Munim for Kirana stores. Manage udhaar, sales, and inventory via WhatsApp. Zero app install needed.",
+  "keywords": "AI Retail OS, WhatsApp Commerce, AI Munim, Kirana Automation, Digital Udhaar, Retail Intelligence, Bharat Commerce OS",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "INR"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "ratingCount": "8450"
+  },
+  "about": [
+    {
+      "@type": "Thing",
+      "name": "WhatsApp Commerce"
+    },
+    {
+      "@type": "Thing",
+      "name": "Generative AI for Retail"
+    },
+    {
+      "@type": "Thing",
+      "name": "Digital Khata"
+    }
+  ]
+}

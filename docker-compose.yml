@@ -1,0 +1,77 @@
+﻿version: "3.8"
+
+services:
+  # 1. DukaanMitra Core & Superintelligence Unified Runner
+  dukaanmitra-enterprise:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dukaanmitra-os:latest
+    container_name: dukaanmitra-enterprise
+    restart: unless-stopped
+    ports:
+      - "3000:3000" # Core Engine & Webhooks
+      - "8000:8000" # AI Brain & WhatsApp Admin Dev Console
+    volumes:
+      - dukaanmitra-data:/app/data
+      - dukaanmitra-db:/app/apps/ai-services
+    environment:
+      - NODE_ENV=production
+      - QUEUE_MODE=memory
+      - WHATSAPP_VERIFY_TOKEN=${WHATSAPP_VERIFY_TOKEN:-dukaanmitra_verify_token_default}
+      - WHATSAPP_APP_SECRET=${WHATSAPP_APP_SECRET:-}
+      - WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN:-}
+      - WHATSAPP_PHONE_NUMBER_ID=${WHATSAPP_PHONE_NUMBER_ID:-}
+    networks:
+      - dukaanmitra-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # 2. DukaanMitra Mitra-OS Web Storefront Console
+  mitra-os-web:
+    image: node:20-alpine
+    container_name: dukaanmitra-mitraos-web
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./apps/mitra-os-web:/app
+    command: sh -c "npm install && npm run build && npx serve -s dist -l 5173"
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://dukaanmitra-enterprise:8000
+    networks:
+      - dukaanmitra-net
+    depends_on:
+      - dukaanmitra-enterprise
+
+  # 3. Commercial Next.js Portal
+  dukaan-in-next:
+    image: node:20-alpine
+    container_name: dukaanmitra-dukaanin-next
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./apps/dukaan-in-next:/app
+    command: sh -c "npm install && npm run build && npm start"
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - NEXT_PUBLIC_API_URL=http://dukaanmitra-enterprise:8000
+    networks:
+      - dukaanmitra-net
+    depends_on:
+      - dukaanmitra-enterprise
+
+networks:
+  dukaanmitra-net:
+    driver: bridge
+
+volumes:
+  dukaanmitra-data:
+  dukaanmitra-db:

@@ -1,0 +1,18 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ['build', '-t', '$LOCATION-docker.pkg.dev/$PROJECT_ID/dukaanmitra/dukaanmitra:$COMMIT_SHA', '.']
+  - name: gcr.io/cloud-builders/docker
+    args: ['push', '$LOCATION-docker.pkg.dev/$PROJECT_ID/dukaanmitra/dukaanmitra:$COMMIT_SHA']
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - dukaanmitra-api
+      - --image=$LOCATION-docker.pkg.dev/$PROJECT_ID/dukaanmitra/dukaanmitra:$COMMIT_SHA
+      - --region=$LOCATION
+      - --platform=managed
+      - --no-allow-unauthenticated
+      - --set-secrets=DATABASE_URL=dukaanmitra-database-url:latest,REDIS_URL=dukaanmitra-redis-url:latest
+images:
+  - '$LOCATION-docker.pkg.dev/$PROJECT_ID/dukaanmitra/dukaanmitra:$COMMIT_SHA'

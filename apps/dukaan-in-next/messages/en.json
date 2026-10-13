@@ -1,0 +1,60 @@
+{
+  "HoldVerificationGate": {
+    "title": "Human Verification",
+    "description": "Security check: press and hold the button for 2.5 seconds.",
+    "button": "Press and Hold to Verify",
+    "status": {
+      "initial": "Press and hold to enter website",
+      "holding": "Keep holding...",
+      "failed": "Verification failed. Try again.",
+      "cancelled": "Verification cancelled. Try again."
+    }
+  },
+  "LandingPage": {
+    "hero": {
+      "badge": "Anime.js v4 Modular Engine",
+      "headline": "BILLBOOK FEKO {br} WHATSAPP CHALAO",
+      "description": "AI-powered WhatsApp Munim for Kirana stores. {br} Built with high-fidelity deterministic animation.",
+      "cta": {
+        "trial": "Start Free Trial",
+        "demo": "View Live Demo"
+      }
+    },
+    "features": {
+      "title": "CORE {span} MODULES",
+      "items": {
+        "whatsapp": {
+          "title": "WhatsApp Entry",
+          "desc": "Pure text-to-ledger extraction with 99% accuracy."
+        },
+        "aimunim": {
+          "title": "AI Munim",
+          "desc": "Context-aware processing for local Hinglish slang."
+        },
+        "ledger": {
+          "title": "Digital Ledger",
+          "desc": "Real-time state updates with deterministic math."
+        },
+        "reports": {
+          "title": "Smart Reports",
+          "desc": "Automated end-of-day analytics via WhatsApp."
+        }
+      }
+    },
+    "cta": {
+      "title": "READY TO {span} UPGRADE?",
+      "button": "START FREE TRIAL 🚀",
+      "security": "Secured by Indian Sovereign Infrastructure"
+    }
+  },
+  "Metadata": {
+    "title": "DukaanMitra | The Best Digital Khata and Udhaar App for Indian Shops",
+    "description": "DukaanMitra is the smartest digital khata and udhaar app for Indian Kirana stores. Automate your accounting via WhatsApp. The best kirana software for sales growth."
+  },
+  "LocaleSwitcher": {
+    "label": "Change language",
+    "en": "English",
+    "hi": "Hindi",
+    "mr": "Marathi"
+  }
+}
