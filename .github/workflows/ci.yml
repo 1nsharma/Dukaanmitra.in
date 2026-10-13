@@ -4,7 +4,7 @@ on:
   push:
     branches: [feat/shared-ai-brain-foundation]
   pull_request:
-    branches: [feat/shared-ai-brain-foundation]
+    branches: [Anti]
 
 permissions:
   contents: read
