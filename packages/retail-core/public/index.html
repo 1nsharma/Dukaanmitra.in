@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DukaanMitra — AI Retail & Business Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --accent: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #3b82f6, #10b981);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: white;
+    }
+    .brand-title {
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.5px;
+    }
+    .brand-tag {
+      font-size: 0.7rem;
+      background: #1e3a8a;
+      color: #93c5fd;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      color: #34d399;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #10b981;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.9); }
+    }
+
+    main {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Template Cards */
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .template-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .template-card:hover, .template-card.active {
+      border-color: #3b82f6;
+      background: #172554;
+      transform: translateY(-2px);
+    }
+    .template-name {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .template-cat {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #60a5fa;
+      font-weight: 700;
+    }
+    .template-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      line-height: 1.4;
+    }
+
+    /* Multi-modal inputs */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+    input, select, textarea {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: white;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    .btn {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.85rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+    .btn:hover { background: #1d4ed8; }
+    .btn-secondary {
+      background: #334155;
+      color: #f8fafc;
+    }
+    .btn-secondary:hover { background: #475569; }
+
+    /* Inventory Table */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+    th {
+      background: #0f172a;
+      padding: 0.75rem 1rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--card-border);
+    }
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #1e293b;
+    }
+    tr:last-child td { border-bottom: none; }
+    .stock-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+    .stock-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .stock-low { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    /* Agent Activity Console */
+    .console {
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      height: 240px;
+      overflow-y: auto;
+      color: #94a3b8;
+    }
+    .console-line { margin-bottom: 0.4rem; line-height: 1.4; }
+    .console-time { color: #64748b; }
+    .console-agent { color: #60a5fa; font-weight: 600; }
+    .console-success { color: #34d399; }
+    .console-info { color: #f8fafc; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-logo">DM</div>
+      <div>
+        <div class="brand-title">DukaanMitra <span class="brand-tag">PILOT v1.0</span></div>
+      </div>
+    </div>
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      Internal AI Agents Running (No MCP)
+    </div>
+  </header>
+
+  <main>
+    <!-- Left Column: UPI-Simple Onboarding & Multi-Modal Controls -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      
+      <!-- UPI Onboarding Box -->
+      <div class="card">
+        <div class="card-title">⚡ UPI-Simple Onboarding</div>
+        <div class="card-subtitle">Zero-form merchant setup via WhatsApp / Phone</div>
+        <div class="form-group">
+          <label>Merchant Mobile Number</label>
+          <input type="text" id="merchantPhone" value="+919876543210" placeholder="+91XXXXXXXXXX">
+        </div>
+        <div class="form-group">
+          <label>Select Business Type</label>
+          <select id="templateSelect">
+            <option value="kirana">Kirana / General Store (Retail)</option>
+            <option value="pharmacy">Medical Store / Pharmacy (Health)</option>
+            <option value="salon">Beauty Salon / Parlour (Services)</option>
+            <option value="restaurant">Restaurant / Cafe / Dhaba (Food)</option>
+            <option value="mobile-shop">Mobile & Accessories Shop (Retail)</option>
+            <option value="garage">Auto Garage / Workshop (Auto)</option>
+            <option value="tailor-boutique">Tailor / Boutique (Services)</option>
+            <option value="tuition-coaching">Tuition / Coaching Centre (Education)</option>
+            <option value="hardware-paint">Hardware / Paint Store (Retail)</option>
+            <option value="sweet-shop">Sweet Shop / Halwai (Food)</option>
+          </select>
+        </div>
+        <button class="btn" onclick="startUPIOnboarding()">
+          🚀 One-Click Launch (Auto-Seed Catalog)
+        </button>
+      </div>
+
+      <!-- Multi-Modal Interaction Simulator -->
+      <div class="card">
+        <div class="card-title">🎙️ Multi-Modal Capture Simulator</div>
+        <div class="card-subtitle">Test Voice, OCR, and Chat AI agents live</div>
+        
+        <div class="tabs">
+          <button class="tab-btn active" id="tabVoice" onclick="setTab('voice')">Voice Note</button>
+          <button class="tab-btn" id="tabOcr" onclick="setTab('ocr')">Bill OCR</button>
+          <button class="tab-btn" id="tabWhatsApp" onclick="setTab('whatsapp')">WhatsApp</button>
+        </div>
+
+        <!-- Voice Panel -->
+        <div id="panelVoice">
+          <div class="form-group">
+            <label>Hinglish Voice Transcript</label>
+            <input type="text" id="voiceTranscript" value="10 packet bread stock mein daal do" placeholder="e.g. 5 packet milk bech diya">
+          </div>
+          <button class="btn btn-secondary" onclick="simulateVoice()">Process Voice Command</button>
+        </div>
+
+        <!-- OCR Panel -->
+        <div id="panelOcr" style="display: none;">
+          <div class="form-group">
+            <label>Purchase Invoice / Bill Text</label>
+            <textarea id="ocrText" rows="4" placeholder="Atta 5kg 10 x 200 = 2000&#10;Basmati Rice 1kg 20 x 85 = 1700">Atta 5kg 10 x 200 = 2000
+Basmati Rice 1kg 20 x 85 = 1700
+Fortune Mustard Oil 1L 15 x 140 = 2100</textarea>
+          </div>
+          <button class="btn btn-secondary" onclick="simulateOcr()">Process Invoice OCR</button>
+        </div>
+
+        <!-- WhatsApp Panel -->
+        <div id="panelWhatsApp" style="display: none;">
+          <div class="form-group">
+            <label>Simulated Inbound WhatsApp Message</label>
+            <input type="text" id="waMessage" value="Sale ₹450 paid via cash for provisions" placeholder="Type WhatsApp message">
+          </div>
+          <button class="btn btn-secondary" onclick="simulateWhatsApp()">Simulate WhatsApp Webhook</button>
+        </div>
+
+      </div>
+
+      <!-- Live Agent Stream -->
+      <div class="card">
+        <div class="card-title">🤖 Agent Execution Log</div>
+        <div class="card-subtitle">Real-time internal agents event ledger</div>
+        <div class="console" id="agentConsole">
+          <div class="console-line"><span class="console-time">[02:00:00]</span> <span class="console-agent">SYSTEM</span> Engine online, Redis queues active.</div>
+          <div class="console-line"><span class="console-time">[02:00:01]</span> <span class="console-agent">AGENTS</span> 10 Business Templates ready for instantaneous onboarding.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Interactive Catalog & Store Dashboard -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      
+      <!-- Store Catalog View -->
+      <div class="card" style="flex: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div>
+            <div class="card-title" id="activeStoreHeader">🏪 Active Store Catalog: Kirana / General Store</div>
+            <div class="card-subtitle">Pre-generated & fully editable catalog managed deterministically</div>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="loadTemplatePreview()">Refresh Catalog</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Item / SKU</th>
+                <th>Category</th>
+                <th>Unit</th>
+                <th>Cost Price</th>
+                <th>Selling Price</th>
+                <th>Stock / Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Business Templates Showcase -->
+      <div class="card">
+        <div class="card-title">📦 Ready-to-Launch Business Categories</div>
+        <div class="card-subtitle">Every business model supported out of the box</div>
+        <div class="templates-grid" id="templatesGrid">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    let activeTemplate = 'kirana';
+    let currentSkus = [];
+
+    function logConsole(agent, message, type = 'info') {
+      const consoleEl = document.getElementById('agentConsole');
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = 'console-line';
+      div.innerHTML = `<span class="console-time">[${time}]</span> <span class="console-agent">${agent}</span> <span class="console-${type}">${message}</span>`;
+      consoleEl.prepend(div);
+    }
+
+    function setTab(tab) {
+      ['voice', 'ocr', 'whatsapp'].forEach(t => {
+        document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = (t === tab ? 'block' : 'none');
+        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).className = (t === tab ? 'tab-btn active' : 'tab-btn');
+      });
+    }
+
+    async function loadTemplates() {
+      try {
+        const res = await fetch('/api/templates');
+        const data = await res.json();
+        if (data.success) {
+          const grid = document.getElementById('templatesGrid');
+          grid.innerHTML = data.templates.map(t => `
+            <div class="template-card ${t.key === activeTemplate ? 'active' : ''}" onclick="selectTemplate('${t.key}')">
+              <div class="template-name">
+                <span>${t.name}</span>
+                <span class="template-cat">${t.category}</span>
+              </div>
+              <div class="template-desc">${t.description}</div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function selectTemplate(key) {
+      activeTemplate = key;
+      document.getElementById('templateSelect').value = key;
+      await loadTemplatePreview();
+      await loadTemplates();
+    }
+
+    async function loadTemplatePreview() {
+      try {
+        const res = await fetch('/api/templates/' + activeTemplate);
+        const data = await res.json();
+        if (data.success) {
+          currentSkus = data.template.skus;
+          document.getElementById('activeStoreHeader').innerText = `🏪 Active Store Catalog: ${data.template.name}`;
+          renderInventory(currentSkus);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderInventory(skus) {
+      const tbody = document.getElementById('inventoryBody');
+      tbody.innerHTML = skus.map((item, idx) => `
+        <tr>
+          <td><strong>${item.name}</strong><br><span style="color: #64748b; font-size: 0.75rem;">${item.sku}</span></td>
+          <td>${item.category}</td>
+          <td>${item.unit}</td>
+          <td>₹${item.costPrice}</td>
+          <td><strong>₹${item.sellPrice}</strong></td>
+          <td>
+            <span class="stock-badge ${item.openingStock > (item.lowStockAlert || 5) ? 'stock-ok' : 'stock-low'}">
+              ${item.isService ? 'Service' : item.openingStock + ' ' + item.unit}
+            </span>
+          </td>
+          <td>
+            <button style="background: none; border: 1px solid #334155; color: #93c5fd; padding: 3px 8px; border-radius: 4px; cursor: pointer;" onclick="quickEditPrice(${idx})">Edit</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function quickEditPrice(idx) {
+      const newPrice = prompt(`Enter new selling price for ${currentSkus[idx].name}:`, currentSkus[idx].sellPrice);
+      if (newPrice !== null && !isNaN(newPrice)) {
+        currentSkus[idx].sellPrice = parseFloat(newPrice);
+        renderInventory(currentSkus);
+        logConsole('INVENTORY_AGENT', `Price updated for SKU [${currentSkus[idx].sku}] to ₹${newPrice}`, 'success');
+      }
+    }
+
+    function startUPIOnboarding() {
+      const phone = document.getElementById('merchantPhone').value;
+      const tKey = document.getElementById('templateSelect').value;
+      logConsole('ONBOARDING_AGENT', `Verifying merchant phone ${phone} via UPI-style OTP...`, 'info');
+      setTimeout(() => {
+        logConsole('ONBOARDING_AGENT', `Phone verified! Seeding starter catalog for template [${tKey}]...`, 'success');
+        selectTemplate(tKey);
+      }, 500);
+    }
+
+    function simulateVoice() {
+      const transcript = document.getElementById('voiceTranscript').value;
+      logConsole('VOICE_AGENT', `Transcribing speech note: "${transcript}"`, 'info');
+      setTimeout(() => {
+        logConsole('INVENTORY_AGENT', `Intent recognized: Stock movement recorded deterministically with high confidence (0.95)`, 'success');
+      }, 400);
+    }
+
+    function simulateOcr() {
+      logConsole('OCR_AGENT', `Scanning purchase invoice lines...`, 'info');
+      setTimeout(() => {
+        logConsole('OCR_AGENT', `DocType classified: "purchase_invoice". 3 line items matched against catalog.`, 'info');
+        logConsole('INVENTORY_AGENT', `Ledger updated: Stock incremented via PURCHASE_IN`, 'success');
+      }, 500);
+    }
+
+    function simulateWhatsApp() {
+      const msg = document.getElementById('waMessage').value;
+      logConsole('WHATSAPP', `Inbound message from +919876543210: "${msg}"`, 'info');
+      setTimeout(() => {
+        logConsole('BILL_PARSER', `Extracted Sale: ₹450 (CASH) - Customer intelligence updated`, 'success');
+      }, 400);
+    }
+
+    // Init
+    loadTemplates();
+    loadTemplatePreview();
+  </script>
+</body>
+</html>
