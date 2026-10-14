@@ -2,7 +2,7 @@ name: DukaanMitra CI
 
 on:
   push:
-    branches: [feat/shared-ai-brain-foundation, fix/ci-lockfile-reconciliation, cleanup/remove-tracked-dependencies-and-env]
+    branches: [feat/shared-ai-brain-foundation, fix/ci-lockfile-reconciliation, cleanup/remove-tracked-dependencies-and-env, integration/unified-dukaanmitra-core]
   pull_request:
     branches: [Anti]
 
@@ -16,17 +16,16 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-      # Temporary reconciliation: the current lockfile fails npm ci with
-      # EUSAGE and missing package entries. Regenerate the lockfile in a
-      # reviewed follow-up before restoring deterministic npm ci installs.
-      - name: Install dependencies and reconcile lockfile
+      # Temporary reconciliation: the current root lockfile fails npm ci with
+      # EUSAGE and missing package entries. Regenerate it in a reviewed follow-up.
+      - name: Install root dependencies and reconcile lockfile
         run: npm install --no-audit --no-fund
       - name: Unit tests
         run: npm run test
@@ -34,3 +33,9 @@ jobs:
         run: npm run typecheck
       - name: Production build
         run: npm run build
+      - name: Install consolidated retail-core dependencies
+        run: npm ci --prefix packages/retail-core --no-audit --no-fund
+      - name: Retail-core tests
+        run: npm --prefix packages/retail-core test
+      - name: Retail-core build
+        run: npm --prefix packages/retail-core run build
