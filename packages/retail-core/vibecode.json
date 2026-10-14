@@ -1,0 +1,215 @@
+{
+  "project": {
+    "name": "DukaanMitra",
+    "version": "1.0.0",
+    "description": "Event-driven retail management system with WhatsApp as input channel"
+  },
+  "architecture": {
+    "pattern": "event-driven",
+    "philosophy": "WhatsApp is NOT a feature - it is an input channel like a keyboard",
+    "rules": [
+      "Single source of truth: Events",
+      "No duplicate logic between channels",
+      "All agents share the same brain (core system)",
+      "Confidence-based processing for AI channels"
+    ]
+  },
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "role": "input_only",
+      "rules": [
+        "No direct DB writes",
+        "No direct replies",
+        "All messages emit events"
+      ],
+      "events": [
+        {
+          "type": "WHATSAPP_MESSAGE_RECEIVED",
+          "description": "Incoming WhatsApp message (text or image)",
+          "payload": {
+            "phone": "string",
+            "message": "string",
+            "image": "optional_file",
+            "message_id": "string"
+          }
+        }
+      ]
+    },
+    "app": {
+      "enabled": true,
+      "role": "input_and_display",
+      "rules": [
+        "Primary UI channel",
+        "High confidence inputs (user-initiated)",
+        "All actions emit events"
+      ],
+      "events": [
+        {
+          "type": "SALE_ADD",
+          "description": "User manually adds a sale via app",
+          "payload": {
+            "amount": "number",
+            "mode": "string",
+            "phone": "optional_string",
+            "confidence": "1.0 (default)"
+          }
+        }
+      ]
+    }
+  },
+  "core": {
+    "event_store": {
+      "description": "Immutable log of all events",
+      "storage": "PostgreSQL",
+      "features": [
+        "Event sourcing",
+        "Audit trail",
+        "Replay capability"
+      ]
+    },
+    "event_router": {
+      "description": "Central routing system for all events",
+      "implementation": "Bull queues with Redis",
+      "routing": {
+        "WHATSAPP_MESSAGE_RECEIVED": ["BILL_PARSER_AGENT"],
+        "BILL_PARSED": ["CUSTOMER_INTELLIGENCE_AGENT"],
+        "CUSTOMER_UPDATED": ["REPLY_GENERATOR"],
+        "OUTBOUND_MESSAGE_READY": ["WHATSAPP_SENDER"],
+        "SALE_ADD": ["CUSTOMER_INTELLIGENCE_AGENT"]
+      },
+      "benefits": [
+        "Retry safety",
+        "Easy scaling",
+        "Simple testing",
+        "Decoupled components"
+      ]
+    }
+  },
+  "agents": {
+    "bill_parser": {
+      "input": "WHATSAPP_MESSAGE_RECEIVED",
+      "output": "BILL_PARSED",
+      "responsibility": "Extract bill information from text/images",
+      "features": [
+        "Amount parsing",
+        "Payment mode detection",
+        "Confidence scoring"
+      ]
+    },
+    "customer_intelligence": {
+      "input": ["BILL_PARSED", "SALE_ADD"],
+      "output": "CUSTOMER_UPDATED",
+      "responsibility": "Update customer records and analytics",
+      "features": [
+        "Customer creation/update",
+        "Sales tracking",
+        "Order analytics",
+        "Preferred payment mode tracking"
+      ]
+    },
+    "reply_generator": {
+      "input": "CUSTOMER_UPDATED",
+      "output": "OUTBOUND_MESSAGE_READY",
+      "responsibility": "Generate context-aware replies",
+      "features": [
+        "Confidence-based messaging",
+        "Customer analytics inclusion",
+        "Soft language for low confidence"
+      ]
+    },
+    "whatsapp_sender": {
+      "input": "OUTBOUND_MESSAGE_READY",
+      "output": "WhatsApp API call",
+      "responsibility": "Send messages via WhatsApp API",
+      "features": [
+        "Message delivery",
+        "Status tracking",
+        "Error handling"
+      ]
+    }
+  },
+  "ux_principles": {
+    "consistency": "What shows in app must match WhatsApp behavior",
+    "trust": "Always show confidence levels for AI-parsed data",
+    "language": {
+      "style": "Soft, respectful, Hindi-English mix",
+      "examples": [
+        "Low confidence: 'Mujhe lag raha hai ₹450 ka bill hai. Agar galat ho to bata dena 🙏'",
+        "High confidence: '✅ ₹450 ka bill save kar liya (CASH)'"
+      ]
+    }
+  },
+  "data_models": {
+    "Event": {
+      "fields": [
+        "id: string",
+        "type: EventType",
+        "source: EventSource",
+        "payload: JSON",
+        "metadata: JSON (optional)",
+        "status: EventStatus",
+        "createdAt: DateTime"
+      ]
+    },
+    "Customer": {
+      "fields": [
+        "id: string",
+        "phone: string (unique)",
+        "name: string (optional)",
+        "totalSales: float",
+        "totalOrders: int",
+        "lastOrderAt: DateTime",
+        "preferredMode: string",
+        "averageOrderValue: float"
+      ]
+    },
+    "Sale": {
+      "fields": [
+        "id: string",
+        "customerId: string",
+        "amount: float",
+        "mode: string",
+        "source: EventSource",
+        "confidence: float (optional)",
+        "eventId: string (optional)",
+        "createdAt: DateTime"
+      ]
+    },
+    "WhatsAppMessage": {
+      "fields": [
+        "id: string",
+        "messageId: string (unique)",
+        "phone: string",
+        "direction: INBOUND|OUTBOUND",
+        "content: string",
+        "contentType: text|image|etc",
+        "status: string",
+        "eventId: string (optional)"
+      ]
+    }
+  },
+  "deployment": {
+    "requirements": [
+      "PostgreSQL database",
+      "Redis for queues",
+      "WhatsApp Business API access",
+      "Node.js runtime"
+    ],
+    "environment_variables": [
+      "DATABASE_URL",
+      "REDIS_URL",
+      "WHATSAPP_API_URL",
+      "WHATSAPP_ACCESS_TOKEN",
+      "WHATSAPP_PHONE_NUMBER_ID",
+      "WHATSAPP_VERIFY_TOKEN",
+      "PORT"
+    ]
+  },
+  "future_extensions": {
+    "confidence_framework": "Advanced ML-based confidence scoring",
+    "abuse_prevention": "Fake bill detection, spam filtering, data poisoning protection",
+    "multi_channel": "POS, Voice, SMS as additional input channels",
+    "analytics": "Business intelligence and reporting dashboard"
+  }
+}
