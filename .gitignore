@@ -16,3 +16,5 @@ Thumbs.db
 *.log
 *.db-wal
 *.db-shm
+
+apps/ai-services/data/
