@@ -18,6 +18,7 @@ import { WhatsAppWebhookHandler } from './channels/whatsapp/webhook.handler';
 import { WhatsAppSender } from './channels/whatsapp/sender';
 import { createWhatsAppRoutes } from './api/routes/whatsapp.routes';
 import { createAppRoutes } from './api/routes/app.routes';
+import { createOndcRoutes } from './api/routes/ondc.routes';
 
 dotenv.config();
 
@@ -128,6 +129,7 @@ if (knowledgeQueue) {
 
 app.use('/whatsapp', createWhatsAppRoutes(webhookHandler));
 app.use('/api', createAppRoutes(eventRouter, prisma));
+app.use('/ondc', createOndcRoutes(prisma, eventRouter));
 
 app.get('/api/info', (req, res) => {
   res.json({

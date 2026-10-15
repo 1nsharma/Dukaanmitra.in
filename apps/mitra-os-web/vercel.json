@@ -7,6 +7,22 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/api/v1/:path*",
+      "destination": "https://api.dukaanmitra.in/api/v1/:path*"
+    },
+    {
+      "source": "/ondc/:path*",
+      "destination": "https://api.dukaanmitra.in/ondc/:path*"
+    },
+    {
+      "source": "/whatsapp/:path*",
+      "destination": "https://api.dukaanmitra.in/whatsapp/:path*"
+    },
+    {
+      "source": "/webhook",
+      "destination": "https://api.dukaanmitra.in/webhook"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

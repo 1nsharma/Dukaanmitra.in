@@ -733,20 +733,42 @@ function formatWhatsAppMarkdown(text) {
   return s;
 }
 
-// Auto-load telemetry on startup
+// Auto-load telemetry & route initialization on startup
 document.addEventListener('DOMContentLoaded', () => {
   loadAdminTelemetry();
-  if (window.location.pathname.includes('admin') || window.location.pathname.includes('dev-console')) {
+  const path = (window.location.pathname || '').toLowerCase();
+  const params = new URLSearchParams(window.location.search);
+  const shopQuery = params.get('shop') || params.get('shopId') || params.get('q');
+
+  if (path.includes('verify')) {
+    showTab('tab-verify');
+    loadCorporateCert();
+    const parts = path.split('/').filter(Boolean);
+    const shopFromPath = parts.length >= 2 && parts[0] === 'verify' ? parts[1] : null;
+    const targetShop = shopFromPath || shopQuery;
+    if (targetShop) {
+      setTimeout(() => {
+        runMerchantVerification(decodeURIComponent(targetShop));
+      }, 200);
+    }
+  } else if (path.includes('onboard') || path.includes('access')) {
+    showTab('tab-access');
+  } else if (path.includes('admin') || path.includes('dev-console') || path.includes('whatsapp')) {
     showTab('tab-whatsapp');
+  } else if (path.includes('company')) {
+    showTab('tab-company');
+  } else if (path.includes('pricing') || path.includes('plans')) {
+    showTab('tab-pricing');
   }
 });
-
 
 function showTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-  document.getElementById(tabId).classList.remove('hidden');
-  event.target.classList.add('active');
+  const targetContent = document.getElementById(tabId);
+  if (targetContent) targetContent.classList.remove('hidden');
+  const targetBtn = document.querySelector(`button[onclick*="${tabId}"]`);
+  if (targetBtn) targetBtn.classList.add('active');
 }
 
 async function sendAICommand() {
@@ -884,8 +906,10 @@ function installPWA() {
 }
 
 // Public Verification
-async function runMerchantVerification() {
-  const q = document.getElementById('verifyQueryInput').value.trim();
+async function runMerchantVerification(query) {
+  const inputEl = document.getElementById('verifyQueryInput');
+  if (query && inputEl) inputEl.value = query;
+  const q = (query || (inputEl ? inputEl.value : '')).trim();
   if (!q) return alert("Enter business ID, name or phone");
   const area = document.getElementById('verificationResultArea');
   area.innerHTML = "<p>Searching registry...</p>";

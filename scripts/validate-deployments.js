@@ -88,6 +88,23 @@ check("WhatsApp Admin Testing Console endpoints and HTML UI present", () => {
   if (!htmlContent.includes('executeWhatsAppDevMessage')) throw new Error("Missing executeWhatsAppDevMessage JS function");
 });
 
+// 7. ONDC Beckn Integration
+check("ONDC Integration Beckn Protocol routes and service configured", () => {
+  const ondcCoreFile = path.join(ROOT, 'apps', 'core-engine', 'src', 'core', 'integration', 'ondc.service.ts');
+  if (!fs.existsSync(ondcCoreFile)) throw new Error("Missing ondc.service.ts in core-engine");
+  const ondcPyFile = path.join(ROOT, 'apps', 'ai-services', 'ondc_network.py');
+  if (!fs.existsSync(ondcPyFile)) throw new Error("Missing ondc_network.py in ai-services");
+});
+
+// 8. WhatsApp Munim Billing & Slip Generation
+check("WhatsApp Munim Natural Language Billing & Slip Generators configured", () => {
+  const munimFile = path.join(ROOT, 'apps', 'core-engine', 'src', 'core', 'agents', 'whatsapp-munim.agent.ts');
+  if (!fs.existsSync(munimFile)) throw new Error("Missing whatsapp-munim.agent.ts");
+  const content = fs.readFileSync(munimFile, 'utf8');
+  if (!content.includes('generateInvoiceSlip')) throw new Error("Missing generateInvoiceSlip");
+  if (!content.includes('generateReminderSlip')) throw new Error("Missing generateReminderSlip");
+});
+
 console.log("\n--------------------------------------------------------------");
 if (hasErrors) {
   console.error("❌ Validation FAILED with errors!");

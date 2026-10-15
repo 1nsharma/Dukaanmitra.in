@@ -153,10 +153,13 @@ def product_dict(r):
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/verify", response_class=HTMLResponse)
+@app.get("/verify/{shop_id}", response_class=HTMLResponse)
+@app.get("/onboard", response_class=HTMLResponse)
+@app.get("/access", response_class=HTMLResponse)
 @app.get("/admin", response_class=HTMLResponse)
 @app.get("/admin/whatsapp", response_class=HTMLResponse)
 @app.get("/dev-console", response_class=HTMLResponse)
-def home():
+def home(shop_id: Optional[str] = None):
     import pathlib
     base = pathlib.Path(__file__).resolve().parent
     with open(base / "static" / "index.html", encoding="utf-8") as f: return f.read()
@@ -447,3 +450,14 @@ try:
     mowglai_delivery_agent.register_mowglai_routes(app)
 except Exception as _e:
     print(f"Warning: Mowglai Delivery Agent could not be registered: {_e}")
+
+# ONDC Beckn Protocol v1.2 Integration (/api/v1/ondc/*)
+try:
+    import ondc_network
+    def _get_ondc_db():
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        return conn
+    app.include_router(ondc_network.get_ondc_router(_get_ondc_db))
+except Exception as _e:
+    print(f"Warning: ONDC Network Router could not be registered: {_e}")
