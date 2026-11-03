@@ -1,0 +1,13 @@
+{
+  "name": "@dukan-mitra/sdk",
+  "version": "1.0.0",
+  "description": "Official TypeScript SDK for DukaanMitra AI Business OS & Retail Intelligence",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": ["dukaanmitra", "retail", "pos", "kirana", "sdk", "whatsapp"],
+  "author": "DukaanMitra AI Engineering",
+  "license": "Apache-2.0"
+}

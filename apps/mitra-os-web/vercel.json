@@ -19,8 +19,16 @@
       "destination": "https://api.dukaanmitra.in/whatsapp/:path*"
     },
     {
+      "source": "/openwa/:path*",
+      "destination": "https://whatsapp.dukaanmitra.in/:path*"
+    },
+    {
       "source": "/webhook",
       "destination": "https://api.dukaanmitra.in/webhook"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://api.dukaanmitra.in/admin/:path*"
     },
     {
       "source": "/(.*)",
@@ -34,6 +42,23 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
         }
       ]
     }

@@ -1,0 +1,72 @@
+# ==============================================================================
+# DukaanMitra AI Engineering — Production Cloud Orchestration
+# Domain: dukaanmitra.in | API: api.dukaanmitra.in | WhatsApp: :2785
+# ==============================================================================
+
+services:
+  # 1. Reverse Proxy & SSL Gateway (Nginx)
+  ingress:
+    image: nginx:alpine
+    container_name: dukaanmitra_prod_ingress
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../../nginx/dukaanmitra.in.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - core-engine
+      - ai-services
+      - whatsapp-gateway
+
+  # 2. Node.js Core Event Engine
+  core-engine:
+    build:
+      context: ../../apps/core-engine
+      dockerfile: Dockerfile
+    container_name: dukaanmitra_prod_core
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://dukaanmitra_admin:secure_prod_pass@postgres:5432/dukaanmitra_prod?schema=public
+      - OPENWA_URL=http://whatsapp-gateway:2785
+      - AI_SERVICES_URL=http://ai-services:8000
+    ports:
+      - "3000:3000"
+
+  # 3. Python FastAPI Superintelligence & Sandbox Engine
+  ai-services:
+    build:
+      context: ../../apps/ai-services
+      dockerfile: Dockerfile
+    container_name: dukaanmitra_prod_ai
+    restart: always
+    environment:
+      - DUKAANMITRA_ENV=production
+      - APP_SECRET=prod_super_secret_key_change_in_vault
+      - DUKAANMITRA_DB=/data/dukaanmitra_prod.db
+      - ALLOW_DEMO_OWNER=false
+    volumes:
+      - ai_prod_data:/data
+    ports:
+      - "8000:8000"
+
+  # 4. OpenWA WhatsApp Gateway (Self-hosted WhatsApp Web session)
+  whatsapp-gateway:
+    image: rmyndharis/openwa:latest
+    container_name: dukaanmitra_prod_openwa
+    restart: always
+    environment:
+      - PORT=2785
+      - BASE_URL=http://localhost:2785
+      - WEBHOOK_URL=http://core-engine:3000/api/channels/whatsapp/webhook
+    volumes:
+      - openwa_prod_sessions:/app/sessions
+    ports:
+      - "2785:2785"
+
+volumes:
+  ai_prod_data:
+  openwa_prod_sessions:
