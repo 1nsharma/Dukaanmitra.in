@@ -12,7 +12,7 @@ console.log('================================================================');
 console.log('Starting Microservices:');
 console.log('  1. Core Engine (Node.js/Express)  -> http://localhost:3000');
 console.log('  2. AI Services (FastAPI/Python)   -> http://localhost:8000');
-console.log('  3. OpenWA WhatsApp Gateway        -> http://localhost:3008');
+console.log('  3. OpenWA WhatsApp Gateway        -> http://localhost:2785');
 console.log('----------------------------------------------------------------\n');
 
 const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
@@ -26,7 +26,7 @@ const coreProcess = spawn(npmCmd, ['run', 'dev'], {
     ...process.env,
     QUEUE_MODE: 'memory',
     REDIS_URL: 'memory',
-    OPENWA_URL: 'http://localhost:3008',
+    OPENWA_URL: 'http://localhost:2785',
   },
 });
 
@@ -44,7 +44,7 @@ const whatsappProcess = spawn(npmCmd, ['run', 'dev'], {
   shell: true,
   env: {
     ...process.env,
-    OPENWA_PORT: '3008',
+    OPENWA_PORT: '2785',
     CORE_WEBHOOK_URL: 'http://localhost:3000/whatsapp/openwa/webhook',
   },
 });

@@ -68,19 +68,22 @@ services:
     depends_on:
       - dukaanmitra-enterprise
 
-  # 4. DukaanMitra OpenWA WhatsApp Commerce Gateway
-  whatsapp-gateway:
-    image: node:20-alpine
-    container_name: dukaanmitra-whatsapp-gateway
+  # 4. DukaanMitra OpenWA WhatsApp Commerce Gateway (rmyndharis/OpenWA Dashboard & API)
+  openwa-gateway:
+    build:
+      context: ./apps/whatsapp-gateway
+      dockerfile: Dockerfile
+    container_name: openwa-api
     restart: unless-stopped
-    working_dir: /app
-    volumes:
-      - ./apps/whatsapp-gateway:/app
-    command: sh -c "npm install && npm start"
     ports:
-      - "3008:3008"
+      - "2785:2785" # Dashboard & API bundled on port 2785
+    volumes:
+      - openwa-data:/app/data
     environment:
-      - OPENWA_PORT=3008
+      - NODE_ENV=production
+      - API_PORT=2785
+      - BIND_HOST=0.0.0.0
+      - DATABASE_SYNCHRONIZE=true
       - CORE_WEBHOOK_URL=http://dukaanmitra-enterprise:3000/whatsapp/openwa/webhook
     networks:
       - dukaanmitra-net
@@ -94,3 +97,4 @@ networks:
 volumes:
   dukaanmitra-data:
   dukaanmitra-db:
+  openwa-data:

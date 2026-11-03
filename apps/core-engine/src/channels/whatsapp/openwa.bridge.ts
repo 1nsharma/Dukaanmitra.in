@@ -33,7 +33,7 @@ export class OpenWABridge {
   constructor(
     prisma: PrismaClient,
     eventRouter: EventRouter,
-    openWaUrl: string = process.env.OPENWA_URL || 'http://localhost:3008',
+    openWaUrl: string = process.env.OPENWA_URL || 'http://localhost:2785',
     aiServicesUrl: string = process.env.AI_SERVICES_URL || 'http://localhost:8000',
     defaultSession: string = 'default'
   ) {

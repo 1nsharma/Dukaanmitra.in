@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 
 const app = express();
-const PORT = process.env.OPENWA_PORT || 3008;
+const PORT = process.env.OPENWA_PORT || 2785;
 const CORE_ENGINE_WEBHOOK = process.env.CORE_WEBHOOK_URL || 'http://localhost:3000/whatsapp/openwa/webhook';
 
 app.use(cors());
