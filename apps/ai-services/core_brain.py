@@ -492,6 +492,14 @@ class VoiceBookkeepingParser:
         low = text.lower()
         now_ts = now_iso()
 
+        # Ensure business exists to satisfy foreign key constraints
+        biz = conn.execute("SELECT id FROM businesses WHERE id=?", (business_id,)).fetchone()
+        if not biz:
+            conn.execute(
+                "INSERT OR IGNORE INTO businesses (id, name, kind, currency, created_at) VALUES (?, ?, ?, ?, ?)",
+                (business_id, f"Store {business_id}", "retail", "INR", now_ts)
+            )
+
         # Check for Jama / Payment received
         # e.g., "Sharma ji ne 500 rupaye diye/jama kiye"
         m_jama = re.search(r"([a-zA-Z\u0900-\u097F\s]+?)\s+(?:ne|ji\s+ne)\s+(\d+(?:\.\d+)?)\s*(?:rupaye|rs|inr)?\s*(?:jama|diye|paid|chukaaye)", low)

@@ -107,10 +107,10 @@ export const StoreDashboard: React.FC<{ storeId: string }> = ({ storeId }) => {
   const [blastProgress, setBlastProgress] = useState(0);
 
   useEffect(() => {
-    if (storeId === "demo-mode") {
+    if (storeId === "demo-mode" || storeId === "sharma-kirana-demo" || !storeId) {
       setStore({
-        id: "demo-mode",
-        name: "Amit's Supermart (Demo)",
+        id: "sharma-kirana-demo",
+        name: "Sharma Kirana & General Store (Live Demo)",
         totalSales: 45200,
         totalUdhaar: 12500,
       });

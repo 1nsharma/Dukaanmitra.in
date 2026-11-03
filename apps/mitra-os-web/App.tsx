@@ -47,6 +47,7 @@ import AndroidBuildApp from './components/AndroidBuildApp';
 import { KeywordsDirectory } from './components/KeywordsDirectory';
 import { DukaanMitraEngineeringBible } from './components/DukaanMitraEngineeringBible';
 import { AiEngineeringEcosystem } from './components/AiEngineeringEcosystem';
+import { LoginPage } from './components/LoginPage';
 
 function CityRedirect() {
   const { city } = useParams<{ city: string }>();
@@ -193,10 +194,17 @@ export default function App() {
         </div>
       </div>
     );
-    if (!user) {
-      return <Navigate to="/" replace />;
+
+    // Support both Firebase authenticated session and Instant Demo session
+    const demoAuthStr = typeof window !== 'undefined' ? localStorage.getItem("dm_demo_auth") : null;
+    const demoAuth = demoAuthStr ? JSON.parse(demoAuthStr) : null;
+    const isAuthed = !!user || !!(demoAuth && demoAuth.authenticated);
+    const activeRole = role?.role || demoAuth?.role;
+
+    if (!isAuthed) {
+      return <Navigate to="/login" replace />;
     }
-    if (adminOnly && role?.role !== 'superadmin') {
+    if (adminOnly && activeRole !== 'superadmin') {
       return <Navigate to="/dashboard" replace />;
     }
     return <>{children}</>;
@@ -251,6 +259,8 @@ export default function App() {
           <Route path="/official-domain" element={<OfficialDomainWarning />} />
           <Route path="/ai-ecosystem" element={<AiEngineeringEcosystem />} />
           <Route path="/ecosystem" element={<AiEngineeringEcosystem />} />
+          <Route path="/login" element={<LoginPage onLoginSuccess={(r, s) => setRole({ uid: 'usr_demo', role: r, storeId: s })} />} />
+          <Route path="/auth" element={<LoginPage onLoginSuccess={(r, s) => setRole({ uid: 'usr_demo', role: r, storeId: s })} />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/blog" element={<Blog />} />
@@ -279,7 +289,7 @@ export default function App() {
           <Route path="/demo" element={<StoreDashboard storeId="demo-mode" />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
-              {role?.storeId ? <StoreDashboard storeId={role.storeId} /> : <div>Loading Store...</div>}
+              <StoreDashboard storeId={role?.storeId || "sharma-kirana-demo"} />
             </ProtectedRoute>
           } />
           <Route path="/whatsapp" element={

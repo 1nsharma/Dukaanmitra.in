@@ -277,3 +277,135 @@ def execute_mcp_tool(tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any
 
         else:
             raise ValueError(f"Unknown MCP tool: {tool_name}")
+
+
+# ==============================================================================
+# Model Context Protocol (MCP) Router & AI Plugin Gateway
+# ==============================================================================
+
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+mcp_router = APIRouter(tags=["Model Context Protocol (MCP) & External AI Integration"])
+
+class McpToolCallRequest(BaseModel):
+    tool_name: str
+    arguments: Dict[str, Any] = {}
+
+class McpListToolsRequest(BaseModel):
+    cursor: Optional[str] = None
+
+@mcp_router.get("/.well-known/ai-plugin.json")
+def get_ai_plugin_manifest():
+    """Manifest for ChatGPT Custom Actions, Gemini Extensions, and Claude MCP Connect."""
+    return {
+        "schema_version": "v1",
+        "name_for_human": "DukaanMitra AI Business OS",
+        "name_for_model": "dukaanmitra_business_os",
+        "description_for_human": "Manage retail store inventory, record Udhaar Khata, and run WhatsApp marketing using DukaanMitra.",
+        "description_for_model": "Plugin and MCP toolset allowing users to manage MSME retail shops. Supports checking stockouts, recording voice/text Khata udhaar, running supplier Mandi price arbitrage, and sending WhatsApp offers via DukaanMitra.",
+        "auth": {"type": "none"},
+        "api": {
+            "type": "openapi",
+            "url": "https://api.dukaanmitra.in/openapi.json"
+        },
+        "logo_url": "https://dukaanmitra.in/logo.svg",
+        "contact_email": "support@dukaanmitra.in",
+        "legal_info_url": "https://dukaanmitra.in/terms"
+    }
+
+@mcp_router.post("/api/v1/mcp/tools/list")
+@mcp_router.get("/api/v1/mcp/tools/list")
+def list_mcp_tools():
+    """Returns available Model Context Protocol (MCP) tools for external LLM grounding."""
+    extended_tools = list(MCP_TOOL_DEFINITIONS)
+    extended_tools.extend([
+        {
+            "name": "get_magic_insights",
+            "description": "The 'Magic Button' (Aaj ki AI Insights). Returns low stock reorders, missed regular customers, and Hinglish WhatsApp ready offers.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "tenant_id": {"type": "string", "description": "Business ID of the shop"}
+                },
+                "required": ["tenant_id"]
+            }
+        },
+        {
+            "name": "record_voice_transaction",
+            "description": "Processes voice or text bookkeeping command (e.g. 'Mishra ji ne 5kg daal udhaar li' or 'Sharma ji ne 500 jama kiye') and updates digital ledger.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "tenant_id": {"type": "string", "description": "Business ID of the shop"},
+                    "voice_text": {"type": "string", "description": "Hindi or Hinglish natural speech command"}
+                },
+                "required": ["tenant_id", "voice_text"]
+            }
+        },
+        {
+            "name": "get_supplier_mandi_arbitrage",
+            "description": "Compares shop's current purchase costs against local Mandi wholesale benchmark rates to identify margin savings.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "tenant_id": {"type": "string", "description": "Business ID of the shop"}
+                },
+                "required": ["tenant_id"]
+            }
+        }
+    ])
+    return {
+        "tools": extended_tools,
+        "protocolVersion": "2024-11-05",
+        "serverInfo": {
+            "name": "dukaanmitra-mcp-gateway",
+            "version": "1.0.0"
+        }
+    }
+
+@mcp_router.post("/api/v1/mcp/tools/call")
+def call_mcp_tool(body: McpToolCallRequest):
+    """Executes a tool call submitted by Gemini, ChatGPT, Claude or Antigravity."""
+    try:
+        # Check Core Brain tools
+        if body.tool_name in ["get_magic_insights", "record_voice_transaction", "get_supplier_mandi_arbitrage"]:
+            import core_brain
+            tenant_id = body.arguments.get("tenant_id", "default")
+            with get_db() as conn:
+                if body.tool_name == "get_magic_insights":
+                    reorders = core_brain.CoreBrainEngine.detect_urgent_reorders(conn, tenant_id)
+                    freqs = core_brain.CoreBrainEngine.calculate_customer_frequencies(conn, tenant_id)
+                    missed = core_brain.CoreBrainEngine.detect_missed_customers(freqs)
+                    offers = core_brain.CoreBrainEngine.generate_ready_offers(missed, "DukaanMitra Store")
+                    return {
+                        "content": [{
+                            "type": "text",
+                            "text": json.dumps({
+                                "urgent_reorders": reorders,
+                                "missed_customers": missed,
+                                "ready_offers": offers
+                            }, ensure_ascii=False)
+                        }]
+                    }
+                elif body.tool_name == "record_voice_transaction":
+                    voice_text = body.arguments.get("voice_text", "")
+                    res = core_brain.VoiceBookkeepingParser.parse_speech_command(conn, tenant_id, voice_text)
+                    conn.commit()
+                    return {"content": [{"type": "text", "text": res["reply"], "details": res}]}
+                elif body.tool_name == "get_supplier_mandi_arbitrage":
+                    arb = core_brain.SupplierRateAnalyzer.analyze_margins_and_savings(conn, tenant_id)
+                    return {"content": [{"type": "text", "text": json.dumps(arb, ensure_ascii=False)}]}
+
+        res = execute_mcp_tool(body.tool_name, body.arguments)
+        return {
+            "content": [{
+                "type": "text",
+                "text": json.dumps(res, ensure_ascii=False)
+            }]
+        }
+    except Exception as e:
+        return {
+            "isError": True,
+            "content": [{"type": "text", "text": f"MCP execution error: {str(e)}"}]
+        }

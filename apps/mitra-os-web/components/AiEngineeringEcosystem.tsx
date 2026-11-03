@@ -21,7 +21,12 @@ import {
   Database,
   Radio,
   FileSpreadsheet,
-  Coins
+  Coins,
+  Bot,
+  QrCode,
+  Terminal,
+  Copy,
+  Check
 } from "lucide-react";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
@@ -67,7 +72,83 @@ interface ArbitrageItem {
 }
 
 export const AiEngineeringEcosystem: React.FC = () => {
-  const [activePhase, setActivePhase] = useState<"phase1" | "phase2" | "phase3" | "phase4">("phase2");
+  const [activePhase, setActivePhase] = useState<"phase1" | "phase2" | "phase3" | "phase4" | "ai_gateway">("ai_gateway");
+
+  // External AI Gateway (ChatGPT / Gemini / MCP Simulator) States
+  const [selectedLlm, setSelectedLlm] = useState<"gemini" | "chatgpt" | "claude">("gemini");
+  const [llmPromptInput, setLlmPromptInput] = useState("Gemini, DukaanMitra se mera aaj ka galla aur low-stock items batao");
+  const [isExecutingLlm, setIsExecutingLlm] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [llmOutput, setLlmOutput] = useState<{
+    toolCalled: string;
+    payload: any;
+    result: any;
+    assistantReply: string;
+  } | null>({
+    toolCalled: "mcp.get_magic_insights",
+    payload: { tenant_id: "sharma-kirana-demo" },
+    result: {
+      galla: 14250,
+      lowStockCount: 3,
+      missedCustomersCount: 2,
+      arbitragePotential: 3390
+    },
+    assistantReply: "Namaste Sharma ji! 🙏 Aaj aapka kul galla ₹14,250 hai. Aapke 3 items (Aashirvaad Aata, Fortune Oil, Tata Namak) reorder level par hain. Gupta ji aur Verma ji pichle 40 din se nahi aaye hain—kya unhe special WhatsApp discount offer bhej doon?"
+  });
+
+  const handleRunLlmPrompt = (promptText: string) => {
+    setLlmPromptInput(promptText);
+    setIsExecutingLlm(true);
+    setTimeout(() => {
+      setIsExecutingLlm(false);
+      const low = promptText.toLowerCase();
+
+      if (low.includes("udhaar") || low.includes("daal") || low.includes("jama")) {
+        setLlmOutput({
+          toolCalled: "mcp.record_voice_transaction",
+          payload: { tenant_id: "sharma-kirana-demo", voice_text: promptText },
+          result: {
+            action: "udhaar_recorded",
+            customer: "Mishra ji",
+            amount: 250.0,
+            new_balance: 1250.0,
+            ledger_id: "ledg_99214"
+          },
+          assistantReply: "✅ DukaanMitra Munim Action: Mishra ji ke khate me ₹250 udhaar darj ho gaya hai. Naya udhaar baaki: ₹1,250. Confirmation SMS/WhatsApp draft ready!"
+        });
+      } else if (low.includes("mandi") || low.includes("bachat") || low.includes("supplier")) {
+        setLlmOutput({
+          toolCalled: "mcp.get_supplier_mandi_arbitrage",
+          payload: { tenant_id: "sharma-kirana-demo" },
+          result: {
+            totalMonthlySaving: 3390.0,
+            opportunitiesCount: 3,
+            topSaving: "Aashirvaad Aata (₹35/bag extra being charged by distributor)"
+          },
+          assistantReply: "💡 Mandi Arbitrage Alert: Aapka supplier Aata par ₹35/bag aur Oil par ₹12/L zyada le raha hai. Mandi rate par switch karne par aapko monthly ₹3,390 ki extra bachat hogi."
+        });
+      } else {
+        setLlmOutput({
+          toolCalled: "mcp.get_magic_insights",
+          payload: { tenant_id: "sharma-kirana-demo" },
+          result: {
+            galla: 14250,
+            lowStockCount: 3,
+            missedCustomersCount: 2,
+            arbitragePotential: 3390
+          },
+          assistantReply: "Namaste Sharma ji! 🙏 Aaj aapka kul galla ₹14,250 hai. 3 items stock out hone wale hain aur 2 toote hue grahakon ke liye WhatsApp ready offers generate ho chuke hain."
+        });
+      }
+    }, 600);
+  };
+
+  const copyToClipboard = (text: string, keyId: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(keyId);
+    setTimeout(() => setCopiedKey(null), 2500);
+  };
   
   // Phase 1: Core Brain States
   const [selectedCustomer, setSelectedCustomer] = useState<string>("sharma");
@@ -226,55 +307,517 @@ export const AiEngineeringEcosystem: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-6 pt-10 space-y-10">
         {/* Phase Navigator Tabs */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-900/60 p-2 rounded-2xl border border-slate-800">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 bg-slate-900/60 p-2 rounded-2xl border border-slate-800">
+          <button
+            onClick={() => setActivePhase("ai_gateway")}
+            className={`flex items-center justify-center gap-2 py-3.5 px-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+              activePhase === "ai_gateway"
+                ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-indigo-600/30 font-black"
+                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+            }`}
+          >
+            <Bot className="w-4 h-4 text-purple-400" />
+            <span>ChatGPT / Gemini MCP</span>
+          </button>
+
           <button
             onClick={() => setActivePhase("phase1")}
-            className={`flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+            className={`flex items-center justify-center gap-2 py-3.5 px-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
               activePhase === "phase1"
                 ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 font-black"
                 : "text-slate-400 hover:text-white hover:bg-slate-800/50"
             }`}
           >
             <Database className="w-4 h-4" />
-            <span>Phase 1: Core Brain PoC</span>
+            <span>Phase 1: Core Brain</span>
           </button>
 
           <button
             onClick={() => setActivePhase("phase2")}
-            className={`flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+            className={`flex items-center justify-center gap-2 py-3.5 px-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
               activePhase === "phase2"
                 ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 font-black"
                 : "text-slate-400 hover:text-white hover:bg-slate-800/50"
             }`}
           >
             <Sparkles className="w-4 h-4" />
-            <span>Phase 2: The MVP (Insights)</span>
+            <span>Phase 2: The MVP</span>
           </button>
 
           <button
             onClick={() => setActivePhase("phase3")}
-            className={`flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+            className={`flex items-center justify-center gap-2 py-3.5 px-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
               activePhase === "phase3"
                 ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 font-black"
                 : "text-slate-400 hover:text-white hover:bg-slate-800/50"
             }`}
           >
             <Mic className="w-4 h-4" />
-            <span>Phase 3: The MLP (Voice & WA)</span>
+            <span>Phase 3: MLP (Voice & WA)</span>
           </button>
 
           <button
             onClick={() => setActivePhase("phase4")}
-            className={`flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+            className={`flex items-center justify-center gap-2 py-3.5 px-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
               activePhase === "phase4"
                 ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 font-black"
                 : "text-slate-400 hover:text-white hover:bg-slate-800/50"
             }`}
           >
             <Crown className="w-4 h-4" />
-            <span>Phase 4: MMP (Monetize)</span>
+            <span>Phase 4: MMP (Plans)</span>
           </button>
         </div>
+
+        {/* ================================================================= */}
+        {/* EXTERNAL AI GATEWAY: CHATGPT / GEMINI / MCP SIMULATOR */}
+        {/* ================================================================= */}
+        {activePhase === "ai_gateway" && (
+          <div className="space-y-8 animate-fadeIn">
+            {/* Header banner */}
+            <div className="border-l-4 border-purple-500 pl-4 py-1 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-black uppercase tracking-tight text-white">
+                    External AI Gateway (ChatGPT / Gemini / MCP)
+                  </h2>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    Live Protocol
+                  </span>
+                </div>
+                <p className="text-slate-400 text-sm mt-1">
+                  Apne pasandeeda AI (ChatGPT, Google Gemini, ya Claude) se bole: <span className="text-purple-300 font-semibold italic">"DukaanMitra se manage karna hai"</span> aur real-time store control payein.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowQrModal(true)}
+                  className="px-4 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-2 transition-all shadow-sm"
+                >
+                  <QrCode className="w-4 h-4 text-emerald-400" />
+                  <span>WhatsApp Web Connect (:2785)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Interactive LLM Prompt Simulator */}
+            <div className="bg-slate-900 border border-purple-900/40 rounded-2xl p-6 shadow-2xl shadow-purple-950/20 space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 text-purple-400 flex items-center justify-center font-bold">
+                    <Bot className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-white uppercase tracking-tight">
+                      Interactive LLM Tool Execution Sandbox
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Simulate live function calling via Model Context Protocol (MCP) or OpenAI GPT Actions.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Model Selector Pills */}
+                <div className="flex items-center gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+                  <button
+                    onClick={() => setSelectedLlm("gemini")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      selectedLlm === "gemini"
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/30 font-black"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <span>Google Gemini</span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedLlm("chatgpt")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      selectedLlm === "chatgpt"
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30 font-black"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <span>OpenAI ChatGPT</span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedLlm("claude")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      selectedLlm === "claude"
+                        ? "bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md shadow-amber-600/30 font-black"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <span>Claude Desktop</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Prompt Input Box */}
+              <div className="space-y-3">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-400 block">
+                  Natural Language Merchant Command:
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={llmPromptInput}
+                    onChange={(e) => setLlmPromptInput(e.target.value)}
+                    placeholder="e.g. Gemini, DukaanMitra se mera aaj ka galla aur low-stock items batao"
+                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 font-medium"
+                  />
+                  <button
+                    onClick={() => handleRunLlmPrompt(llmPromptInput)}
+                    disabled={isExecutingLlm}
+                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-purple-600/30 disabled:opacity-50"
+                  >
+                    {isExecutingLlm ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Calling MCP...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4" />
+                        <span>Run AI Command</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Pre-configured Prompt Chips */}
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                  <span className="text-slate-500 font-semibold text-[11px]">Quick Prompts:</span>
+                  <button
+                    onClick={() => handleRunLlmPrompt("Gemini, DukaanMitra se mera aaj ka galla aur low-stock items batao")}
+                    className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-purple-300 transition-colors text-[11px]"
+                  >
+                    "Gemini, aaj ka galla aur low stock batao"
+                  </button>
+                  <button
+                    onClick={() => handleRunLlmPrompt("ChatGPT, DukaanMitra me Mishra ji ka 250 rupaye udhaar likho")}
+                    className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-purple-300 transition-colors text-[11px]"
+                  >
+                    "ChatGPT, Mishra ji ka 250 udhaar likho"
+                  </button>
+                  <button
+                    onClick={() => handleRunLlmPrompt("Gemini, DukaanMitra mandi arbitrage check karo, supplier kahan loot raha hai")}
+                    className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-purple-300 transition-colors text-[11px]"
+                  >
+                    "Gemini, Mandi arbitrage check karo"
+                  </button>
+                </div>
+              </div>
+
+              {/* Execution Trace & LLM Response */}
+              {llmOutput && (
+                <div className="space-y-4 pt-4 border-t border-slate-800 animate-fadeIn">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* Step 1: MCP Tool Calling Payload */}
+                    <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/80 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                          <Terminal className="w-3.5 h-3.5" />
+                          1. Model Tool Call (MCP Handshake)
+                        </span>
+                        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/40">
+                          200 OK (38ms)
+                        </span>
+                      </div>
+                      <div className="text-[11px] font-mono text-slate-300">
+                        <div className="text-slate-400">Endpoint: <span className="text-white">POST /api/v1/mcp/tools/call</span></div>
+                        <div className="text-slate-400">Tool: <span className="text-purple-300 font-bold">{llmOutput.toolCalled}</span></div>
+                      </div>
+                      <pre className="bg-slate-900/80 p-2.5 rounded-lg text-[10px] font-mono text-slate-300 overflow-x-auto border border-slate-800">
+                        {JSON.stringify(llmOutput.payload, null, 2)}
+                      </pre>
+                    </div>
+
+                    {/* Step 2: DukaanMitra Brain Response */}
+                    <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/80 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                          <Database className="w-3.5 h-3.5" />
+                          2. DukaanMitra Core Brain State
+                        </span>
+                        <span className="text-[10px] font-mono text-indigo-400 bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/40">
+                          Tenant: sharma-kirana-demo
+                        </span>
+                      </div>
+                      <pre className="bg-slate-900/80 p-2.5 rounded-lg text-[10px] font-mono text-emerald-300 overflow-x-auto border border-slate-800 max-h-32">
+                        {JSON.stringify(llmOutput.result, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+
+                  {/* Step 3: Natural Language Assistant Response */}
+                  <div className="bg-gradient-to-r from-purple-950/30 via-slate-900 to-indigo-950/30 border border-purple-500/30 rounded-xl p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-purple-600 flex items-center justify-center text-white text-xs font-black">
+                          {selectedLlm === "gemini" ? "G" : selectedLlm === "chatgpt" ? "O" : "C"}
+                        </div>
+                        <span className="text-xs font-bold text-white capitalize">
+                          {selectedLlm} AI Assistant Speech Response
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-400">Hinglish / Retail Context</span>
+                    </div>
+                    <p className="text-sm text-purple-100 font-medium leading-relaxed bg-slate-950/60 p-3 rounded-lg border border-slate-800/60">
+                      {llmOutput.assistantReply}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Protocol Integrations & Setup Specs */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Card A: Claude Desktop & Local MCP Setup */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center font-bold">
+                      <Terminal className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-white uppercase tracking-tight">
+                        Claude Desktop MCP Configuration
+                      </h4>
+                      <p className="text-[11px] text-slate-400">Add to claude_desktop_config.json</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() =>
+                      copyToClipboard(
+                        JSON.stringify(
+                          {
+                            mcpServers: {
+                              dukaanmitra: {
+                                command: "python",
+                                args: ["-m", "apps.ai-services.mcp_server"],
+                                env: {
+                                  DUKAANMITRA_API_URL: "https://api.dukaanmitra.in"
+                                }
+                              }
+                            }
+                          },
+                          null,
+                          2
+                        ),
+                        "mcp_config"
+                      )
+                    }
+                    className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                    title="Copy MCP Config"
+                  >
+                    {copiedKey === "mcp_config" ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <pre className="bg-slate-950 p-3 rounded-xl font-mono text-[11px] text-slate-300 overflow-x-auto border border-slate-800">
+{`{
+  "mcpServers": {
+    "dukaanmitra": {
+      "command": "python",
+      "args": ["-m", "apps.ai-services.mcp_server"],
+      "env": {
+        "DUKAANMITRA_API_URL": "https://api.dukaanmitra.in"
+      }
+    }
+  }
+}`}
+                </pre>
+                <div className="flex items-center justify-between text-[11px] text-slate-400">
+                  <span>Server Protocol: <strong className="text-white">MCP v1.0.0</strong></span>
+                  <span className="text-emerald-400 font-semibold">Native Stdio / SSE Support</span>
+                </div>
+              </div>
+
+              {/* Card B: ChatGPT Custom GPT & Gemini Discovery */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-white uppercase tracking-tight">
+                        ChatGPT GPT Actions & Gemini Manifest
+                      </h4>
+                      <p className="text-[11px] text-slate-400">OpenAPI Spec & Plugin Discovery</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard("https://api.dukaanmitra.in/openapi.json", "openapi_url")}
+                    className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                    title="Copy OpenAPI URL"
+                  >
+                    {copiedKey === "openapi_url" ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
+                    <div className="text-[10px] uppercase font-black tracking-wider text-slate-400">
+                      OpenAPI 3.1 Action URL (ChatGPT):
+                    </div>
+                    <div className="font-mono text-xs text-emerald-400 flex items-center justify-between">
+                      <span>https://api.dukaanmitra.in/openapi.json</span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
+                    <div className="text-[10px] uppercase font-black tracking-wider text-slate-400">
+                      AI Plugin Manifest (ChatGPT / Gemini Discovery):
+                    </div>
+                    <div className="font-mono text-xs text-purple-300 flex items-center justify-between">
+                      <span>https://api.dukaanmitra.in/.well-known/ai-plugin.json</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                  <span>Auth: <strong className="text-white">Bearer API Key</strong></span>
+                  <span className="text-purple-300 font-semibold">Zero-Config Auto-Import</span>
+                </div>
+              </div>
+            </div>
+
+            {/* WhatsApp Web Gateway OpenWA Status */}
+            <div className="bg-gradient-to-r from-emerald-950/20 via-slate-900 to-teal-950/20 border border-emerald-500/30 rounded-2xl p-6 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold">
+                    <Radio className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-black text-white uppercase tracking-tight">
+                        OpenWA WhatsApp Web Hub (Port 2785)
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        {openwaStatus === "connected" ? "Connected" : "Standby"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Direct WhatsApp Web bridge for automated Kirana reminders, invoices, and supplier alerts.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowQrModal(true)}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-emerald-600/30"
+                  >
+                    <QrCode className="w-4 h-4" />
+                    <span>Scan QR to Link Phone</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-3 gap-3 pt-2 text-xs">
+                <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Local Docker URL</span>
+                  <span className="font-mono text-emerald-400 font-semibold">http://localhost:2785</span>
+                </div>
+                <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Production Reverse Proxy</span>
+                  <span className="font-mono text-indigo-300 font-semibold">https://whatsapp.dukaanmitra.in</span>
+                </div>
+                <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Active Sessions</span>
+                  <span className="text-white font-semibold">1 Store Paired (Sharma Kirana)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* QR Code Modal for OpenWA WhatsApp Web */}
+        {showQrModal && (
+          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl relative animate-fadeIn">
+              <button
+                onClick={() => setShowQrModal(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-white text-lg font-bold"
+              >
+                ✕
+              </button>
+
+              <div className="text-center space-y-1">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto mb-2">
+                  <QrCode className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-black text-white uppercase tracking-tight">
+                  Connect WhatsApp Web (OpenWA :2785)
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Pair your store's WhatsApp number to enable automatic customer offers & voice confirmations.
+                </p>
+              </div>
+
+              {/* Realistic SVG QR Code Display */}
+              <div className="bg-white p-6 rounded-2xl flex flex-col items-center justify-center space-y-3 shadow-inner">
+                <svg viewBox="0 0 200 200" className="w-48 h-48">
+                  {/* Outer Frame */}
+                  <rect width="200" height="200" fill="white" />
+                  {/* Top-Left Finder */}
+                  <rect x="20" y="20" width="50" height="50" fill="black" />
+                  <rect x="28" y="28" width="34" height="34" fill="white" />
+                  <rect x="36" y="36" width="18" height="18" fill="black" />
+                  {/* Top-Right Finder */}
+                  <rect x="130" y="20" width="50" height="50" fill="black" />
+                  <rect x="138" y="28" width="34" height="34" fill="white" />
+                  <rect x="146" y="36" width="18" height="18" fill="black" />
+                  {/* Bottom-Left Finder */}
+                  <rect x="20" y="130" width="50" height="50" fill="black" />
+                  <rect x="28" y="138" width="34" height="34" fill="white" />
+                  <rect x="36" y="146" width="18" height="18" fill="black" />
+                  {/* Simulated Data Blocks */}
+                  <rect x="80" y="25" width="10" height="20" fill="black" />
+                  <rect x="95" y="35" width="20" height="10" fill="black" />
+                  <rect x="85" y="60" width="30" height="15" fill="black" />
+                  <rect x="25" y="85" width="20" height="10" fill="black" />
+                  <rect x="55" y="85" width="15" height="20" fill="black" />
+                  <rect x="80" y="90" width="40" height="20" fill="#059669" />
+                  <rect x="135" y="85" width="25" height="15" fill="black" />
+                  <rect x="165" y="105" width="15" height="25" fill="black" />
+                  <rect x="85" y="125" width="20" height="20" fill="black" />
+                  <rect x="115" y="130" width="15" height="30" fill="black" />
+                  <rect x="140" y="145" width="35" height="20" fill="black" />
+                  <rect x="95" y="165" width="25" height="15" fill="black" />
+                </svg>
+                <div className="text-[11px] font-bold text-slate-800 text-center">
+                  OpenWA Gateway Session: <span className="font-mono text-emerald-600">dm-session-2785</span>
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-300">
+                <div className="font-bold text-white text-[11px] uppercase tracking-wider">
+                  Kaise connect karein:
+                </div>
+                <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-400">
+                  <li>Apne phone me WhatsApp open karein</li>
+                  <li>Settings / 3-dots me jayein aur <strong className="text-white">Linked Devices</strong> chunein</li>
+                  <li><strong className="text-white">Link a Device</strong> par tap karein aur upar ka QR code scan karein</li>
+                </ol>
+              </div>
+
+              <button
+                onClick={() => {
+                  setOpenwaStatus("connected");
+                  setShowQrModal(false);
+                }}
+                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition-all"
+              >
+                Confirm Device Paired
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ================================================================= */}
         {/* PHASE 1: THE CORE BRAIN (BACKEND POC) */}

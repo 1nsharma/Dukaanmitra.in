@@ -476,3 +476,10 @@ try:
     core_brain.register_core_brain_routes(app, DB_PATH)
 except Exception as _e:
     print(f"Warning: Core Brain Engine could not be registered: {_e}")
+
+# Model Context Protocol (MCP) & ChatGPT/Gemini AI Plugin Router
+try:
+    from mcp_server import mcp_router
+    app.include_router(mcp_router)
+except Exception as _e:
+    print(f"Warning: MCP Router could not be registered: {_e}")
