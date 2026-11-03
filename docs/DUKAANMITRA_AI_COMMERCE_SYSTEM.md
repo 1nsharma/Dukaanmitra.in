@@ -52,11 +52,13 @@ DukaanMitra-OS/ (Single Canonical Master Repository)
 │   │   │                             #       Handwritten Slip & Paper Bill OCR, Mowglai Hyperlocal Delivery,
 │   │   │                             #       ONDC Beckn Protocol Adapter, Compliance Engine
 │   │   │
-│   │   └── 💬 whatsapp-gateway/          # [PORT: 3008]
-│   │                                 # OpenWA & Baileys Powered WhatsApp Commerce Gateway
-│   │                                 # Tech: Node.js, Express, Baileys, OpenWA REST API, QRCode
+│   │   └── 💬 whatsapp-gateway/          # [PORT: 2785]
+│   │                                 # OpenWA & Baileys Powered WhatsApp Commerce Gateway (rmyndharis/OpenWA)
+│   │                                 # Tech: Node.js, Express, Baileys, OpenWA REST API, Docker
 │   │                                 # Role: Zero-Approval WhatsApp Setup via QR code, Inbound/Outbound
 │   │                                 #       Two-Way Webhook Bridge to Core Engine & AI Brain
+│   │                                 # Dashboard & API bundled: http://localhost:2785
+│   │                                 # Quick Start: docker compose -f docker-compose.dev.yml up -d
 │   │
 │   ├── 📦 packages/
 │   │   ├── 🤖 enterprise-agents/     # 20 Specialized Autonomous Multi-Agents (Inventory, Finance,

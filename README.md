@@ -55,7 +55,16 @@ npm run dev:core        # Core Engine (Port 3000)
 npm run dev:ai          # AI Services (Port 8000)
 npm run dev:mitraos     # Mitra-OS Web Portal (Port 5173)
 npm run dev:dukaanin    # dukaanmitra.in Storefront (Port 3001)
-npm run dev:whatsapp    # OpenWA WhatsApp Gateway (Port 3008)
+npm run dev:whatsapp    # OpenWA WhatsApp Gateway (Port 2785)
+```
+
+### Option 3: Using Docker (All-in-One or Single-Container)
+```bash
+# 1. Run entire DukaanMitra Stack (All Services + OpenWA):
+docker compose up -d
+
+# 2. Or run OpenWA Single-Container Quick Start (Dashboard & API on Port 2785):
+docker compose -f apps/whatsapp-gateway/docker-compose.dev.yml up -d
 ```
 
 ---
@@ -68,7 +77,7 @@ npm run dev:whatsapp    # OpenWA WhatsApp Gateway (Port 3008)
 | **DukaanMitra.in** | `3001` | Customer E-Commerce Storefront | [http://localhost:3001](http://localhost:3001) |
 | **Core Engine** | `3000` | Merchant Web UI & WhatsApp Engine | [http://localhost:3000](http://localhost:3000) |
 | **AI Services** | `8000` | FastAPI Business Intelligence & Audit | [http://localhost:8000](http://localhost:8000) |
-| **OpenWA Gateway**| `3008` | WhatsApp HTTP API & QR Pairing | [http://localhost:3008](http://localhost:3008) |
+| **OpenWA Gateway**| `2785` | WhatsApp Dashboard & HTTP API | [http://localhost:2785](http://localhost:2785) |
 
 ---
 
