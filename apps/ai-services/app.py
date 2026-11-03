@@ -468,3 +468,11 @@ try:
     app.include_router(ondc_network.get_ondc_router(_get_ondc_db))
 except Exception as _e:
     print(f"Warning: ONDC Network Router could not be registered: {_e}")
+
+
+# DukaanMitra Core Brain Engine (Phase 1 PoC, Phase 2 MVP, Phase 3 MLP, Phase 4 MMP)
+try:
+    import core_brain
+    core_brain.register_core_brain_routes(app, DB_PATH)
+except Exception as _e:
+    print(f"Warning: Core Brain Engine could not be registered: {_e}")

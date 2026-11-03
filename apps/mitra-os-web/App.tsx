@@ -46,6 +46,7 @@ import { OfficialDomainWarning } from './components/OfficialDomainWarning';
 import AndroidBuildApp from './components/AndroidBuildApp';
 import { KeywordsDirectory } from './components/KeywordsDirectory';
 import { DukaanMitraEngineeringBible } from './components/DukaanMitraEngineeringBible';
+import { AiEngineeringEcosystem } from './components/AiEngineeringEcosystem';
 
 function CityRedirect() {
   const { city } = useParams<{ city: string }>();
@@ -248,6 +249,8 @@ export default function App() {
           <Route path="/free-tools" element={<FreeTools />} />
           <Route path="/android-app" element={<AndroidBuildApp />} />
           <Route path="/official-domain" element={<OfficialDomainWarning />} />
+          <Route path="/ai-ecosystem" element={<AiEngineeringEcosystem />} />
+          <Route path="/ecosystem" element={<AiEngineeringEcosystem />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/blog" element={<Blog />} />
