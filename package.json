@@ -14,8 +14,9 @@
     "dev:mitraos": "npm --prefix apps/mitra-os-web run dev",
     "dev:dukaanin": "npm --prefix apps/dukaan-in-next run dev",
     "dev:whatsapp": "npm --prefix apps/whatsapp-gateway run dev",
-    "build": "npm --prefix apps/core-engine run build && npm --prefix apps/mitra-os-web run build",
-    "build:mitraos": "npm --prefix apps/mitra-os-web run build",
+    "build": "npm --prefix apps/mitra-os-web install && npm --prefix apps/mitra-os-web run build",
+    "build:all": "npm --prefix apps/core-engine run build && npm --prefix apps/mitra-os-web run build",
+    "build:mitraos": "npm --prefix apps/mitra-os-web install && npm --prefix apps/mitra-os-web run build",
     "build:dukaanin": "npm --prefix apps/dukaan-in-next run build",
     "build:whatsapp": "npm --prefix apps/whatsapp-gateway run build",
     "start": "node apps/core-engine/dist/index.js",
@@ -48,5 +49,11 @@
     "launch-fasttrack"
   ],
   "author": "Amit Sharma / DukaanMitra Team",
-  "license": "ISC"
+  "license": "ISC",
+  "workspaces": [
+    "apps/mitra-os-web",
+    "apps/core-engine",
+    "packages/*",
+    "sdks/*"
+  ]
 }
