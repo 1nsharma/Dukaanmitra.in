@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "DukaanMitra-OS: Universal Business Management & Multi-Modal AI Operating System for MSMEs",
   "scripts": {
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:openwa": "docker compose -f apps/whatsapp-gateway/docker-compose.dev.yml up -d",
     "launch": "node scripts/start-production.js",
     "dev": "node scripts/start-dev.js",
     "dev:core": "npm --prefix apps/core-engine run dev",
