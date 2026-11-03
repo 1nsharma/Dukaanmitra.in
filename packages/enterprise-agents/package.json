@@ -1,0 +1,9 @@
+{
+  "name": "@dukaanmitra/enterprise-agents",
+  "version": "1.0.0",
+  "description": "DukaanMitra 20-Agent Autonomous Retail Superintelligence Swarm",
+  "main": "index.ts",
+  "dependencies": {
+    "events": "^3.3.0"
+  }
+}

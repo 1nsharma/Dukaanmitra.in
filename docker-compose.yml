@@ -1,4 +1,4 @@
-﻿version: "3.8"
+version: "3.8"
 
 services:
   # 1. DukaanMitra Core & Superintelligence Unified Runner
@@ -63,6 +63,25 @@ services:
     environment:
       - PORT=3002
       - NEXT_PUBLIC_API_URL=http://dukaanmitra-enterprise:8000
+    networks:
+      - dukaanmitra-net
+    depends_on:
+      - dukaanmitra-enterprise
+
+  # 4. DukaanMitra OpenWA WhatsApp Commerce Gateway
+  whatsapp-gateway:
+    image: node:20-alpine
+    container_name: dukaanmitra-whatsapp-gateway
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./apps/whatsapp-gateway:/app
+    command: sh -c "npm install && npm start"
+    ports:
+      - "3008:3008"
+    environment:
+      - OPENWA_PORT=3008
+      - CORE_WEBHOOK_URL=http://dukaanmitra-enterprise:3000/whatsapp/openwa/webhook
     networks:
       - dukaanmitra-net
     depends_on:

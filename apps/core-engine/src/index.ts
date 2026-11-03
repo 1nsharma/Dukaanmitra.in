@@ -127,7 +127,7 @@ if (knowledgeQueue) {
   knowledgeQueue.process(async (job) => { await knowledgeAgent.process(job); });
 }
 
-app.use('/whatsapp', createWhatsAppRoutes(webhookHandler));
+app.use('/whatsapp', createWhatsAppRoutes(webhookHandler, prisma, eventRouter));
 app.use('/api', createAppRoutes(eventRouter, prisma));
 app.use('/ondc', createOndcRoutes(prisma, eventRouter));
 

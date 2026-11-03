@@ -18,3 +18,8 @@ Thumbs.db
 *.db-shm
 
 apps/ai-services/data/
+whatsapp_auth/
+.wwebjs_auth/
+.wwebjs_cache/
+test_write.txt
+*.local
