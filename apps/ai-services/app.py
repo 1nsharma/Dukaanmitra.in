@@ -16,6 +16,13 @@ WA_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 
 app = FastAPI(title="DukaanMitra Universal Business AI", version="0.1.0")
+
+# Mount DukaanMitra AI Engineering Sandbox Router
+try:
+    from sandbox.api import router as sandbox_router
+    app.include_router(sandbox_router)
+except ImportError:
+    pass
 uploads_dir = os.path.join(BASE_DIR, "uploads")
 static_dir = os.path.join(BASE_DIR, "static")
 os.makedirs(uploads_dir, exist_ok=True)
